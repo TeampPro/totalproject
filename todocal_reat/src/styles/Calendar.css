@@ -1,0 +1,213 @@
+.calendar-modal {
+  position: fixed;
+  top: 15%; /* 더 상단 배치 */
+  left: 50%;
+  transform: translate(-50%, 0);
+  padding: 25px 30px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 10;
+}
+
+.calendar-control {
+  display: flex;
+  justify-content: flex-end; /* ✅ 버튼 묶음을 오른쪽 정렬 */
+  align-items: center;
+  width: 100%;
+  margin-bottom: 15px;
+  gap: 30px; /* 버튼 간격 */
+}
+
+.calendar-control button {
+  background-color: #ff8a80; /* 버튼 글자 보이게 색 조정 */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.calendar-control button:hover {
+  background-color: #ff5252;
+}
+
+/* 테이블 스타일 */
+.calendar-modal table {
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 16px;
+}
+
+.calendar-modal th,
+.calendar-modal td {
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+}
+
+.calendar-modal th {
+  background-color: #f0f0f0;
+}
+
+/* ✅ + 버튼 수정 */
+.right-btn {
+  margin-left: 10px; /* 버튼 사이 간격 */
+  background-color: #1976d2;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 0; /* + 기호 수직 가운데 정렬 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+
+}
+
+.right-btn:hover {
+  background-color: #0d47a1;
+}
+
+.thisMonth {
+  background-color: #ffe5e5;
+  border-radius: 20%;
+  color: black;
+  font-weight: bold;
+}
+
+/* 평일 기본 */
+.calendar-modal td {
+  color: #000;
+  text-align: center;
+  width: 40px;
+  height: 40px;
+}
+
+/* 일요일 = 글자 빨강 */
+.calendar-modal td.sunday {
+  color: red;
+}
+
+/* 토요일 = 글자 파랑 */
+.calendar-modal td.saturday {
+  color: #0044cc;
+}
+
+/* 다른 달 날짜 = 은색 */
+.calendar-modal td.dimmed-date {
+  color: silver;
+}
+
+/* ✅ 오늘 날짜 스타일 */
+.calendar-modal td.today {
+  background-color: #ffe5e5;
+  color: black !important;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+/* 요일 이름 */
+.day-names th {
+  color: black;
+}
+
+.holiday {
+  color: red !important;
+  font-weight: bold;
+}
+
+.holiday-name {
+  display: block;
+  font-size: 0.65rem;
+  color: red;
+  margin-top: 3px;
+}
+
+td.today {
+  background-color: #ffe08c !important;
+  color: #000 !important;
+  border-radius: 6px;
+
+}
+
+td {
+  position: relative;
+  padding: 5px;
+  text-align: center;
+  vertical-align: top;
+}
+
+/* ✅ 날짜 숫자 고정 width/가운데 정렬 */
+.day-number {
+  display: inline-block;
+  width: 20px;   /* 날짜 칸 고정 */
+  text-align: center;
+}
+
+/* ✅ dot은 날짜 옆에 overlay 배치 (레이아웃 영향 ❌) */
+.todo-dot-container {
+  position: absolute;
+  top: 10px;
+  right: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
+.todo-dot {
+  position: relative;
+  width: 8px;      /* ✅ 크기 키움 */
+  height: 8px;
+  background-color: #ff8a80;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+.todo-dot:hover {
+  transform: scale(1.3); /* ✅ hover 시 확대 */
+  background-color: #ff5252;
+}
+
+/* 툴팁 */
+.todo-tooltip {
+  display: none;
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  background-color: #333;
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  z-index: 20;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.todo-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+.todo-dot:hover .todo-tooltip {
+  display: block;
+}

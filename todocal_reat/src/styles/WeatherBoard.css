@@ -1,0 +1,144 @@
+/* ✅ 하나씩 나타났다 사라지는 애니메이션 */
+.fade-in-out {
+  opacity: 0;
+  animation: fadeInOut 10s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+
+/* 전체 페이지 */
+.page-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0;
+  overflow-x: hidden;
+  
+}
+
+/* 하얀색 컨테이너 */
+.weather-container {
+  background: #fff;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 1000px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* ✅ 내부 카드가 삐져나오지 않게 */
+}
+
+/* 제목 */
+.title {
+  text-align: center;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+/* 카드 묶음 */
+.card-wrapper {
+  display: flex;
+  flex-wrap: wrap;          /* ✅ 줄바꿈 허용 */
+  justify-content: center;  /* ✅ 가운데 정렬 */
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;         /* ✅ 내용 넘침 방지 */
+  padding: 10px;            /* ✅ 여백 추가 */
+}
+
+/* 개별 카드 */
+.weather-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  border-radius: 16px;
+  width: 160px;
+  height: 160px;
+  text-align: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+  flex-shrink: 0; /* ✅ 줄어들지 않게 고정 */
+  color: #000;
+}
+
+.weather-card:hover {
+  transform: scale(1.05);
+}
+
+.weather-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.weather-info .row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.weather-info div {
+  color: #000;
+  font-size: 12px;
+  text-align: center;
+  min-width: 60px;
+}
+
+/* 카드 내부 텍스트 */
+.city {
+  font-size: 15px;
+  font-weight: bold;
+  color: #444;
+}
+
+.time {
+  font-size: 9px;
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.icon {
+  font-size: 30px;
+  margin-bottom: 6px;
+}
+
+.update-time {
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  margin-top: 20px;
+}
+
+.loading {
+  padding: 16px;
+  text-align: center;
+}
