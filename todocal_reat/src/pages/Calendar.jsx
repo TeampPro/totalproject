@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -14,13 +14,16 @@ const toYMD = (d) => {
 function Calendar() {
   const navigate = useNavigate();
   const [getMoment, setMoment] = useState(moment());
+  const today = getMoment;
   const [holidays, setHolidays] = useState([]);
   const [todos, setTodos] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editTodo, setEditTodo] = useState(null);
   const [selectedDate, setSelectedDate] = useState(moment());
-
-  const today = getMoment;
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(today.year());
+  const [selectedMonth, setSelectedMonth] = useState(today.month() + 1);
+  const monthPickerRef = useRef(null);
 
   // ✅ 공휴일 불러오기
   const fetchHolidays = async (year) => {
@@ -50,6 +53,27 @@ function Calendar() {
     fetchHolidays(today.year());
     fetchTodos();
   }, [today]);
+
+  // ✅ 바깥 영역 클릭 시 month picker 닫기
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        monthPickerRef.current &&
+        !monthPickerRef.current.contains(e.target)
+      ) {
+        setShowMonthPicker(false);
+      }
+    };
+
+    if (showMonthPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    // cleanup
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showMonthPicker]);
 
   // ✅ 날짜별 Todo 필터
   const getTodosForDay = (date) => {
@@ -98,7 +122,6 @@ function Calendar() {
     // ✅ 강제 리렌더
     setMoment(moment());
   };
-
 
   // ✅ 달력 데이터 렌더링
   const calendarArr = () => {
@@ -186,7 +209,52 @@ function Calendar() {
           <button onClick={() => setMoment(today.clone().subtract(1, "month"))}>
             ◀
           </button>
-          <span className="thisMonth">{today.format("YYYY년 MM월")}</span>
+          <span
+            className="thisMonth clickable"
+            onClick={() => setShowMonthPicker((prev) => !prev)}
+          >
+            {today.format("YYYY년 MM월")}
+          </span>
+
+          {showMonthPicker && (
+            <div className="month-picker" ref={monthPickerRef}>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+              >
+                {Array.from({ length: 11 }, (_, i) => 2020 + i).map((y) => (
+                  <option key={y} value={y}>
+                    {y}년
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              >
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i} value={i}>
+                    {i + 1}월
+                  </option>
+                ))}
+              </select>
+
+              <button
+                onClick={() => {
+                  const newDate = moment({
+                    year: selectedYear,
+                    month: selectedMonth,
+                  });
+                  setMoment(newDate);
+                  setShowMonthPicker(false);
+                }}
+              >
+                이동
+              </button>
+            </div>
+          )}
+
           <button onClick={() => setMoment(today.clone().add(1, "month"))}>
             ▶
           </button>
