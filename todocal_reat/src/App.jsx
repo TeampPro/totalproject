@@ -17,8 +17,11 @@ import SignUp from "./pages/SignUp";
 import BeLogin from "./pages/BeLogin";
 import ChatPage from "./pages/ChatPage";
 import Upload from "./pages/Upload.jsx";
-import MyPage from "./pages/MyPage.jsx"
-import MainPage from "./pages/MainPage.jsx"
+import MyPage from "./pages/MyPage.jsx";
+import MainPage from "./pages/MainPage.jsx";
+
+// ✅ 초대 페이지 import 추가
+import InviteJoinPage from "./pages/InviteJoinPage.jsx";
 
 import "./App.css";
 
@@ -45,7 +48,7 @@ function App() {
             <div className="bottom-widgets">
               <div className="todo-widget">
                 <TodoHeader />
-                <AllTasks /> {/* 메인 페이지에서 한 번만 렌더링 */}
+                <AllTasks />
               </div>
               <div className="map-widget">
                 <KakaoMapBox />
@@ -63,7 +66,9 @@ function App() {
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/mainPage" element={<MainPage />} />
             <Route path="/myPage" element={<MyPage />} />
-            {/* Routes에서 TaskList 관련 경로 제거 */}
+
+            {/* ✅ 여기 새 경로 추가 */}
+            <Route path="/chat/invite/:code" element={<InviteJoinPage />} />
           </Routes>
         </div>
       </div>
