@@ -15,6 +15,8 @@ import ChatPage from "./pages/ChatPage";
 import Upload from "./pages/Upload.jsx";
 import Calendar from "./pages/Calendar.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import MyPage from "./pages/MyPage.jsx";
+import MainPage from "./pages/MainPage.jsx";
 
 function App() {
   const location = useLocation();
@@ -32,8 +34,10 @@ function App() {
         <div className="content" style={{ minHeight: "70vh" }}>
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />   
+            <Route path="/main" element={<MainPage />} />
+            <Route path="/signup" element={<SignUp />} />
             <Route path="/beLogin" element={<BeLogin />} />
+            <Route path="/mypage" element={<MyPage />} />
             <Route path="/upload" element={<Upload />} />
             {/* <Route path="/calendar" element={<Calendar />} /> */}
             <Route path="*" element={<NotFound />} />
