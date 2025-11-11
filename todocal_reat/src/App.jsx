@@ -17,8 +17,8 @@ import SignUp from "./pages/SignUp";
 import BeLogin from "./pages/BeLogin";
 import ChatPage from "./pages/ChatPage";
 import Upload from "./pages/Upload.jsx";
-import MyPage from "./pages/MyPage.jsx"
-import MainPage from "./pages/MainPage.jsx"
+import MyPage from "./pages/MyPage.jsx";
+import MainPage from "./pages/MainPage.jsx";
 
 import "./App.css";
 
@@ -32,10 +32,12 @@ function App() {
       {!isLoginOrSignUpPage && <Header />}
 
       <div className="main-layout">
-        {!isLoginOrSignUpPage && !isChat && (
+        {!isLoginOrSignUpPage && !isChat && location.pathname === "/main" && (
           <div className="dashboard">
             <div className="weather-widget">
-              <WeatherBoard />
+              <div className="weather-container">
+                <WeatherBoard />
+              </div>
             </div>
 
             <div className="calendar-widget">
@@ -45,7 +47,7 @@ function App() {
             <div className="bottom-widgets">
               <div className="todo-widget">
                 <TodoHeader />
-                <AllTasks /> {/* 메인 페이지에서 한 번만 렌더링 */}
+                <AllTasks />
               </div>
               <div className="map-widget">
                 <KakaoMapBox />
@@ -61,9 +63,8 @@ function App() {
             <Route path="/beLogin" element={<BeLogin />} />
             <Route path="/upload" element={<Upload />} />
             <Route path="/chat" element={<ChatPage />} />
-            <Route path="/mainPage" element={<MainPage />} />
+            <Route path="/main" element={<MainPage />} />
             <Route path="/myPage" element={<MyPage />} />
-            {/* Routes에서 TaskList 관련 경로 제거 */}
           </Routes>
         </div>
       </div>
