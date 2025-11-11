@@ -1,8 +1,7 @@
-package com.example.todo_caled.users.repository;
+package com.example.todo_caled.repository;
 
-import com.example.todo_caled.users.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-
+import com.example.todo_caled.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     User findById(String id);

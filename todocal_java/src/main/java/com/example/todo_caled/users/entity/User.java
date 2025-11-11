@@ -1,4 +1,4 @@
-package com.example.todo_caled.users.entity;
+package com.example.todo_caled.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -10,26 +10,29 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId; // PK
+    private Long userId; // 기본 키 (자동 증가)
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 50)
     private String id; // 로그인용 아이디
 
-    @Column(nullable = false)
-    private String password;
+    @Column(nullable = false, length = 255)
+    private String password; // BCrypt 해시 저장용 (길이 늘림)
 
-    @Column
-    private String email; // 비회원은 공백 가능
+    @Column(length = 100)
+    private String email; // 비회원 가능
 
-    @Column
-    private String name; // 비회원은 공백 가능
+    @Column(length = 50)
+    private String name; // 비회원 가능
 
-    @Column
-    private String kakaoId; // 카카오톡 아이디
+    @Column(length = 100)
+    private String kakaoId;
 
-    @Column
-    private String kakaoEmail; // 카카오톡 이메일
+    @Column(length = 100)
+    private String kakaoEmail;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private String userType = "NORMAL"; // NORMAL or GUEST
+
+    @Column(length = 255)
+    private String profileImage; // 프로필 이미지 파일명
 }
