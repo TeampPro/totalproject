@@ -1,4 +1,3 @@
-import React from "react";
 import WeatherBoard from "../../pages/WeatherBoard";
 import Calendar from "../../pages/Calendar";
 import AllTasks from "../../pages/AllTasks";

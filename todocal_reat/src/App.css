@@ -23,16 +23,11 @@ body {
 
 /* 날씨 위젯 */
 .weather-widget {
-<<<<<<< HEAD
   min-height: 80px;
-=======
-  height: 80px;
->>>>>>> origin/feature/todolist
   background-color: #fff;
   padding: 10px;
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-<<<<<<< HEAD
 
   display: flex;
   align-items: center;        /* 수직 중앙 */
@@ -67,19 +62,6 @@ body {
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-=======
-}
-
-/* 캘린더 */
-.calendar-widget {
-  background-color: #fff;
-  padding: 10px;
-  border-radius: 10px;
-  min-height: 400px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
->>>>>>> origin/feature/todolist
 /* 일정 탭 버튼 (TODO 위쪽) */
 .calendar-tabs {
   display: flex;

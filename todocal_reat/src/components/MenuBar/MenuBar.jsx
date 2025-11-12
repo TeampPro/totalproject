@@ -1,5 +1,3 @@
-// src/components/MenuBar/MenuBar.jsx
-import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../../styles/MenuBar.css";
 

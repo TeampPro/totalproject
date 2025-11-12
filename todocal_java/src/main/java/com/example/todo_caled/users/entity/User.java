@@ -1,4 +1,4 @@
-package com.example.todo_caled.entity;
+package com.example.todo_caled.users.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;

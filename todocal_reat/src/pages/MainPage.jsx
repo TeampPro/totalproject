@@ -6,11 +6,7 @@ function MainPage() {
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-<<<<<<< HEAD
   // 로그인 정보 확인
-=======
-  // ✅ 로그인 정보 확인
->>>>>>> origin/feature/todolist
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem("user"));
     if (!savedUser) {
@@ -21,33 +17,16 @@ function MainPage() {
     setUser(savedUser);
   }, [navigate]);
 
-<<<<<<< HEAD
   // 로그아웃
-=======
-  // ✅ 로그아웃 기능
->>>>>>> origin/feature/todolist
   const handleLogout = () => {
     localStorage.removeItem("user");
     alert("로그아웃 되었습니다.");
     navigate("/");
   };
 
-<<<<<<< HEAD
   // 이제 화면에는 메뉴 버튼만 렌더링
   return (
     <>
-=======
-  return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>메인 페이지 🏠</h1>
-      {user && (
-        <p style={styles.welcome}>
-          안녕하세요, <b>{user.name || user.id}</b>님!
-        </p>
-      )}
-
-      {/* ✅ 햄버거 버튼 */}
->>>>>>> origin/feature/todolist
       {user && (
         <div style={styles.menuWrapper}>
           <button
@@ -59,19 +38,11 @@ function MainPage() {
             <div style={styles.bar}></div>
           </button>
 
-<<<<<<< HEAD
-=======
-          {/* ✅ 펼쳐지는 메뉴 */}
->>>>>>> origin/feature/todolist
           {menuOpen && (
             <div style={styles.dropdown}>
               <button
                 style={styles.dropdownItem}
-<<<<<<< HEAD
                 onClick={() => navigate("/myPage")}
-=======
-                onClick={() => navigate("/mypage")}
->>>>>>> origin/feature/todolist
               >
                 마이페이지
               </button>
@@ -82,36 +53,16 @@ function MainPage() {
           )}
         </div>
       )}
-<<<<<<< HEAD
     </>
-=======
-    </div>
->>>>>>> origin/feature/todolist
   );
 }
 
 const styles = {
-<<<<<<< HEAD
   menuWrapper: {
     position: "fixed",
     bottom: "80px", // 메뉴바 위로 위치
     right: "20px",
     zIndex: 100,
-=======
-  container: {
-    textAlign: "center",
-    marginTop: "100px",
-    fontFamily: "Arial, sans-serif",
-  },
-  title: { fontSize: "2rem", color: "#333" },
-  welcome: { fontSize: "1.2rem", marginTop: "10px" },
-
-  // ✅ 햄버거 메뉴 관련
-  menuWrapper: {
-    position: "fixed",
-    bottom: "20px",
-    right: "20px",
->>>>>>> origin/feature/todolist
   },
   menuButton: {
     backgroundColor: "#007bff",

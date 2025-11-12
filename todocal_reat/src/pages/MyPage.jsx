@@ -9,11 +9,7 @@ function MyPage() {
     password: "",
     kakaoId: "",
     kakaoEmail: "",
-<<<<<<< HEAD
     profileImage: null,
-=======
-    profileImage: null, // File 객체 또는 null
->>>>>>> origin/feature/todolist
   });
   const [isEditing, setIsEditing] = useState(false);
   const [userType, setUserType] = useState("member");
@@ -22,10 +18,7 @@ function MyPage() {
   const [preview, setPreview] = useState(null);
   const navigate = useNavigate();
 
-<<<<<<< HEAD
-=======
   // 로그인된 사용자 정보 불러오기
->>>>>>> origin/feature/todolist
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem("user"));
     if (!savedUser) {
@@ -33,15 +26,10 @@ function MyPage() {
       navigate("/");
       return;
     }
-<<<<<<< HEAD
-    setUserType(savedUser.userType || "member");
-
-=======
 
     setUserType(savedUser.userType || "member");
 
     // 유저 정보 가져오기
->>>>>>> origin/feature/todolist
     fetch(`http://localhost:8080/api/user/${savedUser.id}`)
       .then((res) => {
         if (!res.ok) throw new Error("사용자 정보 조회 실패");
@@ -52,15 +40,6 @@ function MyPage() {
           id: data.id || "",
           name: data.name || "",
           email: data.email || "",
-<<<<<<< HEAD
-          password: "",
-          kakaoId: data.kakaoId || "",
-          kakaoEmail: data.kakaoEmail || "",
-          profileImage: null,
-        });
-        if (data.profileImage) {
-          setPreview(`http://localhost:8080/api/uploads/${data.profileImage}`);
-=======
           password: "", // 비밀번호는 클라이언트에 채우지 않음
           kakaoId: data.kakaoId || "",
           kakaoEmail: data.kakaoEmail || "",
@@ -71,7 +50,6 @@ function MyPage() {
           setPreview(`http://localhost:8080/api/uploads/${data.profileImage}`);
         } else {
           setPreview(null);
->>>>>>> origin/feature/todolist
         }
       })
       .catch((err) => {
@@ -80,19 +58,13 @@ function MyPage() {
       });
   }, [navigate]);
 
-<<<<<<< HEAD
-=======
   // 입력 변경 핸들러
->>>>>>> origin/feature/todolist
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUserInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-<<<<<<< HEAD
-=======
   // 프로필 이미지 선택 (안전 처리)
->>>>>>> origin/feature/todolist
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -100,29 +72,12 @@ function MyPage() {
     setPreview(URL.createObjectURL(file));
   };
 
-<<<<<<< HEAD
-=======
-  // 프로필 정보 수정 저장
->>>>>>> origin/feature/todolist
   const handleSave = async () => {
     try {
       const formData = new FormData();
       formData.append("id", userInfo.id);
       formData.append("name", userInfo.name || "");
       formData.append("email", userInfo.email || "");
-<<<<<<< HEAD
-      if (userInfo.profileImage instanceof File) {
-        formData.append("profileImage", userInfo.profileImage);
-      }
-      const response = await fetch("http://localhost:8080/api/user/update-with-file", {
-        method: "PUT",
-        body: formData,
-      });
-      const data = await response.json().catch(() => ({}));
-      if (response.ok) {
-        alert(data.message || "회원 정보가 성공적으로 수정되었습니다.");
-        setIsEditing(false);
-=======
       // 파일이 실제 File 객체일 때만 append
       if (userInfo.profileImage instanceof File) {
         formData.append("profileImage", userInfo.profileImage);
@@ -143,7 +98,6 @@ function MyPage() {
         setIsEditing(false);
 
         // 서버에서 최신 정보 재조회 (프로필 이미지 파일명 반영 위해)
->>>>>>> origin/feature/todolist
         const savedUser = JSON.parse(localStorage.getItem("user"));
         if (savedUser?.id) {
           fetch(`http://localhost:8080/api/user/${savedUser.id}`)
@@ -153,21 +107,13 @@ function MyPage() {
                 ...prev,
                 name: d.name || "",
                 email: d.email || "",
-<<<<<<< HEAD
                 profileImage: null,
-=======
-                profileImage: null, // 로컬 File 제거
->>>>>>> origin/feature/todolist
               }));
               if (d.profileImage) {
                 setPreview(`http://localhost:8080/api/uploads/${d.profileImage}`);
               }
-<<<<<<< HEAD
-            });
-=======
             })
             .catch((err) => console.error("재조회 실패:", err));
->>>>>>> origin/feature/todolist
         }
       } else {
         alert(data.message || "수정 실패");
@@ -178,27 +124,11 @@ function MyPage() {
     }
   };
 
-<<<<<<< HEAD
-=======
-  // 비밀번호 변경
->>>>>>> origin/feature/todolist
   const handlePasswordChange = async () => {
     if (!currentPassword || !newPassword) {
       alert("현재 비밀번호와 새 비밀번호를 모두 입력해주세요.");
       return;
     }
-<<<<<<< HEAD
-    try {
-      const res = await fetch("http://localhost:8080/api/user/change-password", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: userInfo.id,
-          currentPassword,
-          newPassword,
-        }),
-      });
-=======
 
     try {
       const res = await fetch(
@@ -214,7 +144,6 @@ function MyPage() {
         }
       );
 
->>>>>>> origin/feature/todolist
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         alert(data.message || "비밀번호가 변경되었습니다.");
@@ -229,23 +158,10 @@ function MyPage() {
     }
   };
 
-<<<<<<< HEAD
   const handleDeleteAccount = async () => {
     if (!window.confirm("정말로 회원탈퇴 하시겠습니까?")) return;
     try {
       const res = await fetch(`http://localhost:8080/api/user/delete/${userInfo.id}`, { method: "DELETE" });
-=======
-  // 회원탈퇴
-  const handleDeleteAccount = async () => {
-    if (!window.confirm("정말로 회원탈퇴 하시겠습니까?")) return;
-
-    try {
-      const res = await fetch(
-        `http://localhost:8080/api/user/delete/${userInfo.id}`,
-        { method: "DELETE" }
-      );
-
->>>>>>> origin/feature/todolist
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         alert(data.message || "회원탈퇴가 완료되었습니다.");
@@ -264,11 +180,8 @@ function MyPage() {
     <div style={styles.container}>
       <div style={styles.card}>
         <h2 style={styles.title}>마이페이지</h2>
-<<<<<<< HEAD
-=======
 
         {/* 프로필 이미지 */}
->>>>>>> origin/feature/todolist
         <div style={{ marginBottom: "20px" }}>
           <img
             src={preview || "/default-profile.png"}
@@ -279,19 +192,12 @@ function MyPage() {
             <input type="file" accept="image/*" onChange={handleImageChange} />
           )}
         </div>
-<<<<<<< HEAD
-=======
 
         {/* 정보 입력 */}
->>>>>>> origin/feature/todolist
         <div style={styles.infoGroup}>
           <label>아이디</label>
           <input type="text" value={userInfo.id} disabled style={styles.input} />
         </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/feature/todolist
         <div style={styles.infoGroup}>
           <label>이름</label>
           <input
@@ -303,10 +209,6 @@ function MyPage() {
             style={styles.input}
           />
         </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/feature/todolist
         <div style={styles.infoGroup}>
           <label>이메일</label>
           <input
@@ -318,10 +220,6 @@ function MyPage() {
             style={styles.input}
           />
         </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/feature/todolist
         {userType === "guest" ? (
           <p style={styles.warning}>⚠️ 비회원은 정보 수정이 불가능합니다.</p>
         ) : (
@@ -331,24 +229,17 @@ function MyPage() {
                 저장하기
               </button>
             ) : (
-<<<<<<< HEAD
-              <button style={styles.editButton} onClick={() => setIsEditing(true)}>
-=======
               <button
                 style={styles.editButton}
                 onClick={() => setIsEditing(true)}
               >
->>>>>>> origin/feature/todolist
                 수정하기
               </button>
             )}
           </>
         )}
-<<<<<<< HEAD
-=======
 
         {/* 비밀번호 변경 섹션 */}
->>>>>>> origin/feature/todolist
         {userType !== "guest" && (
           <div style={styles.passwordBox}>
             <h4>비밀번호 변경</h4>
@@ -371,20 +262,13 @@ function MyPage() {
             </button>
           </div>
         )}
-<<<<<<< HEAD
-=======
 
         {/* 회원탈퇴 */}
->>>>>>> origin/feature/todolist
         {userType !== "guest" && (
           <button style={styles.deleteButton} onClick={handleDeleteAccount}>
             회원탈퇴
           </button>
         )}
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/feature/todolist
         <button style={styles.backButton} onClick={() => navigate("/main")}>
           메인으로
         </button>
@@ -398,11 +282,7 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-<<<<<<< HEAD
-    minHeight: "100vh",
-=======
     height: "100vh",
->>>>>>> origin/feature/todolist
     backgroundColor: "#f8f9fa",
   },
   card: {

@@ -1,6 +1,6 @@
 package com.example.todo_caled.users.controller;
 
-import com.example.todo_caled.entity.User;
+import com.example.todo_caled.users.entity.User;
 import com.example.todo_caled.users.repository.UserRepository;
 import com.example.todo_caled.users.service.KakaoService;
 import org.springframework.beans.factory.annotation.Autowired;

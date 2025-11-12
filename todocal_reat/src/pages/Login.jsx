@@ -38,19 +38,16 @@ function Login() {
 
       if (response.ok) {
         alert(data.message || '로그인 성공');
-<<<<<<< HEAD
+
         localStorage.setItem(
           'user',
           JSON.stringify({ id: data.id, userType: data.userType || 'member' })
         );
-=======
+
         // 로컬에 사용자 정보 저장 (id, userType)
         localStorage.setItem('user', JSON.stringify({ id: data.id, userType: data.userType || 'member' }));
         localStorage.setItem('memberName', data.id);
-<<<<<<< HEAD
->>>>>>> feature/weather
-=======
->>>>>>> origin/feature/todolist
+
         navigate('/main');
       } else {
         alert(data.message || '로그인 실패');
@@ -75,15 +72,9 @@ function Login() {
         alert(`✅ ${data.message}\n\n아이디: ${data.id}\n비밀번호: ${data.password}`);
         localStorage.setItem('guestInfo', JSON.stringify({ id: data.id, password: data.password }));
         localStorage.setItem('user', JSON.stringify({ id: data.id, userType: data.userType || 'guest' }));
-<<<<<<< HEAD
-=======
 
         localStorage.setItem('memberName', data.id);
 
-<<<<<<< HEAD
->>>>>>> feature/weather
-=======
->>>>>>> origin/feature/todolist
         navigate('/main');
       } else {
         alert(data.message || '비회원 회원가입에 실패했습니다.');
