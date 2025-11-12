@@ -18,8 +18,16 @@ import BeLogin from "./pages/BeLogin";
 import ChatPage from "./pages/ChatPage";
 import Upload from "./pages/Upload.jsx";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import MyPage from "./pages/MyPage.jsx"
 import MainPage from "./pages/MainPage.jsx"
+=======
+import MyPage from "./pages/MyPage.jsx";
+import MainPage from "./pages/MainPage.jsx";
+
+// ✅ 초대 페이지 import 추가
+import InviteJoinPage from "./pages/InviteJoinPage.jsx";
+>>>>>>> feature/weather
 
 import "./App.css";
 =======
@@ -50,6 +58,7 @@ import MainPage from "./pages/MainPage.jsx";
       <>
         {!isLoginOrSignUpPage && !isMyPage && <Header />}
 
+<<<<<<< HEAD
         <div className="main-layout">
           {!isLoginOrSignUpPage && !isChat && !isMyPage && location.pathname === "/main" && (
             <div className="dashboard">
@@ -57,6 +66,16 @@ import MainPage from "./pages/MainPage.jsx";
                 <div className="weather-container">
                   <WeatherBoard />
                 </div>
+=======
+            <div className="calendar-widget">
+              <Calendar />
+            </div>
+
+            <div className="bottom-widgets">
+              <div className="todo-widget">
+                <TodoHeader />
+                <AllTasks />
+>>>>>>> feature/weather
               </div>
 
               <div className="calendar-widget">
@@ -103,7 +122,9 @@ import MainPage from "./pages/MainPage.jsx";
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/mainPage" element={<MainPage />} />
             <Route path="/myPage" element={<MyPage />} />
-            {/* Routes에서 TaskList 관련 경로 제거 */}
+
+            {/* ✅ 여기 새 경로 추가 */}
+            <Route path="/chat/invite/:code" element={<InviteJoinPage />} />
           </Routes>
 =======
 >>>>>>> origin/feature/totalcss
