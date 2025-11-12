@@ -1,5 +1,5 @@
 .calendar-modal {
-  position: fixed;
+  position: relative;
   top: 15%; /* 더 상단 배치 */
   left: 50%;
   transform: translate(-50%, 0);
@@ -210,4 +210,35 @@ td {
 
 .todo-dot:hover .todo-tooltip {
   display: block;
+}
+
+.thisMonth.clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.thisMonth.clickable:hover {
+  color: #007bff;
+}
+
+.month-picker {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  border-radius: 8px;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.month-picker select,
+.month-picker button {
+  font-size: 14px;
+  padding: 3px 6px;
 }

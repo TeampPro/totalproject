@@ -1,8 +1,7 @@
 package com.example.todo_caled.todolist.controller;
 
-
-import com.example.todo_caled.todolist.entity.Todo;
-import com.example.todo_caled.todolist.service.TodoService;
+import com.example.todo_caled.task.entity.Task;
+import com.example.todo_caled.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,52 +14,43 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TodoController {
 
-    private final TodoService todoService;
+    private final TaskService taskService;
 
+    // 전체 조회 (Calendar 하단/초기 로딩)
     @GetMapping("/all")
-    public List<Todo> getAllTodos() {
-        return todoService.getAllTodos();
+    public List<Task> getAllTodos() {
+        return taskService.getAllTasks(); // ✅ 서비스 메서드명에 맞춤
     }
 
+    // 생성 (Calendar + 버튼)
     @PostMapping
-    public Todo createTodo(@RequestBody Todo todo) {
-        return todoService.saveTodo(todo);
-    }
-
-    @GetMapping("/{date}")
-    public List<Todo> getTodosByDate(@PathVariable String date) {
-        return todoService.getTodosByDate(date);
-    }
-
-    @DeleteMapping("/{id}")
-    public void deleteTodo(@PathVariable Long id) {
-        todoService.deleteTodo(id);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Todo> updateTodo(
-            @PathVariable Long id,
-            @RequestBody Todo todo
-    ) {
-        System.out.println("📩 [PUT 요청 진입]");
-        System.out.println("   ├─ todoId: " + todo.getTodoId());
-        System.out.println("   ├─ title: " + todo.getTitle());
-        System.out.println("   ├─ content: " + todo.getContent());
-        System.out.println("   ├─ tDate(raw): " + todo.getTDate());
-        System.out.println("   ├─ status: " + todo.getStatus());
-
-        // ✅ JSON 직렬화 실패 대비
-        if (todo.getTDate() == null && todo.getTDateString() != null) {
-            try {
-                todo.setTDate(LocalDate.parse(todo.getTDateString()));
-            } catch (Exception e) {
-                System.out.println("⚠️ 날짜 변환 실패: " + todo.getTDateString());
-            }
+    public Task createTodo(@RequestBody Task task) {
+        // 프런트가 YYYY-MM-DD 만 보냈다면 promiseDate가 null일 수 있음 → 방어
+        // (프런트에서 "YYYY-MM-DDT00:00:00"로 보내면 불필요)
+        if (task.getPromiseDate() == null && task.getCreatedDate() != null) {
+            // no-op: createdDate를 promiseDate로 쓸 생각이 없으면 제거
         }
+        return taskService.saveTask(task); // ✅ 서비스 메서드명에 맞춤
+    }
 
-        todo.setTodoId(id);
+    // 날짜별 조회 (선택 날짜)
+    @GetMapping("/{date}")
+    public List<Task> getTodosByDate(@PathVariable String date) {
+        return taskService.findByDate(LocalDate.parse(date));
+    }
 
-        Todo updated = todoService.updateTodo(todo);
+    // 삭제
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTodo(@PathVariable Long id) {
+        taskService.deleteTask(id); // ✅ 서비스 메서드명에 맞춤
+        return ResponseEntity.noContent().build();
+    }
+
+    // 수정
+    @PutMapping("/{id}")
+    public ResponseEntity<Task> updateTodo(@PathVariable Long id, @RequestBody Task task) {
+        task.setId(id);
+        Task updated = taskService.updateTask(task); // ✅ 서비스 메서드명에 맞춤
         return ResponseEntity.ok(updated);
     }
 }

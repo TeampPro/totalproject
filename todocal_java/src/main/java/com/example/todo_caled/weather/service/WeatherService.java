@@ -3,8 +3,12 @@ package com.example.todo_caled.weather.service;
 import com.example.todo_caled.weather.util.GeoToGridConverter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
@@ -14,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class WeatherService {
 
@@ -32,16 +37,16 @@ public class WeatherService {
             "김해", new double[]{35.2280, 128.8890}
     );
 
-    public List<Map<String, String>> getMultiWeather() throws Exception {
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    @Cacheable(value = "weatherCache", key = "'multiWeather'")
+    public List<Map<String, String>> getMultiWeather() {
         List<Map<String, String>> resultList = new ArrayList<>();
 
-        // ✅ 기준시간 계산 (현재시각 - 1시간) + 30분
         LocalDateTime now = LocalDateTime.now().minusHours(1);
         String baseDate = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String baseTime = String.format("%02d30", now.getHour());
-
-        RestTemplate restTemplate = new RestTemplate();
-        ObjectMapper mapper = new ObjectMapper();
 
         for (Map.Entry<String, double[]> entry : LOCATIONS.entrySet()) {
             String city = entry.getKey();
@@ -60,47 +65,66 @@ public class WeatherService {
                     + "&nx=" + nx
                     + "&ny=" + ny;
 
-            String response = restTemplate.getForObject(url, String.class);
-            JsonNode root = mapper.readTree(response);
-            JsonNode items = root.path("response").path("body").path("items").path("item");
+            try {
+                // ✅ 호출 간 약간의 지연 (API rate limit 방지)
+                Thread.sleep(200);
 
-            Map<String, String> weather = new LinkedHashMap<>();
-            weather.put("도시", city);
-            weather.put("기준일자", baseDate);
-            weather.put("기준시각", baseTime);
+                ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+                JsonNode root = mapper.readTree(response.getBody());
+                JsonNode items = root.path("response").path("body").path("items").path("item");
 
-            for (JsonNode item : items) {
-                String category = item.path("category").asText();
-                String value = item.path("fcstValue").asText();
+                Map<String, String> weather = new LinkedHashMap<>();
+                weather.put("도시", city);
+                weather.put("기준일자", baseDate);
+                weather.put("기준시각", baseTime);
 
-                switch (category) {
-                    case "T1H" -> weather.put("기온", value + "℃");
-                    case "REH" -> weather.put("습도", value + "%");
-                    case "WSD" -> weather.put("풍속", value + "m/s");
-                    case "PTY" -> { // 강수형태
-                        Map<String, String> rainType = Map.of(
-                                "0", "없음",
-                                "1", "비",
-                                "2", "비/눈",
-                                "3", "눈",
-                                "5", "빗방울",
-                                "6", "빗방울/눈날림",
-                                "7", "눈날림"
-                        );
-                        weather.put("강수형태", rainType.getOrDefault(value, "정보없음"));
-                    }
-                    case "SKY" -> { // 하늘상태
-                        Map<String, String> skyType = Map.of(
-                                "1", "맑음",
-                                "3", "구름많음",
-                                "4", "흐림"
-                        );
-                        weather.put("하늘상태", skyType.getOrDefault(value, "정보없음"));
+                for (JsonNode item : items) {
+                    String category = item.path("category").asText();
+                    String value = item.path("fcstValue").asText();
+
+                    switch (category) {
+                        case "T1H" -> weather.put("기온", value + "℃");
+                        case "REH" -> weather.put("습도", value + "%");
+                        case "WSD" -> weather.put("풍속", value + "m/s");
+                        case "PTY" -> {
+                            Map<String, String> rainType = Map.of(
+                                    "0", "없음",
+                                    "1", "비",
+                                    "2", "비/눈",
+                                    "3", "눈",
+                                    "5", "빗방울",
+                                    "6", "빗방울/눈날림",
+                                    "7", "눈날림"
+                            );
+                            weather.put("강수형태", rainType.getOrDefault(value, "정보없음"));
+                        }
+                        case "SKY" -> {
+                            Map<String, String> skyType = Map.of(
+                                    "1", "맑음",
+                                    "3", "구름많음",
+                                    "4", "흐림"
+                            );
+                            weather.put("하늘상태", skyType.getOrDefault(value, "정보없음"));
+                        }
                     }
                 }
-            }
 
-            resultList.add(weather);
+                resultList.add(weather);
+                log.info("✅ {} 날씨 수집 완료", city);
+
+            } catch (HttpClientErrorException.TooManyRequests e) {
+                log.warn("⚠️ [{}] API 호출 제한 초과 (429 Too Many Requests)", city);
+                resultList.add(Map.of(
+                        "도시", city,
+                        "오류", "요청이 많습니다. 잠시 후 다시 시도해주세요."
+                ));
+            } catch (Exception e) {
+                log.error("❌ [{}] 날씨 수집 실패: {}", city, e.getMessage());
+                resultList.add(Map.of(
+                        "도시", city,
+                        "오류", "데이터 수집 중 오류 발생"
+                ));
+            }
         }
 
         return resultList;

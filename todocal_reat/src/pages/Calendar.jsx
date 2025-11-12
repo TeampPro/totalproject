@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -11,16 +11,20 @@ const toYMD = (d) => {
   return moment(d).format("YYYY-MM-DD");
 };
 
-function Calendar() {
+function Calendar({ onTodosChange }) {
   const navigate = useNavigate();
   const [getMoment, setMoment] = useState(moment());
+  const today = getMoment;
+
   const [holidays, setHolidays] = useState([]);
   const [todos, setTodos] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editTodo, setEditTodo] = useState(null);
   const [selectedDate, setSelectedDate] = useState(moment());
-
-  const today = getMoment;
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(today.year());
+  const [selectedMonth, setSelectedMonth] = useState(today.month() + 1);
+  const monthPickerRef = useRef(null);
 
   // ✅ 공휴일 불러오기
   const fetchHolidays = async (year) => {
@@ -38,7 +42,9 @@ function Calendar() {
       const res = await axios.get("http://localhost:8080/api/todos/all");
       const mapped = res.data.map((todo) => ({
         ...todo,
-        tDate: toYMD(todo.tDate || todo.date),
+        tDate: todo.promiseDate
+          ? moment(todo.promiseDate).format("YYYY-MM-DD")
+          : null,
       }));
       setTodos(mapped);
     } catch (err) {
@@ -51,13 +57,33 @@ function Calendar() {
     fetchTodos();
   }, [today]);
 
+  // ✅ 바깥 클릭 시 month picker 닫기
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        monthPickerRef.current &&
+        !monthPickerRef.current.contains(e.target)
+      ) {
+        setShowMonthPicker(false);
+      }
+    };
+
+    if (showMonthPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showMonthPicker]);
+
   // ✅ 날짜별 Todo 필터
   const getTodosForDay = (date) => {
     const formatted = date.format("YYYY-MM-DD");
     return todos.filter((t) => t.tDate === formatted);
   };
 
-  // ✅ 공휴일 여부
+  // ✅ 공휴일 관련 함수
   const isHoliday = (date) => {
     const formatted = date.format("YYYY-MM-DD");
     return holidays.some((h) => h.date === formatted);
@@ -73,32 +99,44 @@ function Calendar() {
   const handleSave = async (savedTodo) => {
     if (!savedTodo) return;
 
+    // 🧹 삭제된 일정
     if (savedTodo.deleted) {
-      setTodos((prev) => prev.filter((t) => t.todoId !== savedTodo.todoId));
+      console.log("🧹 삭제된 일정 ID:", savedTodo.id);
+
+      // 즉시 화면에서 제거
+      setTodos((prev) => prev.filter((t) => t.id !== savedTodo.id));
+
+      // 하단 목록 새로고침 트리거
+      onTodosChange && onTodosChange();
+
+      // 달력 리렌더
       setMoment(moment());
       return;
     }
 
+    // 🟢 추가 / 수정
     const normalized = {
       ...savedTodo,
       tDate: moment(savedTodo.tDate).format("YYYY-MM-DD"),
     };
 
-    // ✅ 즉시 반영 (프론트 데이터 우선)
+    // 프론트 즉시 반영
     setTodos((prev) => {
-      const exists = prev.some((t) => t.todoId === normalized.todoId);
+      const exists = prev.some((t) => t.id === normalized.id);
       return exists
-        ? prev.map((t) => (t.todoId === normalized.todoId ? normalized : t))
+        ? prev.map((t) => (t.id === normalized.id ? normalized : t))
         : [...prev, normalized];
     });
 
-    // ✅ 서버 동기화는 비동기로 (UI 영향 없음)
-    fetchTodos(); // await 제거
+    // 서버와 동기화
+    fetchTodos();
 
-    // ✅ 강제 리렌더
+    // 하단 목록 새로고침 트리거
+    onTodosChange && onTodosChange();
+
+    // 강제 리렌더
     setMoment(moment());
   };
-
 
   // ✅ 달력 데이터 렌더링
   const calendarArr = () => {
@@ -148,7 +186,7 @@ function Calendar() {
                   <div className="todo-dot-container">
                     {dayTodos.slice(0, 3).map((todo, idx) => (
                       <div
-                        key={todo.todoId || idx}
+                        key={todo.id || idx}
                         className="todo-dot"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -186,7 +224,53 @@ function Calendar() {
           <button onClick={() => setMoment(today.clone().subtract(1, "month"))}>
             ◀
           </button>
-          <span className="thisMonth">{today.format("YYYY년 MM월")}</span>
+
+          <span
+            className="thisMonth clickable"
+            onClick={() => setShowMonthPicker((prev) => !prev)}
+          >
+            {today.format("YYYY년 MM월")}
+          </span>
+
+          {showMonthPicker && (
+            <div className="month-picker" ref={monthPickerRef}>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+              >
+                {Array.from({ length: 11 }, (_, i) => 2020 + i).map((y) => (
+                  <option key={y} value={y}>
+                    {y}년
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              >
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i} value={i + 1}>
+                    {i + 1}월
+                  </option>
+                ))}
+              </select>
+
+              <button
+                onClick={() => {
+                  const newDate = moment({
+                    year: selectedYear,
+                    month: selectedMonth - 1,
+                  });
+                  setMoment(newDate);
+                  setShowMonthPicker(false);
+                }}
+              >
+                이동
+              </button>
+            </div>
+          )}
+
           <button onClick={() => setMoment(today.clone().add(1, "month"))}>
             ▶
           </button>
