@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 import { useState } from "react";
 import classes from "../../styles/todoHeader.module.css";
+=======
+// src/components/Header/Header.jsx
+import { NavLink, useNavigate } from "react-router-dom";
+import classes from "../../styles/header.module.css";
+>>>>>>> origin/feature/todolist
 
 const TodoHeader = ({ onChangeFilter, active }) => {
   const [addActive, setAddActive] = useState(false);
@@ -11,6 +17,7 @@ const TodoHeader = ({ onChangeFilter, active }) => {
   };
 
   return (
+<<<<<<< HEAD
     <div className={classes.todoHeader}>
       <nav className={classes.todoNav}>
         <button
@@ -57,6 +64,27 @@ const TodoHeader = ({ onChangeFilter, active }) => {
         +
       </button>
     </div>
+=======
+    <header className={classes.header}>
+      <nav className={classes.nav}>
+        <NavLink to="/tasks" className={({ isActive }) => isActive ? classes.active : ""}>
+          일정
+        </NavLink>
+        <NavLink to="/week" className={({ isActive }) => isActive ? classes.active : ""}>
+          이번주 일정
+        </NavLink>
+        <NavLink to="/month" className={({ isActive }) => isActive ? classes.active : ""}>
+          이번달 일정
+        </NavLink>
+        <NavLink to="/shared" className={({ isActive }) => isActive ? classes.active : ""}>
+          공유일정
+        </NavLink>
+      </nav>
+      <button className={classes.addTopButton} onClick={() => navigate("/add")}>
+        +
+      </button>
+    </header>
+>>>>>>> origin/feature/todolist
   );
 };
 

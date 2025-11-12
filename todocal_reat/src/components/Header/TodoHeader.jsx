@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState } from "react";
 import classes from "../../styles/todoHeader.module.css";
 
@@ -10,6 +11,11 @@ const TodoHeader = ({ onChangeFilter, active }) => {
     window.location.href = "/add";
   };
 
+=======
+import classes from "../../styles/todoHeader.module.css";
+
+const TodoHeader = ({ onChangeFilter, active }) => {
+>>>>>>> origin/feature/todolist
   return (
     <div className={classes.todoHeader}>
       <nav className={classes.todoNav}>
@@ -47,12 +53,18 @@ const TodoHeader = ({ onChangeFilter, active }) => {
         </button>
       </nav>
 
+<<<<<<< HEAD
       {/* ✅ 추가 버튼 */}
       <button
         className={`${classes.todoAddButton} ${
           addActive ? classes.active : ""
         }`}
         onClick={handleAddClick}
+=======
+      <button
+        className={classes.todoAddButton}
+        onClick={() => (window.location.href = "/add")}
+>>>>>>> origin/feature/todolist
       >
         +
       </button>

@@ -2,6 +2,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+<<<<<<< HEAD
   padding: 10px 16px;
   background-color: #f9fafb;
   border-radius: 10px;
@@ -41,11 +42,33 @@
 }
 
 /* ✅ 일정 추가 버튼 */
+=======
+  padding: 8px 12px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.todoNav a {
+  margin-right: 12px;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+}
+
+.todoNav a.active {
+  font-weight: bold;
+  color: #1976d2;
+  border-bottom: 2px solid #1976d2;
+}
+
+>>>>>>> origin/feature/todolist
 .todoAddButton {
   font-size: 1.2rem;
   background-color: #1976d2;
   color: white;
   border: none;
+<<<<<<< HEAD
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -64,3 +87,46 @@
 .todoAddButton:active {
   background-color: #0b3c91;
 }
+=======
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.todoNav {
+  display: flex;
+  gap: 10px;
+}
+
+.todoBtn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #555;
+  transition: color 0.2s;
+}
+
+.todoBtn:hover {
+  color: #000;
+}
+
+.active {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.todoAddButton {
+  margin-left: auto;
+  background: #007bff;
+  color: white;
+  border: none;
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+>>>>>>> origin/feature/todolist

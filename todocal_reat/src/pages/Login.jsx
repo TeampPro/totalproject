@@ -47,7 +47,10 @@ function Login() {
         // 로컬에 사용자 정보 저장 (id, userType)
         localStorage.setItem('user', JSON.stringify({ id: data.id, userType: data.userType || 'member' }));
         localStorage.setItem('memberName', data.id);
+<<<<<<< HEAD
 >>>>>>> feature/weather
+=======
+>>>>>>> origin/feature/todolist
         navigate('/main');
       } else {
         alert(data.message || '로그인 실패');
@@ -77,7 +80,10 @@ function Login() {
 
         localStorage.setItem('memberName', data.id);
 
+<<<<<<< HEAD
 >>>>>>> feature/weather
+=======
+>>>>>>> origin/feature/todolist
         navigate('/main');
       } else {
         alert(data.message || '비회원 회원가입에 실패했습니다.');
