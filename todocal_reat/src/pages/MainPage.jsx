@@ -6,7 +6,7 @@ function MainPage() {
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // ✅ 로그인 정보 확인
+  // 로그인 정보 확인
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem("user"));
     if (!savedUser) {
@@ -17,23 +17,16 @@ function MainPage() {
     setUser(savedUser);
   }, [navigate]);
 
-  // ✅ 로그아웃 기능
+  // 로그아웃
   const handleLogout = () => {
     localStorage.removeItem("user");
     alert("로그아웃 되었습니다.");
     navigate("/");
   };
 
+  // 이제 화면에는 메뉴 버튼만 렌더링
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>메인 페이지 🏠</h1>
-      {user && (
-        <p style={styles.welcome}>
-          안녕하세요, <b>{user.name || user.id}</b>님!
-        </p>
-      )}
-
-      {/* ✅ 햄버거 버튼 */}
+    <>
       {user && (
         <div style={styles.menuWrapper}>
           <button
@@ -45,12 +38,11 @@ function MainPage() {
             <div style={styles.bar}></div>
           </button>
 
-          {/* ✅ 펼쳐지는 메뉴 */}
           {menuOpen && (
             <div style={styles.dropdown}>
               <button
                 style={styles.dropdownItem}
-                onClick={() => navigate("/mypage")}
+                onClick={() => navigate("/myPage")}
               >
                 마이페이지
               </button>
@@ -61,24 +53,16 @@ function MainPage() {
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }
 
 const styles = {
-  container: {
-    textAlign: "center",
-    marginTop: "100px",
-    fontFamily: "Arial, sans-serif",
-  },
-  title: { fontSize: "2rem", color: "#333" },
-  welcome: { fontSize: "1.2rem", marginTop: "10px" },
-
-  // ✅ 햄버거 메뉴 관련
   menuWrapper: {
     position: "fixed",
-    bottom: "20px",
+    bottom: "80px", // 메뉴바 위로 위치
     right: "20px",
+    zIndex: 100,
   },
   menuButton: {
     backgroundColor: "#007bff",
