@@ -1,7 +1,11 @@
 package com.example.todo_caled.users.controller;
 
 import com.example.todo_caled.entity.User;
+<<<<<<< HEAD
 import com.example.todo_caled.repository.UserRepository;
+=======
+import com.example.todo_caled.users.repository.UserRepository;
+>>>>>>> origin/feature/login
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;

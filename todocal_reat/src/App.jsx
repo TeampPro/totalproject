@@ -17,10 +17,17 @@ import SignUp from "./pages/SignUp";
 import BeLogin from "./pages/BeLogin";
 import ChatPage from "./pages/ChatPage";
 import Upload from "./pages/Upload.jsx";
+<<<<<<< HEAD
 import MyPage from "./pages/MyPage.jsx"
 import MainPage from "./pages/MainPage.jsx"
 
 import "./App.css";
+=======
+import Calendar from "./pages/Calendar.jsx";
+import NotFound from "./pages/NotFound.jsx";
+import MyPage from "./pages/MyPage.jsx";
+import MainPage from "./pages/MainPage.jsx";
+>>>>>>> origin/feature/login
 
 function App() {
   const location = useLocation();
@@ -57,8 +64,13 @@ function App() {
         <div className="content">
           <Routes>
             <Route path="/" element={<Login />} />
+<<<<<<< HEAD
+=======
+            <Route path="/main" element={<MainPage />} />
+>>>>>>> origin/feature/login
             <Route path="/signup" element={<SignUp />} />
             <Route path="/beLogin" element={<BeLogin />} />
+            <Route path="/mypage" element={<MyPage />} />
             <Route path="/upload" element={<Upload />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/mainPage" element={<MainPage />} />
