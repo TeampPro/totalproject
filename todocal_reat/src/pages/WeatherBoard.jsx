@@ -3,47 +3,62 @@ import "../styles/WeatherBoard.css";
 
 export default function WeatherBoard() {
   const [data, setData] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0); // 현재 보여줄 도시 인덱스
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  // const [lastUpdate, setLastUpdate] = useState(null);
+  const [message, setMessage] = useState("");
+
+  // ✅ 날씨 데이터 요청
+  const fetchData = () => {
+    setLoading(true);
+    fetch("/api/weather/multi") // 🔹 proxy 설정이 있으면 http://localhost:8080 생략 가능
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.status === "warming-up") {
+          // 백엔드가 캐시 준비 중일 때
+          setMessage("⏳ 날씨 정보를 준비 중입니다. 잠시 후 자동으로 업데이트됩니다.");
+          setData([]);
+          setTimeout(fetchData, 60 * 1000); // 1분 후 재시도
+        } else if (Array.isArray(json) && json.length > 0) {
+          setData(json);
+          setCurrentIndex(0);
+          setMessage(""); // 메시지 제거
+        } else {
+          setMessage("⚠️ 날씨 데이터를 불러오지 못했습니다.");
+        }
+      })
+      .catch(() => {
+        setMessage("❌ 서버 연결이 원활하지 않습니다. 잠시 후 다시 시도해주세요.");
+        setTimeout(fetchData, 60 * 1000); // 오류 발생 시 1분 후 재시도
+      })
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
-    const fetchData = () => {
-      setLoading(true);
-      fetch("http://localhost:8080/api/weather/multi")
-        .then(res => res.json())
-        .then(json => {
-          setData(json);
-          // setLastUpdate(new Date());
-          setCurrentIndex(0);
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    };
-
     fetchData();
-    const refreshTimer = setInterval(fetchData, 60 * 60 * 1000); // 매 1시간마다 갱신
+    const refreshTimer = setInterval(fetchData, 60 * 60 * 1000); // 매 1시간마다 자동 갱신
     return () => clearInterval(refreshTimer);
   }, []);
 
-  // ✅ 자동으로 다음 카드로 전환
+  // ✅ 5초마다 도시 전환
   useEffect(() => {
     if (data.length === 0) return;
     const interval = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % data.length);
-    }, 5000);   // 5초마다 카드전환
+      setCurrentIndex((prev) => (prev + 1) % data.length);
+    }, 5000);
     return () => clearInterval(interval);
   }, [data]);
 
   if (loading) return <div className="loading">🌥️ 날씨 불러오는 중...</div>;
+  if (message) return <div className="loading">{message}</div>;
+  if (data.length === 0) return <div className="loading">⚠️ 표시할 날씨 데이터가 없습니다.</div>;
 
-  const w = data[currentIndex]; // 현재 보여줄 날씨 데이터
+  const w = data[currentIndex];
 
-  function formatDate(dateStr) {      // 날짜 분리
-    const year = dateStr.slice(0,4);
+  function formatDate(dateStr) {
+    const year = dateStr.slice(0, 4);
     const month = dateStr.slice(4, 6);
-    const day = dateStr.slice(6, 8)
-    return `${year}/${month}/${day}`
+    const day = dateStr.slice(6, 8);
+    return `${year}/${month}/${day}`;
   }
 
   return (
@@ -62,6 +77,7 @@ export default function WeatherBoard() {
               <div className="icon">
                 {getWeatherIcon(w["강수형태"], w["하늘상태"])}
               </div>
+
               <div className="weather-info">
                 <div className="row">
                   <div>🌡️ {w["기온"] ?? "-"}</div>
@@ -75,17 +91,13 @@ export default function WeatherBoard() {
             </div>
           )}
         </div>
-
-        {/* <div className="update-time">
-          마지막 업데이트: {lastUpdate?.toLocaleString("ko-KR")}
-        </div> */}
       </div>
     </div>
   );
 }
 
-  function getWeatherIcon(pty, sky) {
-  // 비, 눈 등 강수형태가 있으면 우선 표시
+// ✅ 날씨 아이콘 표시 함수
+function getWeatherIcon(pty, sky) {
   if (pty && pty !== "없음") {
     switch (pty) {
       case "비": return "🌧️";
@@ -98,7 +110,6 @@ export default function WeatherBoard() {
     }
   }
 
-  // 강수 없으면 하늘상태로 표시
   switch (sky) {
     case "맑음": return "☀️";
     case "구름많음": return "⛅";
