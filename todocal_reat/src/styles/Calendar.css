@@ -1,244 +1,189 @@
-.calendar-modal {
-  position: relative;
-  top: 15%; /* 더 상단 배치 */
-  left: 50%;
-  transform: translate(-50%, 0);
-  padding: 25px 30px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 10;
-}
-
-.calendar-control {
-  display: flex;
-  justify-content: flex-end; /* ✅ 버튼 묶음을 오른쪽 정렬 */
-  align-items: center;
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-top: 1px solid #ddd;
+  border-left: 1px solid #ddd;
   width: 100%;
-  margin-bottom: 15px;
-  gap: 30px; /* 버튼 간격 */
+  max-width: 1200px; /* 좌우 넓게 */
+  margin: 0 auto;
+  font-family: "Pretendard", sans-serif;
 }
 
-.calendar-control button {
-  background-color: #ff8a80; /* 버튼 글자 보이게 색 조정 */
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 4px 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.calendar-control button:hover {
-  background-color: #ff5252;
-}
-
-/* 테이블 스타일 */
-.calendar-modal table {
-  border-collapse: collapse;
-  text-align: center;
-  font-size: 16px;
-}
-
-.calendar-modal th,
-.calendar-modal td {
-  padding: 8px;
-  width: 40px;
-  height: 40px;
-}
-
-.calendar-modal th {
-  background-color: #f0f0f0;
-}
-
-/* ✅ + 버튼 수정 */
-.right-btn {
-  margin-left: 10px; /* 버튼 사이 간격 */
-  background-color: #1976d2;
-  color: white;
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 22px;
-  line-height: 0; /* + 기호 수직 가운데 정렬 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-
-}
-
-.right-btn:hover {
-  background-color: #0d47a1;
-}
-
-.thisMonth {
-  background-color: #ffe5e5;
-  border-radius: 20%;
-  color: black;
-  font-weight: bold;
-}
-
-/* 평일 기본 */
-.calendar-modal td {
-  color: #000;
-  text-align: center;
-  width: 40px;
-  height: 40px;
-}
-
-/* 일요일 = 글자 빨강 */
-.calendar-modal td.sunday {
-  color: red;
-}
-
-/* 토요일 = 글자 파랑 */
-.calendar-modal td.saturday {
-  color: #0044cc;
-}
-
-/* 다른 달 날짜 = 은색 */
-.calendar-modal td.dimmed-date {
-  color: silver;
-}
-
-/* ✅ 오늘 날짜 스타일 */
-.calendar-modal td.today {
-  background-color: #ffe5e5;
-  color: black !important;
-  border-radius: 50%;
-  font-weight: bold;
-}
-
-/* 요일 이름 */
-.day-names th {
-  color: black;
-}
-
-.holiday {
-  color: red !important;
-  font-weight: bold;
-}
-
-.holiday-name {
-  display: block;
-  font-size: 0.65rem;
-  color: red;
-  margin-top: 3px;
-}
-
-td.today {
-  background-color: #ffe08c !important;
-  color: #000 !important;
-  border-radius: 6px;
-
-}
-
-td {
-  position: relative;
-  padding: 5px;
-  text-align: center;
-  vertical-align: top;
-}
-
-/* ✅ 날짜 숫자 고정 width/가운데 정렬 */
-.day-number {
-  display: inline-block;
-  width: 20px;   /* 날짜 칸 고정 */
-  text-align: center;
-}
-
-/* ✅ dot은 날짜 옆에 overlay 배치 (레이아웃 영향 ❌) */
-.todo-dot-container {
-  position: absolute;
-  top: 10px;
-  right: 2px;
+/* ✅ 칸 높이 늘림 */
+.day-cell {
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  height: 180px; /* 🔹 기존 160 → 180 */
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  align-items: center;
-}
-
-.todo-dot {
-  position: relative;
-  width: 8px;      /* ✅ 크기 키움 */
-  height: 8px;
-  background-color: #ff8a80;
-  border-radius: 50%;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 12px 10px; /* 🔹 살짝 여유 */
   cursor: pointer;
-  transition: transform 0.15s ease, background-color 0.2s ease;
-}
-
-.todo-dot:hover {
-  transform: scale(1.3); /* ✅ hover 시 확대 */
-  background-color: #ff5252;
-}
-
-/* 툴팁 */
-.todo-tooltip {
-  display: none;
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translate(-50%, -100%);
-  background-color: #333;
-  color: #fff;
-  padding: 6px 8px;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  white-space: nowrap;
-  z-index: 20;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.todo-tooltip::after {
-  content: '';
-  position: absolute;
-  bottom: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 5px;
-  border-style: solid;
-  border-color: #333 transparent transparent transparent;
-}
-
-.todo-dot:hover .todo-tooltip {
-  display: block;
-}
-
-.thisMonth.clickable {
-  cursor: pointer;
-  user-select: none;
-  transition: color 0.2s;
-}
-
-.thisMonth.clickable:hover {
-  color: #007bff;
-}
-
-.month-picker {
-  position: absolute;
-  top: 60px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 6px;
   background: #fff;
-  border: 1px solid #ccc;
-  padding: 6px 8px;
-  border-radius: 8px;
-  z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: background 0.15s ease-in-out;
+  overflow: hidden; /* ✅ 스크롤 완전 제거 */
 }
 
-.month-picker select,
-.month-picker button {
-  font-size: 14px;
-  padding: 3px 6px;
+.day-cell:hover {
+  background: #fafafa;
+}
+
+.weekday {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.date-number {
+  font-size: 24px;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 8px; /* ✅ 날짜 아래 간격 조금 넓힘 */
+}
+
+/* ✅ todo 리스트 */
+.todo-list {
+  margin-top: 8px;
+  width: 100%;
+  overflow: hidden; /* ✅ 스크롤 완전 제거 */
+}
+
+.todo-item {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 6px 0;
+  font-size: 11.5px;
+  color: #111;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.todo-item:not(:last-child) {
+  border-bottom: 1px solid #000;
+}
+
+/* ✅ +N 표시는 확실히 보이게 여백 추가 */
+.todo-more {
+  font-size: 11px;
+  color: #666;
+  margin-top: 6px; /* 🔹 위쪽 여백 확보 */
+  cursor: pointer;
+  flex-shrink: 0; /* ✅ 밀려나지 않게 고정 */
+}
+
+.todo-more:hover {
+  text-decoration: underline;
+}
+
+/* 오늘 날짜 */
+.today {
+  background-color: #fff6eb;
+  border: 1px solid #ffcc80;
+}
+
+/* 이전/다음 달 날짜 흐리게 */
+.dimmed-date {
+  opacity: 0.4;
+}
+
+/* 반응형 조정 */
+@media (max-width: 1024px) {
+  .calendar-grid {
+    max-width: 1000px;
+  }
+  .day-cell {
+    height: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .calendar-grid {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 700px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-grid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 400px;
+  }
+  .day-cell {
+    height: 140px;
+  }
+  .date-number {
+    font-size: 18px;
+  }
+}
+
+.todo-day-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.todo-day-modal {
+  background: #fff;
+  padding: 20px 24px;
+  border-radius: 10px;
+  width: 360px;
+  max-height: 70vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.todo-day-modal h3 {
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111;
+}
+
+.todo-day-modal ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.todo-day-modal li {
+  padding: 8px 0;
+  border-bottom: 1px solid #000;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.todo-day-modal li:last-child {
+  border-bottom: none;
+}
+
+.todo-day-modal button {
+  margin-top: 14px;
+  width: 100%;
+  padding: 8px 0;
+  border: none;
+  border-radius: 6px;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.todo-day-modal button:hover {
+  background: #333;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

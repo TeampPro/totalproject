@@ -15,7 +15,6 @@ function Calendar({ onTodosChange }) {
   const navigate = useNavigate();
   const [getMoment, setMoment] = useState(moment());
   const today = getMoment;
-
   const [holidays, setHolidays] = useState([]);
   const [todos, setTodos] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -25,6 +24,7 @@ function Calendar({ onTodosChange }) {
   const [selectedYear, setSelectedYear] = useState(today.year());
   const [selectedMonth, setSelectedMonth] = useState(today.month() + 1);
   const monthPickerRef = useRef(null);
+  const [dayModalTodos, setDayModalTodos] = useState(null); // ✅ 객체 형태로 변경
 
   // ✅ 공휴일 불러오기
   const fetchHolidays = async (year) => {
@@ -57,7 +57,7 @@ function Calendar({ onTodosChange }) {
     fetchTodos();
   }, [today]);
 
-  // ✅ 바깥 클릭 시 month picker 닫기
+  // ✅ 외부 클릭 시 MonthPicker 닫기
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -67,23 +67,12 @@ function Calendar({ onTodosChange }) {
         setShowMonthPicker(false);
       }
     };
-
-    if (showMonthPicker) {
+    if (showMonthPicker)
       document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMonthPicker]);
 
-  // ✅ 날짜별 Todo 필터
-  const getTodosForDay = (date) => {
-    const formatted = date.format("YYYY-MM-DD");
-    return todos.filter((t) => t.tDate === formatted);
-  };
-
-  // ✅ 공휴일 관련 함수
+  // ✅ 공휴일 관련
   const isHoliday = (date) => {
     const formatted = date.format("YYYY-MM-DD");
     return holidays.some((h) => h.date === formatted);
@@ -95,32 +84,28 @@ function Calendar({ onTodosChange }) {
     return found ? found.name : "";
   };
 
-  // ✅ 저장 / 수정 / 삭제 후 반영
+  // ✅ 날짜별 Todo 필터
+  const getTodosForDay = (date) => {
+    const formatted = date.format("YYYY-MM-DD");
+    return todos.filter((t) => t.tDate === formatted);
+  };
+
+  // ✅ 저장 / 수정 / 삭제 반영
   const handleSave = async (savedTodo) => {
     if (!savedTodo) return;
 
-    // 🧹 삭제된 일정
     if (savedTodo.deleted) {
-      console.log("🧹 삭제된 일정 ID:", savedTodo.id);
-
-      // 즉시 화면에서 제거
       setTodos((prev) => prev.filter((t) => t.id !== savedTodo.id));
-
-      // 하단 목록 새로고침 트리거
       onTodosChange && onTodosChange();
-
-      // 달력 리렌더
       setMoment(moment());
       return;
     }
 
-    // 🟢 추가 / 수정
     const normalized = {
       ...savedTodo,
       tDate: moment(savedTodo.tDate).format("YYYY-MM-DD"),
     };
 
-    // 프론트 즉시 반영
     setTodos((prev) => {
       const exists = prev.some((t) => t.id === normalized.id);
       return exists
@@ -128,17 +113,12 @@ function Calendar({ onTodosChange }) {
         : [...prev, normalized];
     });
 
-    // 서버와 동기화
     fetchTodos();
-
-    // 하단 목록 새로고침 트리거
     onTodosChange && onTodosChange();
-
-    // 강제 리렌더
     setMoment(moment());
   };
 
-  // ✅ 달력 데이터 렌더링
+  // ✅ 달력 렌더링
   const calendarArr = () => {
     const startDay = today.clone().startOf("month").startOf("week");
     const endDay = today.clone().endOf("month").endOf("week");
@@ -146,71 +126,62 @@ function Calendar({ onTodosChange }) {
     const calendar = [];
 
     while (day.isBefore(endDay, "day")) {
+      const current = day.clone();
+      const isToday = moment().isSame(current, "day");
+      const isDiffMonth = current.month() !== today.month();
+      const dayTodos = getTodosForDay(current);
+
       calendar.push(
-        <tr key={day.format("YYYY-MM-DD") + "-row"}>
-          {Array(7)
-            .fill(0)
-            .map((_, i) => {
-              const current = day.clone();
-              day.add(1, "day");
+        <div
+          key={current.format("YYYY-MM-DD")}
+          className={`day-cell ${isDiffMonth ? "dimmed-date" : ""} ${
+            isToday ? "today" : ""
+          }`}
+          onClick={() => setSelectedDate(current)}
+        >
+          <span className="weekday">{current.format("ddd")}</span>
+          <span className="date-number">{current.format("D")}</span>
 
-              const isToday =
-                moment().format("YYYYMMDD") === current.format("YYYYMMDD");
-              const isDiffMonth = current.format("MM") !== today.format("MM");
+          {!isDiffMonth && isHoliday(current) && (
+            <small className="holiday-name">{getHolidayName(current)}</small>
+          )}
 
-              let className = "";
-              if (i === 0) className = "sunday";
-              if (i === 6) className = "saturday";
-              if (isDiffMonth) className += " dimmed-date";
-              if (isToday) className += " today";
-              if (isHoliday(current)) className += " holiday";
+          {/* ✅ Todo 목록 (2개까지만) */}
+          <div className="todo-list">
+            {dayTodos.slice(0, 2).map((todo, idx) => (
+              <div
+                key={todo.id || idx}
+                className="todo-item"
+                title={todo.title}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditTodo(todo);
+                  setShowModal(true);
+                }}
+              >
+                {todo.title}
+              </div>
+            ))}
 
-              const dayTodos = getTodosForDay(current);
-
-              return (
-                <td
-                  key={current.format("YYYY-MM-DD")}
-                  className={className}
-                  onClick={() => setSelectedDate(current)}
-                >
-                  <span className="day-number">{current.format("D")}</span>
-
-                  {/* 공휴일 표시 */}
-                  {!isDiffMonth && isHoliday(current) && (
-                    <small className="holiday-name">
-                      {getHolidayName(current)}
-                    </small>
-                  )}
-
-                  {/* Todo 점 표시 */}
-                  <div className="todo-dot-container">
-                    {dayTodos.slice(0, 3).map((todo, idx) => (
-                      <div
-                        key={todo.id || idx}
-                        className="todo-dot"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditTodo(todo);
-                          setShowModal(true);
-                        }}
-                      >
-                        <div className="todo-tooltip">
-                          <strong>{todo.title}</strong>
-                          {todo.content && <div>{todo.content}</div>}
-                        </div>
-                      </div>
-                    ))}
-                    {dayTodos.length > 3 && (
-                      <div className="todo-dot-more">
-                        +{dayTodos.length - 3}
-                      </div>
-                    )}
-                  </div>
-                </td>
-              );
-            })}
-        </tr>
+            {/* ✅ 2개 초과 시 +n 표시 */}
+            {dayTodos.length > 2 && (
+              <div
+                className="todo-more"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDayModalTodos({
+                    date: current.format("YYYY-MM-DD"),
+                    list: dayTodos,
+                  });
+                }}
+              >
+                +{dayTodos.length - 2}
+              </div>
+            )}
+          </div>
+        </div>
       );
+      day.add(1, "day");
     }
     return calendar;
   };
@@ -224,7 +195,6 @@ function Calendar({ onTodosChange }) {
           <button onClick={() => setMoment(today.clone().subtract(1, "month"))}>
             ◀
           </button>
-
           <span
             className="thisMonth clickable"
             onClick={() => setShowMonthPicker((prev) => !prev)}
@@ -250,7 +220,7 @@ function Calendar({ onTodosChange }) {
                 onChange={(e) => setSelectedMonth(Number(e.target.value))}
               >
                 {Array.from({ length: 12 }, (_, i) => (
-                  <option key={i} value={i + 1}>
+                  <option key={i} value={i}>
                     {i + 1}월
                   </option>
                 ))}
@@ -286,22 +256,10 @@ function Calendar({ onTodosChange }) {
           </button>
         </div>
 
-        <table>
-          <thead>
-            <tr className="day-names">
-              <th>일</th>
-              <th>월</th>
-              <th>화</th>
-              <th>수</th>
-              <th>목</th>
-              <th>금</th>
-              <th>토</th>
-            </tr>
-          </thead>
-          <tbody>{calendarArr()}</tbody>
-        </table>
+        <div className="calendar-grid">{calendarArr()}</div>
       </div>
 
+      {/* ✅ 일정 수정 / 추가 모달 */}
       {showModal && (
         <CalendarTodo
           onClose={() => setShowModal(false)}
@@ -309,6 +267,35 @@ function Calendar({ onTodosChange }) {
           editTodo={editTodo}
           defaultDate={selectedDate.format("YYYY-MM-DD")}
         />
+      )}
+
+      {/* ✅ 하루 전체 일정 보기 모달 */}
+      {dayModalTodos && (
+        <div
+          className="todo-day-modal-overlay"
+          onClick={() => setDayModalTodos(null)}
+        >
+          <div className="todo-day-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>
+              {dayModalTodos.date} 일정 ({dayModalTodos.list.length}개)
+            </h3>
+            <ul>
+              {dayModalTodos.list.map((todo) => (
+                <li
+                  key={todo.id}
+                  onClick={() => {
+                    setEditTodo(todo);
+                    setShowModal(true);
+                    setDayModalTodos(null);
+                  }}
+                >
+                  {todo.title}
+                </li>
+              ))}
+            </ul>
+            <button onClick={() => setDayModalTodos(null)}>닫기</button>
+          </div>
+        </div>
       )}
     </>
   );
