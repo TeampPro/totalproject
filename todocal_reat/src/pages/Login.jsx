@@ -28,6 +28,7 @@ function Login() {
         alert(data.message || '로그인 성공');
         // 로컬에 사용자 정보 저장 (id, userType)
         localStorage.setItem('user', JSON.stringify({ id: data.id, userType: data.userType || 'member' }));
+        localStorage.setItem('memberName', data.id);
         navigate('/main');
       } else {
         // 서버가 400등으로 보낸 에러 메시지 처리
@@ -57,6 +58,8 @@ function Login() {
         localStorage.setItem('guestInfo', JSON.stringify({ id: data.id, password: data.password }));
         // 전체 앱에서 사용자 타입 확인하려면 user로도 저장
         localStorage.setItem('user', JSON.stringify({ id: data.id, userType: data.userType || 'guest' }));
+
+        localStorage.setItem('memberName', data.id);
 
         navigate('/main');
       } else {

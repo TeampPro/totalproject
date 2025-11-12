@@ -3,80 +3,111 @@ import axios from "axios";
 import moment from "moment";
 import "../styles/CalendarTodo.css";
 
+/**
+ * props:
+ * - onClose(): 모달 닫기
+ * - onSave(savedTodo): 저장/수정/삭제 후 Calendar로 전달
+ * - editTodo: 수정할 todo 객체
+ * - defaultDate: 새 일정 추가 시 선택된 날짜 (YYYY-MM-DD)
+ */
 function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
   const isEdit = !!editTodo;
 
-  const [todo, setTodo] = useState(
-    editTodo || {
-      title: "",
-      content: "",
-      tDate: defaultDate || moment().format("YYYY-MM-DD"),
-    }
-  );
+  const [todo, setTodo] = useState({
+    id: editTodo?.id ?? null,
+    title: editTodo?.title ?? "",
+    content: editTodo?.content ?? "",
+    tDate:
+      editTodo?.tDate ??
+      defaultDate ??
+      moment().format("YYYY-MM-DD"),
+  });
 
+  // ✅ 수정/추가 모드 전환 시 동기화
   useEffect(() => {
     if (editTodo) {
-      setTodo(editTodo);
+      setTodo({
+        id: editTodo.id,
+        title: editTodo.title ?? "",
+        content: editTodo.content ?? "",
+        tDate:
+          editTodo.tDate ??
+          moment(editTodo.promiseDate).format("YYYY-MM-DD"),
+      });
     } else if (defaultDate) {
-      setTodo((prev) => ({ ...prev, tDate: defaultDate })); // 모달 재오픈 시도 대비
+      setTodo((prev) => ({ ...prev, tDate: defaultDate }));
     }
   }, [editTodo, defaultDate]);
 
-  /* ✅ 저장 */
+  const handleChange = (key) => (e) => {
+    setTodo((prev) => ({ ...prev, [key]: e.target.value }));
+  };
+
+  // ✅ 저장 또는 수정
   const handleSave = async () => {
     if (!todo.title.trim()) {
       alert("제목을 입력해주세요!");
       return;
     }
-    if (!todo.tDate) {
-      setTodo((prev) => ({ ...prev, tDate: defaultDate || moment().format("YYYY-MM-DD") }));
-    }
+
+    const payload = {
+      title: todo.title.trim(),
+      content: todo.content?.trim() ?? "",
+      promiseDate: moment(todo.tDate).format("YYYY-MM-DDTHH:mm:ss"),
+    };
 
     try {
       let res;
-      if (isEdit) {
-        console.log("✏ 수정 시 날짜 데이터:", todo.tDate);
+      if (isEdit && todo.id != null) {
+        // ✏ 수정
         res = await axios.put(
-          `http://localhost:8080/api/todos/${todo.todoId}`,
-          {
-            ...todo,
-            tDate: moment(todo.tDate).format("YYYY-MM-DD")
-          }
+          `http://localhost:8080/api/todos/${todo.id}`,
+          payload
         );
         alert("할 일이 수정되었습니다!");
       } else {
-        console.log("➕ 추가 시 날짜 데이터:", todo.tDate);
-        res = await axios.post("http://localhost:8080/api/todos", {
-          ...todo,
-          tDate: moment(todo.tDate).format("YYYY-MM-DD"),
-        });
+        // ➕ 추가
+        res = await axios.post("http://localhost:8080/api/todos", payload);
         alert("할 일이 추가되었습니다!");
       }
-      console.log("📌 서버 저장 완료 → 받은 데이터:", res.data);
 
-      // ✅ 서버 응답 데이터에 현재 선택된 날짜(tDate) 강제 덮어쓰기
-      const fixedData = {
-        ...res.data,
+      // ✅ 서버 응답 기반으로 Calendar에 전달할 데이터 정리
+      const saved = res?.data ?? {};
+      const normalized = {
+        id: saved.id ?? todo.id,
+        title: saved.title ?? todo.title,
+        content: saved.content ?? todo.content,
         tDate: moment(todo.tDate).format("YYYY-MM-DD"),
+        promiseDate:
+          saved.promiseDate ??
+          moment(todo.tDate).format("YYYY-MM-DD"),
       };
 
-      onSave(fixedData);
+      onSave(normalized);
       onClose();
     } catch (err) {
       console.error("❌ 저장 실패:", err);
+      alert("저장에 실패했습니다. 콘솔을 확인해주세요.");
     }
   };
 
-  /* ✅ 삭제 */
+  // ✅ 삭제
   const handleDelete = async () => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
     try {
-      await axios.delete(`http://localhost:8080/api/todos/${todo.todoId}`);
+      await axios.delete(`http://localhost:8080/api/todos/${todo.id}`);
       alert("삭제되었습니다!");
-      onSave({ ...todo, deleted: true });
+
+      // ✅ 최소한의 필드만 넘겨서 Calendar에서 정확히 필터되게
+      onSave({
+        id: todo.id,
+        deleted: true,
+      });
+
       onClose();
     } catch (err) {
       console.error("❌ 삭제 실패:", err);
+      alert("삭제에 실패했습니다. 콘솔을 확인해주세요.");
     }
   };
 
@@ -90,7 +121,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
           <input
             type="date"
             value={todo.tDate}
-            onChange={(e) => setTodo({ ...todo, tDate: e.target.value })}
+            onChange={handleChange("tDate")}
           />
         </label>
 
@@ -99,7 +130,8 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
           <input
             type="text"
             value={todo.title}
-            onChange={(e) => setTodo({ ...todo, title: e.target.value })}
+            onChange={handleChange("title")}
+            placeholder="제목을 입력하세요"
           />
         </label>
 
@@ -107,7 +139,8 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
           내용
           <textarea
             value={todo.content}
-            onChange={(e) => setTodo({ ...todo, content: e.target.value })}
+            onChange={handleChange("content")}
+            placeholder="내용을 입력하세요"
           />
         </label>
 

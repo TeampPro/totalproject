@@ -1,5 +1,5 @@
 .calendar-modal {
-  position: fixed;
+  position: relative;
   top: 15%; /* 더 상단 배치 */
   left: 50%;
   transform: translate(-50%, 0);
