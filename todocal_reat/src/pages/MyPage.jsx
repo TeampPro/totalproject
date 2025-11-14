@@ -18,7 +18,6 @@ function MyPage() {
   const [preview, setPreview] = useState(null);
   const navigate = useNavigate();
 
-  // 로그인된 사용자 정보 불러오기
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem("user"));
     if (!savedUser) {
@@ -26,10 +25,8 @@ function MyPage() {
       navigate("/");
       return;
     }
-
     setUserType(savedUser.userType || "member");
 
-    // 유저 정보 가져오기
     fetch(`http://localhost:8080/api/user/${savedUser.id}`)
       .then((res) => {
         if (!res.ok) throw new Error("사용자 정보 조회 실패");
@@ -40,16 +37,13 @@ function MyPage() {
           id: data.id || "",
           name: data.name || "",
           email: data.email || "",
-          password: "", // 비밀번호는 클라이언트에 채우지 않음
+          password: "",
           kakaoId: data.kakaoId || "",
           kakaoEmail: data.kakaoEmail || "",
-          profileImage: null, // 서버에서의 파일명은 profileImage 필드로 따로 보관
+          profileImage: null,
         });
-
         if (data.profileImage) {
           setPreview(`http://localhost:8080/api/uploads/${data.profileImage}`);
-        } else {
-          setPreview(null);
         }
       })
       .catch((err) => {
@@ -58,13 +52,11 @@ function MyPage() {
       });
   }, [navigate]);
 
-  // 입력 변경 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUserInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 프로필 이미지 선택 (안전 처리)
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -78,26 +70,17 @@ function MyPage() {
       formData.append("id", userInfo.id);
       formData.append("name", userInfo.name || "");
       formData.append("email", userInfo.email || "");
-      // 파일이 실제 File 객체일 때만 append
       if (userInfo.profileImage instanceof File) {
         formData.append("profileImage", userInfo.profileImage);
       }
-
-      const response = await fetch(
-        "http://localhost:8080/api/user/update-with-file",
-        {
-          method: "PUT",
-          body: formData, // 절대 headers에 Content-Type 직접 지정하지 않음
-        }
-      );
-
+      const response = await fetch("http://localhost:8080/api/user/update-with-file", {
+        method: "PUT",
+        body: formData,
+      });
       const data = await response.json().catch(() => ({}));
-
       if (response.ok) {
         alert(data.message || "회원 정보가 성공적으로 수정되었습니다.");
         setIsEditing(false);
-
-        // 서버에서 최신 정보 재조회 (프로필 이미지 파일명 반영 위해)
         const savedUser = JSON.parse(localStorage.getItem("user"));
         if (savedUser?.id) {
           fetch(`http://localhost:8080/api/user/${savedUser.id}`)
@@ -112,8 +95,7 @@ function MyPage() {
               if (d.profileImage) {
                 setPreview(`http://localhost:8080/api/uploads/${d.profileImage}`);
               }
-            })
-            .catch((err) => console.error("재조회 실패:", err));
+            });
         }
       } else {
         alert(data.message || "수정 실패");
@@ -129,21 +111,16 @@ function MyPage() {
       alert("현재 비밀번호와 새 비밀번호를 모두 입력해주세요.");
       return;
     }
-
     try {
-      const res = await fetch(
-        "http://localhost:8080/api/user/change-password",
-        {
-          method: "PUT", // 백엔드가 PUT 으로 받음
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: userInfo.id,
-            currentPassword,
-            newPassword,
-          }),
-        }
-      );
-
+      const res = await fetch("http://localhost:8080/api/user/change-password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: userInfo.id,
+          currentPassword,
+          newPassword,
+        }),
+      });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         alert(data.message || "비밀번호가 변경되었습니다.");
@@ -180,8 +157,6 @@ function MyPage() {
     <div style={styles.container}>
       <div style={styles.card}>
         <h2 style={styles.title}>마이페이지</h2>
-
-        {/* 프로필 이미지 */}
         <div style={{ marginBottom: "20px" }}>
           <img
             src={preview || "/default-profile.png"}
@@ -192,8 +167,6 @@ function MyPage() {
             <input type="file" accept="image/*" onChange={handleImageChange} />
           )}
         </div>
-
-        {/* 정보 입력 */}
         <div style={styles.infoGroup}>
           <label>아이디</label>
           <input type="text" value={userInfo.id} disabled style={styles.input} />
@@ -229,17 +202,12 @@ function MyPage() {
                 저장하기
               </button>
             ) : (
-              <button
-                style={styles.editButton}
-                onClick={() => setIsEditing(true)}
-              >
+              <button style={styles.editButton} onClick={() => setIsEditing(true)}>
                 수정하기
               </button>
             )}
           </>
         )}
-
-        {/* 비밀번호 변경 섹션 */}
         {userType !== "guest" && (
           <div style={styles.passwordBox}>
             <h4>비밀번호 변경</h4>
@@ -262,8 +230,6 @@ function MyPage() {
             </button>
           </div>
         )}
-
-        {/* 회원탈퇴 */}
         {userType !== "guest" && (
           <button style={styles.deleteButton} onClick={handleDeleteAccount}>
             회원탈퇴
@@ -282,7 +248,7 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    height: "100vh",
+    minHeight: "100vh",
     backgroundColor: "#f8f9fa",
   },
   card: {
