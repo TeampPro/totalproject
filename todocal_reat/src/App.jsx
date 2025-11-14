@@ -9,16 +9,6 @@ import Calendar from "./pages/Calendar.jsx";
 import AllTasks from "./pages/AllTasks";
 import KakaoMapBox from "./pages/KakaoMapBox";
 
-<<<<<<< HEAD
-  import Login from "./pages/Login.jsx";
-  import SignUp from "./pages/SignUp.jsx";
-  import BeLogin from "./pages/BeLogin.jsx";
-  import ChatPage from "./pages/ChatPage.jsx";
-  import Upload from "./pages/Upload.jsx";
-  import MyPage from "./pages/MyPage.jsx";
-  import MainPage from "./pages/MainPage.jsx";
-  import UserInfo from "../myprofile/UserInfo.jsx";
-=======
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import BeLogin from "./pages/BeLogin.jsx";
@@ -27,19 +17,12 @@ import Upload from "./pages/Upload.jsx";
 import MyPage from "./pages/MyPage.jsx";
 import MainPage from "./pages/MainPage.jsx";
 import TodoPage from "./components/TodoPage/TodoPage.jsx";
->>>>>>> origin/feature/git
 
 import "./App.css";
 
 function App() {
   const location = useLocation();
 
-<<<<<<< HEAD
-    // ✅ 캘린더 → 할일목록 동기화 & 필터 상태
-    const [refreshKey, setRefreshKey] = useState(0);
-    const [taskFilter, setTaskFilter] = useState("all"); // 'all' | 'week' | 'month'
-    const handleTodosChange = () => setRefreshKey((k) => k + 1);
-=======
   const isLoginOrSignUpPage =
     location.pathname === "/" || location.pathname === "/signup";
   const isChat = location.pathname === "/chat";
@@ -49,8 +32,7 @@ function App() {
   const [taskFilter, setTaskFilter] = useState("all");
   const [refreshKey, setRefreshKey] = useState(0);
   const handleTodosChange = () => setRefreshKey((prev) => prev + 1);
->>>>>>> origin/feature/git
-
+``
   const handleFilterChange = (filterType) => {
     setTaskFilter(filterType);
   };
@@ -86,20 +68,6 @@ function App() {
           </div>
         )}
 
-<<<<<<< HEAD
-          <div className="content">
-            <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/signup" element={<SignUp />} />
-              <Route path="/beLogin" element={<BeLogin />} />
-              <Route path="/upload" element={<Upload />} />
-              <Route path="/chat" element={<ChatPage />} />
-              <Route path="/main" element={<MainPage />} />
-              <Route path="/myPage" element={<MyPage />} />
-              <Route path="/main" element={<UserInfo />} />
-            </Routes>
-          </div>
-=======
         <div className="content">
           <Routes>
             <Route path="/" element={<Login />} />
@@ -111,7 +79,6 @@ function App() {
             <Route path="/myPage" element={<MyPage />} />
             <Route path="/todo" element={<TodoPage />} /> {/* TodoPage 단독 */}
           </Routes>
->>>>>>> origin/feature/git
         </div>
       </div>
 
