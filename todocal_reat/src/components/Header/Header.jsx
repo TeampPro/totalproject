@@ -47,15 +47,6 @@ const TodoHeader = ({ onChangeFilter, active }) => {
         </button>
       </nav>
 
-      {/* ✅ 추가 버튼 */}
-      <button
-        className={`${classes.todoAddButton} ${
-          addActive ? classes.active : ""
-        }`}
-        onClick={handleAddClick}
-      >
-        +
-      </button>
     </div>
   );
 };
