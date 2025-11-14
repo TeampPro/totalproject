@@ -134,9 +134,11 @@ function Calendar({ onTodosChange }) {
       calendar.push(
         <div
           key={current.format("YYYY-MM-DD")}
-          className={`day-cell ${isDiffMonth ? "dimmed-date" : ""} ${
-            isToday ? "today" : ""
-          }`}
+          className={`day-cell 
+            ${isDiffMonth ? "dimmed-date" : ""} 
+            ${isToday ? "today" : ""} 
+            ${!isDiffMonth && isHoliday(current) ? "holiday" : ""}`
+          }
           onClick={() => setSelectedDate(current)}
         >
           <span className="weekday">{current.format("ddd")}</span>

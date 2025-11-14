@@ -19,6 +19,7 @@ import MainPage from "./pages/MainPage.jsx";
 import TodoPage from "./components/TodoPage/TodoPage.jsx";
 
 import "./App.css";
+import TimeHome from "./components/TimeCalendar/TimeHome.jsx";
 
 function App() {
   const location = useLocation();
@@ -31,8 +32,8 @@ function App() {
 
   const [taskFilter, setTaskFilter] = useState("all");
   const [refreshKey, setRefreshKey] = useState(0);
-  const handleTodosChange = () => setRefreshKey((prev) => prev + 1);
-``
+  const handleTodosChange = () => setRefreshKey((prev) => prev + 1); 
+  
   const handleFilterChange = (filterType) => {
     setTaskFilter(filterType);
   };
@@ -49,7 +50,7 @@ function App() {
             </div>
 
             <div className="calendar-widget">
-              <Calendar onTodosChange={handleTodosChange} />
+              <TimeHome onTodosChange={handleTodosChange} />
             </div>
 
             <div className="bottom-widgets">
