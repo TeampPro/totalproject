@@ -19,6 +19,7 @@
   import Upload from "./pages/Upload.jsx";
   import MyPage from "./pages/MyPage.jsx";
   import MainPage from "./pages/MainPage.jsx";
+  import UserInfo from "../myprofile/UserInfo.jsx";
 
   import "./App.css";
 
@@ -31,7 +32,6 @@
     // ✅ 캘린더 → 할일목록 동기화 & 필터 상태
     const [refreshKey, setRefreshKey] = useState(0);
     const [taskFilter, setTaskFilter] = useState("all"); // 'all' | 'week' | 'month'
-
     const handleTodosChange = () => setRefreshKey((k) => k + 1);
 
     return (
@@ -73,6 +73,7 @@
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/main" element={<MainPage />} />
               <Route path="/myPage" element={<MyPage />} />
+              <Route path="/main" element={<UserInfo />} />
             </Routes>
           </div>
         </div>

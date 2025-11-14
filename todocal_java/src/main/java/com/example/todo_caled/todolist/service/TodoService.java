@@ -27,6 +27,10 @@ public class TodoService {
         if (todo.getOwnerId() == null) todo.setOwnerId(1L);
         if (todo.getCalendarId() == null) todo.setCalendarId(1L);
 
+        if (todo.getShared() == null) todo.setShared(false);
+        if (todo.getPromiseTime() == null) todo.setPromiseTime("");
+        if (todo.getLocation() == null) todo.setLocation("");
+
         return todoRepository.save(todo);
     }
 
@@ -47,6 +51,10 @@ public class TodoService {
         existing.setContent(todo.getContent());
         existing.setStatus(todo.getStatus());
         existing.setTDate(todo.getTDate());
+
+        existing.setLocation(todo.getLocation());
+        existing.setPromiseTime(todo.getPromiseTime());
+        existing.setShared(todo.getShared());
 
         Todo saved = todoRepository.saveAndFlush(existing);
         System.out.println("✅ After Update: " + saved.getTDate());

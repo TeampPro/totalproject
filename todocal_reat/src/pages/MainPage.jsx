@@ -1,37 +1,46 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import UserInfo from "../../myprofile/UserInfo";
 
-function MainPage() {
+const MainPage = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // 로그인 정보 확인
   useEffect(() => {
-    const savedUser = JSON.parse(localStorage.getItem("user"));
-    if (!savedUser) {
-      alert("로그인이 필요합니다.");
+    try {
+      const savedUser = JSON.parse(localStorage.getItem("user"));
+      if (!savedUser) {
+        alert("로그인이 필요합니다.");
+        navigate("/");
+        return;
+      }
+      setUser(savedUser);
+    } catch {
+      localStorage.removeItem("user");
       navigate("/");
-      return;
     }
-    setUser(savedUser);
   }, [navigate]);
 
-  // 로그아웃
   const handleLogout = () => {
     localStorage.removeItem("user");
     alert("로그아웃 되었습니다.");
     navigate("/");
   };
 
-  // 이제 화면에는 메뉴 버튼만 렌더링
   return (
     <>
+      {/* ✅ 상단 유저 정보 표시 */}
+      <div style={styles.userInfoWrapper}>
+        <UserInfo onLogout={handleLogout} />
+      </div>
+
+      {/* ✅ 우측 하단 플로팅 메뉴 */}
       {user && (
         <div style={styles.menuWrapper}>
           <button
             style={styles.menuButton}
-            onClick={() => setMenuOpen(!menuOpen)}
+            onClick={() => setMenuOpen((prev) => !prev)}
           >
             <div style={styles.bar}></div>
             <div style={styles.bar}></div>
@@ -55,12 +64,18 @@ function MainPage() {
       )}
     </>
   );
-}
+};
 
 const styles = {
+  userInfoWrapper: {
+    marginTop: "60px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   menuWrapper: {
     position: "fixed",
-    bottom: "80px", // 메뉴바 위로 위치
+    bottom: "80px",
     right: "20px",
     zIndex: 100,
   },

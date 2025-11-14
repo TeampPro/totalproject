@@ -39,4 +39,8 @@ public class Todo {
 
     private Long ownerId;       // FK user.id
     private Long calendarId;    // FK calendar.id
+
+    private String location;      // 약속 장소
+    private String promiseTime;   // 약속 시간 (HH:mm)
+    private Boolean shared;       // 공유 여부
 }
