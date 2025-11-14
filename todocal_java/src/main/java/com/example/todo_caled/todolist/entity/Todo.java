@@ -43,4 +43,6 @@ public class Todo {
     private String location;      // 약속 장소
     private String promiseTime;   // 약속 시간 (HH:mm)
     private Boolean shared;       // 공유 여부
+
+
 }

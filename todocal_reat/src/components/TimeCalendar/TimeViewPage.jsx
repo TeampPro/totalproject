@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import moment from "moment";
 import "./TimeViewPage.css";
 
-const START_HOUR = 8; // 시작 시간 (8시)
-const END_HOUR = 20; // 종료 시간 (20시, 8PM)
-const HOUR_HEIGHT = 60; // 1시간당 높이(px)
+const START_HOUR = 8;
+const END_HOUR = 20;
+const HOUR_HEIGHT = 60;
 
 function TimeViewPage() {
-  const [weekStart, setWeekStart] = useState(moment().startOf("week")); // 일요일 기준
+  const [weekStart, setWeekStart] = useState(moment().startOf("week"));
+  const [events, setEvents] = useState([]); // 🔥 DB에서 불러올 일정들
 
   // 한 주 날짜 배열
   const days = Array.from({ length: 7 }, (_, i) =>
@@ -20,31 +22,48 @@ function TimeViewPage() {
     (_, i) => START_HOUR + i
   );
 
-  // 🔹 데모용 이벤트 (나중에 API 데이터로 바꿔도 됨)
-  const sampleEvents = [
-    {
-      id: 1,
-      title: "팀 프로젝트 기획 회의",
-      start: moment(weekStart).add(2, "day").hour(9).minute(0), // 화 9:00
-      end: moment(weekStart).add(2, "day").hour(11).minute(0), // 화 11:00
-      color: "#cfe3ff",
-    },
-    {
-      id: 2,
-      title: "React API 연동",
-      start: moment(weekStart).add(3, "day").hour(13).minute(30), // 수 13:30
-      end: moment(weekStart).add(3, "day").hour(15).minute(0), // 수 15:00
-      color: "#ffe4cc",
-    },
-    {
-      id: 3,
-      title: "DB 검증 및 리포트",
-      start: moment(weekStart).add(4, "day").hour(10).minute(0), // 목 10:00
-      end: moment(weekStart).add(4, "day").hour(12).minute(0), // 목 12:00
-      color: "#e4f7d2",
-    },
-  ];
+  /** =============================
+   *  🔥 일정(DB) 불러오기
+   * ============================= */
+  useEffect(() => {
+    axios
+      .get("http://localhost:8080/api/todos/all")
+      .then((res) => {
+        const converted = res.data
+          .filter((t) => t.promiseDate && t.promiseTime)
+          .map((t) => {
+            const start = moment(
+              `${t.promiseDate} ${t.promiseTime}`,
+              "YYYY-MM-DD HH:mm"
+            );
 
+            // 기본: 1시간짜리 블록
+            const end = start.clone().add(1, "hour");
+
+            return {
+              id: t.id,
+              title: t.title,
+              start,
+              end,
+              color: "#cfe3ff", // 기본 색 (원하면 색 분리 가능)
+            };
+          });
+
+        setEvents(converted);
+      })
+      .catch((err) => console.error("❌ 일정 불러오기 실패:", err));
+  }, []); // 최초 1회
+
+  /** =============================
+   *  🔥 현재 주에 해당하는 일정 필터링
+   * ============================= */
+  const getEventsForDay = (day) => {
+    return events.filter((ev) => ev.start.isSame(day, "day"));
+  };
+
+  /** =============================
+   *  주 이동 기능
+   * ============================= */
   const goPrevWeek = () => setWeekStart(moment(weekStart).subtract(1, "week"));
   const goNextWeek = () => setWeekStart(moment(weekStart).add(1, "week"));
   const goToday = () => setWeekStart(moment().startOf("week"));
@@ -66,9 +85,9 @@ function TimeViewPage() {
         </div>
       </header>
 
-      {/* 주간 시간표 그리드 */}
+      {/* 주간 시간표 */}
       <div className="timeview-grid">
-        {/* 상단 요일 헤더 */}
+        {/* 요일 헤더 */}
         <div className="timeview-header-row">
           <div className="timeview-time-col-header" />
           {days.map((day) => (
@@ -79,9 +98,9 @@ function TimeViewPage() {
           ))}
         </div>
 
-        {/* 본문: 좌측 시간 / 우측 요일별 컬럼 */}
+        {/* 본문 */}
         <div className="timeview-body">
-          {/* 왼쪽 시간 축 */}
+          {/* 왼쪽 시간 */}
           <div className="timeview-time-col">
             {hours.map((h) => (
               <div key={h} className="timeview-time-cell">
@@ -90,15 +109,13 @@ function TimeViewPage() {
             ))}
           </div>
 
-          {/* 요일별 컬럼 */}
+          {/* 요일별 이벤트 */}
           {days.map((day) => {
-            const dayEvents = sampleEvents.filter((e) =>
-              e.start.isSame(day, "day")
-            );
+            const dayEvents = getEventsForDay(day);
 
             return (
               <div key={day.format("YYYY-MM-DD")} className="timeview-day-col">
-                {/* 시간 슬롯 라인 */}
+                {/* 시간 칸 */}
                 {hours.map((h) => (
                   <div key={h} className="timeview-slot" />
                 ))}
@@ -108,6 +125,7 @@ function TimeViewPage() {
                   const startHour =
                     event.start.hour() + event.start.minute() / 60;
                   const endHour = event.end.hour() + event.end.minute() / 60;
+
                   const top = (startHour - START_HOUR) * HOUR_HEIGHT;
                   const height = (endHour - startHour) * HOUR_HEIGHT;
 
