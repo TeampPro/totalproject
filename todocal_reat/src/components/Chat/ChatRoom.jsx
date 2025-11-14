@@ -10,16 +10,17 @@ export default function ChatRoom({ room }) {
   const [msg, setMsg] = useState("");
   const [inviteLink, setInviteLink] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [isConnected, setIsConnected] = useState(false); // ✅ 연결 상태 표시
+  const [isConnected, setIsConnected] = useState(false);
+
   const ws = useRef(null);
   const reconnectTimer = useRef(null);
+  const messagesEndRef = useRef(null); // ✅ 새 메시지 스크롤 기준점
 
-  // ✅ memberName: 로그인 사용자 이름 또는 localStorage 저장된 이름
   const memberName =
     location.state?.memberName || localStorage.getItem("memberName") || "guest";
-  const nickname = useRef(memberName); // nickname = 서버 DB에 저장된 memberName과 일치해야 함
+  const nickname = useRef(memberName);
 
-  // ✅ 과거 메시지 불러오기
+  // ✅ 기존 메시지 로드
   useEffect(() => {
     const loadOldMessages = async () => {
       const data = await fetchMessages(room.id);
@@ -32,9 +33,9 @@ export default function ChatRoom({ room }) {
     loadOldMessages();
   }, [room.id]);
 
-  // ✅ WebSocket 연결 함수
+  // ✅ WebSocket 연결
   const connectWebSocket = () => {
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) return; // 중복 방지
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) return;
 
     const socket = new WebSocket(
       `ws://localhost:8080/ws/chat?roomId=${room.id}&memberName=${nickname.current}`
@@ -65,7 +66,12 @@ export default function ChatRoom({ room }) {
       console.warn("❌ WebSocket 종료됨", e.code, e.reason);
       setIsConnected(false);
 
-      // ✅ 자동 재연결 시도 (2초 후)
+      if (e.reason.includes("입장") || e.code === 1008) {
+        alert("채팅방 입장 권한이 없습니다.");
+        return;
+      }
+
+      // 자동 재연결
       if (!reconnectTimer.current) {
         reconnectTimer.current = setTimeout(() => {
           console.log("🔁 재연결 시도 중...");
@@ -75,24 +81,37 @@ export default function ChatRoom({ room }) {
     };
   };
 
-  // ✅ WebSocket 연결 초기화
+  // ✅ WebSocket 연결 (중복 방지 포함)
   useEffect(() => {
-    if (ws.current) return;
+    // 이미 연결되어 있으면 다시 연결하지 않음
+    if (ws.current && ws.current.readyState !== WebSocket.CLOSED) {
+      console.log("⚠️ 이미 WebSocket 연결 중 — 중복 연결 방지");
+      return;
+    }
+
     connectWebSocket();
 
+    // cleanup
     return () => {
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      if (ws.current) {
         ws.current.close();
+        ws.current = null; // ✅ 완전 초기화
       }
     };
   }, []);
+
+  // ✅ 새 메시지 추가 시 스크롤 맨 아래로
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   // ✅ 메시지 전송
   const sendMessage = () => {
     if (!msg.trim()) return;
 
-    // ✅ 연결 상태 확인 (닫힌 소켓 방지)
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
       alert("서버와의 연결이 끊어졌습니다. 잠시 후 다시 시도해주세요.");
       return;
@@ -165,14 +184,46 @@ export default function ChatRoom({ room }) {
             <span style={{ fontSize: "0.8em" }}>({m.time})</span>
           </div>
         ))}
+        {/* 👇 스크롤 기준점 */}
+        <div ref={messagesEndRef} />
       </div>
 
-      <input
-        value={msg}
-        onChange={(e) => setMsg(e.target.value)}
-        placeholder="메시지 입력..."
-      />
-      <button onClick={sendMessage}>보내기</button>
+      {/* ✅ 메시지 입력 + 전송 (Enter=전송, Shift+Enter=줄바꿈) */}
+      <div style={{ display: "flex", gap: 8 }}>
+        <textarea
+          value={msg}
+          onChange={(e) => setMsg(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage();
+            }
+          }}
+          placeholder="메시지를 입력하세요 (Shift+Enter로 줄바꿈)"
+          rows={2}
+          style={{
+            flex: 1,
+            resize: "none",
+            padding: 8,
+            borderRadius: 8,
+            border: "1px solid #ccc",
+          }}
+        />
+        <button
+          onClick={sendMessage}
+          style={{
+            padding: "8px 16px",
+            borderRadius: 8,
+            border: "none",
+            backgroundColor: "#4caf50",
+            color: "white",
+            fontWeight: "bold",
+            cursor: "pointer",
+          }}
+        >
+          보내기
+        </button>
+      </div>
 
       {/* ✅ 초대 링크 모달 */}
       {showModal && (

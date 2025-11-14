@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -23,6 +25,9 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
+
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
     /** 채팅방 생성 */
     public ChatRoomResponseDto createRoom(String name) {
@@ -144,7 +149,7 @@ public class ChatService {
                 .roomId(dto.getRoomId())
                 .sender(dto.getSender())
                 .message(dto.getMessage())
-                .sentAt(LocalDateTime.now())
+                .sentAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
                 .build();
         chatMessageRepository.save(entity);
     }
@@ -156,7 +161,7 @@ public class ChatService {
                         .roomId(msg.getRoomId())
                         .sender(msg.getSender())
                         .message(msg.getMessage())
-                        .time(msg.getSentAt().toString())
+                        .time(msg.getSentAt() != null ? msg.getSentAt().format(FORMATTER) : "")
                         .build())
                 .collect(Collectors.toList());
     }

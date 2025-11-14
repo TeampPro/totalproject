@@ -55,7 +55,7 @@ public class ChatSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         ChatMessageDto dto = gson.fromJson(message.getPayload(), ChatMessageDto.class);
-        dto.setTime(new SimpleDateFormat("HH:mm:ss").format(new Date()));
+        dto.setTime(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
 
         String roomId = sessionRoom.get(session.getId());
         if (roomId == null) {
