@@ -1,9 +1,16 @@
 package com.example.todo_caled.task.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "tasks")
 public class Task {
 
@@ -17,11 +24,13 @@ public class Task {
     private String content;
 
     private LocalDateTime createdDate;
-    private LocalDateTime promiseDate;
+    private LocalDateTime promiseDate; // 날짜 + 시간
 
-    public Task() {
-        this.createdDate = LocalDateTime.now();
-    }
+    private String location;          // 장소
+    private Boolean shared;           // 공유 여부
+
+    private Long ownerId;             // 추후 회원구분
+    private Long calendarId;          // 캘린더 구분(필요시)
 
     public Task(String title, String content, LocalDateTime promiseDate) {
         this.title = title;
@@ -30,19 +39,9 @@ public class Task {
         this.promiseDate = promiseDate;
     }
 
-    // Getter & Setter
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
-
-    public LocalDateTime getCreatedDate() { return createdDate; }
-    public void setCreatedDate(LocalDateTime createdDate) { this.createdDate = createdDate; }
-
-    public LocalDateTime getPromiseDate() { return promiseDate; }
-    public void setPromiseDate(LocalDateTime promiseDate) { this.promiseDate = promiseDate; }
+    @PrePersist
+    public void onCreate() {
+        if (createdDate == null) createdDate = LocalDateTime.now();
+        if (shared == null) shared = false;
+    }
 }
