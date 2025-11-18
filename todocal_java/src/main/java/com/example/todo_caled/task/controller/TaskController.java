@@ -23,6 +23,16 @@ public class TaskController {
 
     @PostMapping
     public Task create(@RequestBody Task task) {
+
+        if (task.getPromiseDate() == null) {
+            throw new IllegalArgumentException("시작 시간은 필수입니다.");
+        }
+
+        // 종료시간 없으면 자동 +1시간
+        if (task.getEndDateTime() == null) {
+            task.setEndDateTime(task.getPromiseDate().plusHours(1));
+        }
+
         return taskService.createTask(task);
     }
 
@@ -31,6 +41,11 @@ public class TaskController {
             @PathVariable Long id,
             @RequestBody Task task
     ) {
+        // 종료시간 없으면 자동 +1시간
+        if (task.getPromiseDate() != null && task.getEndDateTime() == null) {
+            task.setEndDateTime(task.getPromiseDate().plusHours(1));
+        }
+
         return ResponseEntity.ok(taskService.updateTask(id, task));
     }
 
@@ -40,13 +55,11 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
 
-    // 날짜별
     @GetMapping("/date/{date}")
     public List<Task> byDate(@PathVariable String date) {
         return taskService.findByDate(LocalDate.parse(date));
     }
 
-    // 주간 스케줄표 구간 조회
     @GetMapping("/range")
     public List<Task> byRange(
             @RequestParam String start,

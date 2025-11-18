@@ -146,3 +146,16 @@
     border-radius: 0;
   }
 }
+
+.timeview-event {
+  position: absolute;
+  border-radius: 8px;
+  padding: 4px;
+  box-sizing: border-box;
+  cursor: pointer;  /* ✔ 마우스 포인터 변경 */
+  transition: transform 0.1s ease;
+}
+
+.timeview-event:hover {
+  transform: scale(1.02);   /* ✔ hover 시 약간 강조 효과 */
+}

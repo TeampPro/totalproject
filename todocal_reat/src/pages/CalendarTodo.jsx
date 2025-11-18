@@ -14,23 +14,29 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
       ? moment(editTodo.promiseDate).format("YYYY-MM-DD")
       : defaultDate ?? moment().format("YYYY-MM-DD"),
     time: editTodo ? moment(editTodo.promiseDate).format("HH:mm") : "",
+    endTime: editTodo?.endDateTime
+      ? moment(editTodo.endDateTime).format("HH:mm")
+      : "",
     location: editTodo?.location ?? "",
     shared: editTodo?.shared ?? false,
   });
 
   useEffect(() => {
-    if (isEdit) {
+    if (isEdit && editTodo) {
       setTodo({
         id: editTodo.id,
-        title: editTodo.title ?? "",
-        content: editTodo.content ?? "",
+        title: editTodo.title,
+        content: editTodo.content,
         date: moment(editTodo.promiseDate).format("YYYY-MM-DD"),
         time: moment(editTodo.promiseDate).format("HH:mm"),
-        location: editTodo.location ?? "",
-        shared: editTodo.shared ?? false,
+        endTime: editTodo.endDateTime
+          ? moment(editTodo.endDateTime).format("HH:mm")
+          : "",
+        location: editTodo.location,
+        shared: editTodo.shared,
       });
     }
-  }, [editTodo, isEdit]);
+  }, [editTodo]);
 
   const handleChange = (key) => (e) => {
     const value =
@@ -44,16 +50,19 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
       return;
     }
 
-    const promiseDate = todo.time
-      ? `${todo.date}T${todo.time}:00`
-      : `${todo.date}T00:00:00`;
+    const start = `${todo.date}T${todo.time || "00:00"}:00`;
+
+    const end = todo.endTime
+      ? `${todo.date}T${todo.endTime}:00`
+      : moment(start).add(1, "hour").format("YYYY-MM-DDTHH:mm:ss");
 
     const payload = {
-      title: todo.title.trim(),
-      content: todo.content ?? "",
-      promiseDate,
-      location: todo.location ?? "",
-      shared: todo.shared ?? false,
+      title: todo.title,
+      content: todo.content,
+      promiseDate: start,
+      endDateTime: end,
+      location: todo.location,
+      shared: todo.shared,
     };
 
     try {
@@ -61,15 +70,8 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
         ? await axios.put(`http://localhost:8080/api/tasks/${todo.id}`, payload)
         : await axios.post("http://localhost:8080/api/tasks", payload);
 
-      const saved = res.data;
-
-      if (isEdit) {
-        alert("할 일이 수정되었습니다.");
-      } else {
-        alert("할 일이 저장되었습니다.");
-      }
-
-      onSave(saved);
+      alert(isEdit ? "할 일이 수정되었습니다." : "할 일이 저장되었습니다.");
+      onSave(res.data);
       onClose();
     } catch (err) {
       console.error("❌ 저장 실패:", err);
@@ -106,11 +108,20 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
         </label>
 
         <label>
-          시간
+          시작 시간
           <input
             type="time"
             value={todo.time}
             onChange={handleChange("time")}
+          />
+        </label>
+
+        <label>
+          종료 시간
+          <input
+            type="time"
+            value={todo.endTime}
+            onChange={handleChange("endTime")}
           />
         </label>
 

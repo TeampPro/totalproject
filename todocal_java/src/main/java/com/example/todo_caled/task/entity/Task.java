@@ -2,12 +2,10 @@ package com.example.todo_caled.task.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@Setter
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -24,23 +22,17 @@ public class Task {
     private String content;
 
     private LocalDateTime createdDate;
-    private LocalDateTime promiseDate; // 날짜 + 시간
 
-    private String location;          // 장소
-    private Boolean shared;           // 공유 여부
+    private LocalDateTime promiseDate;   // 시작 시간
 
-    private Long ownerId;             // 추후 회원구분
-    private Long calendarId;          // 캘린더 구분(필요시)
+    private LocalDateTime endDateTime;   // 종료 시간
 
-    public Task(String title, String content, LocalDateTime promiseDate) {
-        this.title = title;
-        this.content = content;
-        this.createdDate = LocalDateTime.now();
-        this.promiseDate = promiseDate;
-    }
+    private String location;
+
+    private Boolean shared;
 
     @PrePersist
-    public void onCreate() {
+    public void prePersist() {
         if (createdDate == null) createdDate = LocalDateTime.now();
         if (shared == null) shared = false;
     }

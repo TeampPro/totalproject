@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
-
 import java.util.List;
 
 @Service
@@ -14,15 +13,6 @@ import java.util.List;
 public class TaskService {
 
     private final TaskRepository taskRepository;
-
-    private LocalDateTime merge(LocalDate date, String time) {
-        if (time == null || time.isBlank()) return date.atStartOfDay();
-        return LocalDateTime.of(date, LocalTime.parse(time));
-    }
-
-    /* ===========================================
-        CRUD
-    ============================================ */
 
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
@@ -44,6 +34,9 @@ public class TaskService {
         if (newData.getPromiseDate() != null) {
             t.setPromiseDate(newData.getPromiseDate());
         }
+        if (newData.getEndDateTime() != null) {
+            t.setEndDateTime(newData.getEndDateTime());
+        }
 
         return taskRepository.save(t);
     }
@@ -52,9 +45,6 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
-    /* ===========================================
-        날짜 조회
-    ============================================ */
     public List<Task> findByDate(LocalDate date) {
         return taskRepository.findByPromiseDateBetween(
                 date.atStartOfDay(),
@@ -62,9 +52,6 @@ public class TaskService {
         );
     }
 
-    /* ===========================================
-        구간 조회 (주간 스케줄표)
-    ============================================ */
     public List<Task> findByRange(LocalDate start, LocalDate end) {
         return taskRepository.findByPromiseDateBetween(
                 start.atStartOfDay(),
