@@ -3,6 +3,8 @@ package com.example.todo_caled.users.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Table(name = "users")
 @Entity
 @Data
@@ -35,4 +37,9 @@ public class User {
 
     @Column(length = 255)
     private String profileImage; // 프로필 이미지 파일명
+
+    @Column(updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+
 }
