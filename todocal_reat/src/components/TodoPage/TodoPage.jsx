@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import TodoHeader from "../Header/TodoHeader.jsx";
 import TaskList from "../TaskList/TaskList";
 import classes from "../../styles/TodoPage/TodoPage.module.css";
 import moment from "moment";
@@ -60,7 +59,6 @@ const TodoPage = () => {
     <div className={classes.todoPageContainer}>
       {/* 상단 헤더 */}
       <div className={classes.todoHeaderContainer}>
-        <TodoHeader onChangeFilter={setFilter} active={filter} showAddButton={false} />
         <button className={classes.writeButton} onClick={handleAddClick}>
           글작성하기
         </button>
