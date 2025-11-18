@@ -5,6 +5,7 @@ import com.example.todo_caled.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,8 +19,8 @@ public class TodoController {
 
     // 전체 조회 (Calendar 하단/초기 로딩)
     @GetMapping("/all")
-    public List<Task> getAllTodos() {
-        return taskService.getAllTasks(); // ✅ 서비스 메서드명에 맞춤
+    public List<Task> getAllTodos(@RequestParam(required = false) String userId) { // ★ 변경
+        return taskService.getVisibleTasks(userId); // ★ 변경
     }
 
     // 생성 (Calendar + 버튼)

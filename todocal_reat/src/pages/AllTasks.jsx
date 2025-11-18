@@ -14,7 +14,20 @@ const AllTasks = ({ filter = "all" }) => {
   const [raw, setRaw] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/tasks")
+    // ★ userId 쿼리 추가
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const params = new URLSearchParams();
+
+    if (storedUser && storedUser.id) {
+      params.append("userId", storedUser.id);
+    }
+
+    const query = params.toString();
+    const url = query
+      ? `http://localhost:8080/api/tasks?${query}`
+      : "http://localhost:8080/api/tasks";
+
+    fetch(url)
       .then((res) => res.json())
       .then((data) => setRaw(data));
   }, []);
@@ -28,7 +41,7 @@ const AllTasks = ({ filter = "all" }) => {
 
     let filtered = raw
       .map((t) => ({ ...t, _m: normalize(t.promiseDate) }))
-      .filter((t) => t._m && t._m.isSameOrAfter(today)); // ✅ 오늘 이전 약속 제외
+      .filter((t) => t._m && t._m.isSameOrAfter(today)); // 오늘 이전 약속 제외
 
     if (filter === "week") {
       filtered = filtered.filter(
@@ -40,7 +53,6 @@ const AllTasks = ({ filter = "all" }) => {
           t._m.isSameOrAfter(startOfMonth) && t._m.isSameOrBefore(endOfMonth)
       );
     }
-    // 'shared'는 여기서 별도 처리 필요하면 분기 추가
 
     filtered.sort((a, b) => a._m.valueOf() - b._m.valueOf());
     return filtered.map(({ _m, ...rest }) => rest);

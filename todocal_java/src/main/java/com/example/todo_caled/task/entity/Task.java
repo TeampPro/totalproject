@@ -19,15 +19,27 @@ public class Task {
     private LocalDateTime createdDate;
     private LocalDateTime promiseDate;
 
+    @Column(length = 50)
+    private String ownerId;
+
+    private Boolean shared;
+
     public Task() {
         this.createdDate = LocalDateTime.now();
     }
-
     public Task(String title, String content, LocalDateTime promiseDate) {
+        // 초기 데이터는 ownerId = null, shared = true 로 넣음 (공유 일정 취급)
+        this(title, content, promiseDate, null, true);
+    }
+
+
+    public Task(String title, String content, LocalDateTime promiseDate, String ownerId, Boolean shared) {
         this.title = title;
         this.content = content;
         this.createdDate = LocalDateTime.now();
         this.promiseDate = promiseDate;
+        this.ownerId = ownerId;
+        this.shared = shared;
     }
 
     // Getter & Setter
@@ -45,4 +57,10 @@ public class Task {
 
     public LocalDateTime getPromiseDate() { return promiseDate; }
     public void setPromiseDate(LocalDateTime promiseDate) { this.promiseDate = promiseDate; }
+
+    public String getOwnerId() { return ownerId; }
+    public void setOwnerId(String ownerId) { this.ownerId = ownerId; }
+
+    public Boolean getShared() { return shared; }
+    public void setShared(Boolean shared) { this.shared = shared; }
 }

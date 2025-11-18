@@ -4,6 +4,7 @@ package com.example.todo_caled.task.controller;
 import com.example.todo_caled.task.entity.Task;
 import com.example.todo_caled.task.service.TaskService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,8 +20,10 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<Task> getAllTasks() {
-        return taskService.getAllTasks();
+    public List<Task> getAllTasks(
+            @RequestParam(required = false) String userId) {
+        // userId 가 없으면 공유 일정만, 있으면 "내 일정 + 공유 일정"
+        return taskService.getVisibleTasks(userId);
     }
 
     @GetMapping("/{id}")

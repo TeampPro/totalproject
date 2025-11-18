@@ -7,7 +7,9 @@ import moment from "moment";
 const normalize = (d) => {
   if (!d) return null;
   const m = moment(d, moment.ISO_8601, true);
-  return m.isValid() ? m.startOf("day") : moment(d, "YYYY-MM-DD", true).startOf("day");
+  return m.isValid()
+    ? m.startOf("day")
+    : moment(d, "YYYY-MM-DD", true).startOf("day");
 };
 
 const TodoPage = () => {
@@ -18,7 +20,20 @@ const TodoPage = () => {
 
   // 서버에서 실제 데이터 fetch
   useEffect(() => {
-    fetch("http://localhost:8080/api/tasks")
+    // ★ userId 쿼리 추가
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const params = new URLSearchParams();
+
+    if (storedUser && storedUser.id) {
+      params.append("userId", storedUser.id);
+    }
+
+    const query = params.toString();
+    const url = query
+      ? `http://localhost:8080/api/tasks?${query}`
+      : "http://localhost:8080/api/tasks";
+
+    fetch(url)
       .then((res) => res.json())
       .then((data) => setRawTasks(data))
       .catch((err) => console.error(err));
@@ -36,18 +51,21 @@ const TodoPage = () => {
       .filter((t) => t._m && t._m.isSameOrAfter(today)); // 오늘 이전 제외
 
     if (filter === "week") {
-      tasks = tasks.filter((t) => t._m.isBetween(startOfWeek, endOfWeek, null, "[]"));
+      tasks = tasks.filter((t) =>
+        t._m.isBetween(startOfWeek, endOfWeek, null, "[]")
+      );
     } else if (filter === "month") {
-      tasks = tasks.filter((t) => t._m.isBetween(startOfMonth, endOfMonth, null, "[]"));
+      tasks = tasks.filter((t) =>
+        t._m.isBetween(startOfMonth, endOfMonth, null, "[]")
+      );
     } else if (filter === "shared") {
-      tasks = tasks.filter((t) => t.shared === true);
+      tasks = tasks.filter((t) => t.shared === true); // 공유 일정만
     }
 
     tasks.sort((a, b) => a._m.valueOf() - b._m.valueOf());
     return tasks.map(({ _m, ...rest }) => rest);
   }, [rawTasks, filter]);
 
-  // 페이지네이션
   const startIdx = (currentPage - 1) * itemsPerPage;
   const pagedTasks = filteredTasks.slice(startIdx, startIdx + itemsPerPage);
   const totalPages = Math.ceil(filteredTasks.length / itemsPerPage);
@@ -58,17 +76,21 @@ const TodoPage = () => {
 
   return (
     <div className={classes.todoPageContainer}>
-      {/* 상단 헤더 */}
       <div className={classes.todoHeaderContainer}>
-        <TodoHeader onChangeFilter={setFilter} active={filter} showAddButton={false} />
+        <TodoHeader
+          onChangeFilter={setFilter}
+          active={filter}
+          showAddButton={false}
+        />
         <button className={classes.writeButton} onClick={handleAddClick}>
           글작성하기
         </button>
       </div>
 
-      {/* 리스트 */}
       <div className={classes.taskList}>
-        {pagedTasks.length === 0 && <div className={classes.empty}>데이터가 없습니다.</div>}
+        {pagedTasks.length === 0 && (
+          <div className={classes.empty}>데이터가 없습니다.</div>
+        )}
         {pagedTasks.map((task) => (
           <div key={task.id} className={classes.taskItem}>
             <h4>{task.title}</h4>
@@ -77,13 +99,14 @@ const TodoPage = () => {
         ))}
       </div>
 
-      {/* 페이지네이션 */}
       {totalPages > 1 && (
         <div className={classes.pagination}>
           {Array.from({ length: totalPages }, (_, i) => (
             <button
               key={i + 1}
-              className={`${classes.pageBtn} ${currentPage === i + 1 ? classes.activePage : ""}`}
+              className={`${classes.pageBtn} ${
+                currentPage === i + 1 ? classes.activePage : ""
+              }`}
               onClick={() => setCurrentPage(i + 1)}
             >
               {i + 1}
