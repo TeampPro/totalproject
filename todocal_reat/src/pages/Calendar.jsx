@@ -254,7 +254,7 @@ function Calendar({ onTodosChange }) {
               setShowModal(true);
             }}
           >
-            +
+            일정 추가
           </button>
         </div>
 
