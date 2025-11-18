@@ -1,40 +1,73 @@
 package com.example.todo_caled.task.controller;
 
-
 import com.example.todo_caled.task.entity.Task;
 import com.example.todo_caled.task.service.TaskService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/tasks")
+@RequiredArgsConstructor
 public class TaskController {
 
     private final TaskService taskService;
 
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
-    }
-
     @GetMapping
-    public List<Task> getAllTasks() {
+    public List<Task> all() {
         return taskService.getAllTasks();
     }
 
-    @GetMapping("/{id}")
-    public Optional<Task> getTask(@PathVariable Long id) {
-        return taskService.getTaskById(id);
+    @PostMapping
+    public Task create(@RequestBody Task task) {
+
+        if (task.getPromiseDate() == null) {
+            throw new IllegalArgumentException("시작 시간은 필수입니다.");
+        }
+
+        // 종료시간 없으면 자동 +1시간
+        if (task.getEndDateTime() == null) {
+            task.setEndDateTime(task.getPromiseDate().plusHours(1));
+        }
+
+        return taskService.createTask(task);
     }
 
-    @PostMapping
-    public Task createTask(@RequestBody Task task) {
-        return taskService.saveTask(task);
+    @PutMapping("/{id}")
+    public ResponseEntity<Task> update(
+            @PathVariable Long id,
+            @RequestBody Task task
+    ) {
+        // 종료시간 없으면 자동 +1시간
+        if (task.getPromiseDate() != null && task.getEndDateTime() == null) {
+            task.setEndDateTime(task.getPromiseDate().plusHours(1));
+        }
+
+        return ResponseEntity.ok(taskService.updateTask(id, task));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTask(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         taskService.deleteTask(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/date/{date}")
+    public List<Task> byDate(@PathVariable String date) {
+        return taskService.findByDate(LocalDate.parse(date));
+    }
+
+    @GetMapping("/range")
+    public List<Task> byRange(
+            @RequestParam String start,
+            @RequestParam String end
+    ) {
+        return taskService.findByRange(
+                LocalDate.parse(start),
+                LocalDate.parse(end)
+        );
     }
 }

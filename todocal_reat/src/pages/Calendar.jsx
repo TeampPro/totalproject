@@ -39,7 +39,7 @@ function Calendar({ onTodosChange }) {
   // ✅ Todo 불러오기
   const fetchTodos = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/todos/all");
+      const res = await axios.get("http://localhost:8080/api/tasks");
       const mapped = res.data.map((todo) => ({
         ...todo,
         tDate: todo.promiseDate
@@ -48,7 +48,7 @@ function Calendar({ onTodosChange }) {
       }));
       setTodos(mapped);
     } catch (err) {
-      console.error("❌ Todo 불러오기 실패:", err);
+      console.error("❌ Task 불러오기 실패:", err);
     }
   };
 
@@ -134,9 +134,11 @@ function Calendar({ onTodosChange }) {
       calendar.push(
         <div
           key={current.format("YYYY-MM-DD")}
-          className={`day-cell ${isDiffMonth ? "dimmed-date" : ""} ${
-            isToday ? "today" : ""
-          }`}
+          className={`day-cell 
+            ${isDiffMonth ? "dimmed-date" : ""} 
+            ${isToday ? "today" : ""} 
+            ${!isDiffMonth && isHoliday(current) ? "holiday" : ""}`
+          }
           onClick={() => setSelectedDate(current)}
         >
           <span className="weekday">{current.format("ddd")}</span>

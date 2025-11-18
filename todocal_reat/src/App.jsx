@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import Header from "./components/Header/Header.jsx";
 import MenuBar from "./components/MenuBar/MenuBar.jsx";
 import TodoHeader from "./components/Header/TodoHeader.jsx";
 
@@ -22,6 +21,7 @@ import InvitePage from "./pages/InvitePage.jsx"
 import ChatRoomWrapper from "./components/Chat/ChatRoomWrapper.jsx"
 
 import "./App.css";
+import TimeHome from "./components/TimeCalendar/TimeHome.jsx";
 
 function App() {
   const location = useLocation();
@@ -34,16 +34,14 @@ function App() {
 
   const [taskFilter, setTaskFilter] = useState("all");
   const [refreshKey, setRefreshKey] = useState(0);
-  const handleTodosChange = () => setRefreshKey((prev) => prev + 1);
-``
+  const handleTodosChange = () => setRefreshKey((prev) => prev + 1); 
+  
   const handleFilterChange = (filterType) => {
     setTaskFilter(filterType);
   };
 
   return (
     <>
-      {!isLoginOrSignUpPage && !isMyPage && !isTodoPage && <Header />}
-
       <div className="main-layout">
         {!isLoginOrSignUpPage && !isChat && !isMyPage && !isTodoPage && (
           <div className="dashboard">
@@ -52,7 +50,7 @@ function App() {
             </div>
 
             <div className="calendar-widget">
-              <Calendar onTodosChange={handleTodosChange} />
+              <TimeHome onTodosChange={handleTodosChange} />
             </div>
 
             <div className="bottom-widgets">

@@ -187,3 +187,15 @@
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* 🔥 공휴일 날짜 숫자 빨간색 */
+.day-cell.holiday .date-number {
+  color: red !important;
+  font-weight: 700;
+}
+
+/* 🔥 공휴일 이름도 빨간색 */
+.day-cell.holiday .holiday-name {
+  color: red !important;
+  font-weight: 600;
+}
