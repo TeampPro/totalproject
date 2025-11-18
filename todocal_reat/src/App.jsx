@@ -17,6 +17,9 @@ import MyPage from "./pages/MyPage.jsx";
 import MainPage from "./pages/MainPage.jsx";
 import TodoPage from "./components/TodoPage/TodoPage.jsx";
 import InvitePage from "./pages/InvitePage.jsx"
+import BoardHome from "./components/Board/BoardHome.jsx";
+import PostDetail from "./components/Board/PostDetail.jsx";
+import PostWrite from "./components/Board/PostWrite.jsx";
 
 import ChatRoomWrapper from "./components/Chat/ChatRoomWrapper.jsx"
 
@@ -31,6 +34,8 @@ function App() {
   const isChat = location.pathname.startsWith("/chat");
   const isMyPage = location.pathname === "/myPage";
   const isTodoPage = location.pathname === "/todo";
+  const isBoardDetail = location.pathname.startsWith("/board/");
+
 
   const [taskFilter, setTaskFilter] = useState("all");
   const [refreshKey, setRefreshKey] = useState(0);
@@ -43,31 +48,30 @@ function App() {
   return (
     <>
       <div className="main-layout">
-        {!isLoginOrSignUpPage && !isChat && !isMyPage && !isTodoPage && (
-          <div className="dashboard">
-            <div className="weather-widget">
-              <WeatherBoard />
-            </div>
-
-            <div className="calendar-widget">
-              <TimeHome onTodosChange={handleTodosChange} />
-            </div>
-
-            <div className="bottom-widgets">
-              <div className="todo-widget">
-                <TodoHeader
-                  active={taskFilter}
-                  onChangeFilter={handleFilterChange}
-                  showAddButton={true} // 메인에서는 + 버튼 표시
-                />
-                <AllTasks key={refreshKey} filter={taskFilter} />
+        {!isLoginOrSignUpPage &&
+          !isChat &&
+          !isMyPage &&
+          !isTodoPage &&
+          !isBoardDetail && (
+            <div className="dashboard">
+              <div className="weather-widget">
+                <WeatherBoard />
               </div>
-              <div className="map-widget">
-                <KakaoMapBox />
+
+              <div className="calendar-widget">
+                <TimeHome onTodosChange={handleTodosChange} />
+              </div>
+
+              <div className="bottom-widgets">
+                <div className="todo-widget">
+                  <BoardHome /> {/* ← 게시판으로 변경 */}
+                </div>
+                <div className="map-widget">
+                  <KakaoMapBox />
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         <div className="content">
           <Routes>
@@ -75,11 +79,11 @@ function App() {
             <Route path="/signup" element={<SignUp />} />
             <Route path="/beLogin" element={<BeLogin />} />
             <Route path="/upload" element={<Upload />} />
-
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/chat/:roomId" element={<ChatRoomWrapper />} />
             <Route path="/chat/invite/:code" element={<InvitePage />} />
-
+            <Route path="/board/:id" element={<PostDetail />} />
+            <Route path="/board/write" element={<PostWrite />} />
             <Route path="/main" element={<MainPage />} />
             <Route path="/myPage" element={<MyPage />} />
             <Route path="/todo" element={<TodoPage />} /> {/* TodoPage 단독 */}

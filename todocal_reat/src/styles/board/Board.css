@@ -1,0 +1,218 @@
+/* ================================
+   기본 컨테이너
+================================ */
+.board-container {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================================
+   상단 영역 (탭 + 글쓰기)
+================================ */
+.board-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+/* 탭 */
+.board-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.board-tab {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background-color: #e5e5e5;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.board-tab.active {
+  background-color: #1976d2;
+  color: #fff;
+  font-weight: 600;
+}
+
+.board-tab:hover {
+  background-color: #d0d0d0;
+}
+
+/* 글쓰기 버튼 */
+.board-write-btn {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: #1976d2;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.board-write-btn:hover {
+  background-color: #0d47a1;
+}
+
+/* ================================
+   네이버 카페 스타일 "헤더"
+================================ */
+.board-header {
+  display: grid;
+  grid-template-columns: 1fr 120px 120px 80px;
+  padding: 10px 6px;
+  border-bottom: 2px solid #e2e2e2;
+  font-weight: 700;
+  font-size: 14px;
+  color: #222;
+  background: #fafafa;
+}
+
+.board-header span {
+  display: flex;
+  align-items: center;
+}
+
+/* ================================
+   게시글 리스트
+================================ */
+.board-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 게시글 한 줄 (네이버 카페 스타일) */
+.board-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 120px 80px;
+  padding: 10px 6px;
+  border-bottom: 1px solid #f2f2f2;
+  cursor: pointer;
+  transition: background 0.12s ease-in-out;
+  font-size: 14px;
+}
+
+.board-row:hover {
+  background: #fafafa;
+}
+
+/* 공지 강조 */
+.board-row.notice {
+  background: #fff7f7;
+  font-weight: 600;
+}
+
+.notice-text {
+  color: #d60000;
+  font-weight: 700;
+}
+
+/* ================================
+   제목 (● / 공지 + 제목 + 댓글수)
+================================ */
+.col-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 점 또는 공지 */
+.post-prefix {
+  width: 32px;
+  text-align: center;
+  font-size: 14px;
+  color: #333;
+}
+
+/* 제목 */
+.post-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+}
+
+/* 댓글 수 */
+.comment-count {
+  font-size: 13px;
+  color: #ff0033;
+}
+
+/* ================================
+   오른쪽 정보 (작성자 / 작성일 / 조회수)
+================================ */
+.col-writer,
+.col-date,
+.col-views {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+
+.col-writer {
+  color: #444;
+}
+
+.col-date {
+  color: #999;
+}
+
+.col-views {
+  color: #999;
+  justify-content: flex-end;
+}
+
+/* ================================
+   상태 메시지
+================================ */
+.board-info,
+.board-empty,
+.board-error {
+  font-size: 0.85rem;
+  color: #666;
+  text-align: center;
+  padding: 16px 0;
+}
+
+.board-error {
+  color: #c62828;
+}
+
+/* ================================
+   페이지네이션
+================================ */
+.pagination {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.pagination button {
+  padding: 6px 12px;
+  background: #f1f1f1;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background: #e5e5e5;
+  color: #999;
+  cursor: default;
+}
+
+.page-number {
+  font-size: 14px;
+  color: #444;
+}
