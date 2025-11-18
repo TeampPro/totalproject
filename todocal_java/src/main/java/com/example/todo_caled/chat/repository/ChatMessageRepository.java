@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     List<ChatMessage> findByRoomIdOrderBySentAtAsc(String roomId);
+    void deleteByRoomId(String roomId);
 
     @Modifying
     @Query("DELETE FROM ChatMessage m WHERE m.sentAt < :threshold")

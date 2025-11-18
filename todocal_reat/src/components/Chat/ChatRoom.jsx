@@ -1,13 +1,17 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
-import PropTypes from "prop-types";
+import { useLocation, useParams } from "react-router-dom";
 import axios from "axios";
 import { fetchMessages } from "../../api/chatApi";
 
 import "../../styles/ChatRoom.css";
 
-export default function ChatRoom({ room }) {
+export default function ChatRoom() {
   const location = useLocation();
+  const { roomId } = useParams();
+
+  // ✅ 방 제목: 라우터 state에서 우선 가져오고, 없으면 나중에 서버에서 조회
+  const initialRoomName = location.state?.roomName || "";
+  const [roomName, setRoomName] = useState(initialRoomName);
 
   const [memberName, setMemberName] = useState("");
   const [messages, setMessages] = useState([]);
@@ -23,28 +27,21 @@ export default function ChatRoom({ room }) {
   const reconnectTimer = useRef(null);
   const messagesEndRef = useRef(null);
 
-  /* 🔥 추가된 부분: 채팅창 스크롤 상태 관리 */
-  const chatBoxRef = useRef(null); 
+  // 스크롤 관련
+  const chatBoxRef = useRef(null);
   const [autoScroll, setAutoScroll] = useState(true);
 
-  // 🔥 사용자 스크롤 시 자동 스크롤 여부 판단
   const handleScroll = () => {
     if (!chatBoxRef.current) return;
-
     const { scrollTop, clientHeight, scrollHeight } = chatBoxRef.current;
-    
-    // 사용자가 거의 맨 아래 보고 있을 때만 autoScroll 유지
     const isBottom = scrollHeight - scrollTop - clientHeight < 50;
-
     setAutoScroll(isBottom);
   };
-  /* 🔥 추가 끝 */
 
-  // memberName 초기화
+  // ✅ memberName 초기화
   useEffect(() => {
     const nameFromState = location.state?.memberName;
     const nameFromStorage = localStorage.getItem("memberName");
-
     const finalName = nameFromState || nameFromStorage;
 
     if (!finalName) {
@@ -54,13 +51,33 @@ export default function ChatRoom({ room }) {
 
     setMemberName(finalName);
     nickname.current = finalName;
-  }, []);
+  }, [location.state]);
+
+  // ✅ 방 이름이 없으면 서버에서 다시 조회 (GET /api/chat/rooms/{roomId} 기준)
+  useEffect(() => {
+    if (roomName) return; // 이미 state에 있으면 건너뜀
+
+    const fetchRoomInfo = async () => {
+      try {
+        const res = await axios.get(`/api/chat/rooms/${roomId}`);
+        if (res.data?.name) {
+          setRoomName(res.data.name);
+        }
+      } catch (err) {
+        console.error("채팅방 정보 조회 실패:", err);
+        // 여기서 에러는 그냥 로그만 찍고, 제목은 roomId로만 표시
+      }
+    };
+
+    fetchRoomInfo();
+  }, [roomId, roomName]);
 
   const connectWebSocket = () => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) return;
 
+    // ✅ roomId 사용
     const socket = new WebSocket(
-      `ws://localhost:8080/ws/chat?roomId=${room.id}&memberName=${nickname.current}`
+      `ws://localhost:8080/ws/chat?roomId=${roomId}&memberName=${nickname.current}`
     );
 
     ws.current = socket;
@@ -83,7 +100,7 @@ export default function ChatRoom({ room }) {
         return;
       }
 
-      if (data.roomId === room.id) {
+      if (data.roomId === roomId) {
         setMessages((prev) => [...prev, data]);
       }
     };
@@ -96,7 +113,16 @@ export default function ChatRoom({ room }) {
       console.warn("❌ WebSocket 종료됨", e.code, e.reason);
       setIsConnected(false);
 
-      if (e.code === 1008 && e.reason === "DUPLICATE_SESSION") return;
+      if (e.code === 1000) {
+        console.log("✅ 정상 종료이므로 재연결하지 않습니다.");
+        return;
+      }
+
+      if (e.code === 1008 && e.reason === "DUPLICATE_SESSION") {
+        console.warn("중복 접속으로 기존 세션이 정리되었습니다. 재연결 중단.");
+        return;
+      }
+
       if (e.code === 1008 && e.reason.includes("입장")) {
         alert("채팅방 입장 권한이 없습니다.");
         return;
@@ -119,16 +145,16 @@ export default function ChatRoom({ room }) {
     return () => {
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
       if (ws.current) {
-        ws.current.close();
+        ws.current.close(1000, "COMPONENT_UNMOUNT");
         ws.current = null;
       }
     };
   }, [memberName]);
 
-  // 메시지 로드
+  // ✅ 메시지 로드 (roomId 사용)
   useEffect(() => {
     const loadOldMessages = async () => {
-      const data = await fetchMessages(room.id);
+      const data = await fetchMessages(roomId);
       setMessages(
         data.length > 0
           ? data
@@ -136,9 +162,9 @@ export default function ChatRoom({ room }) {
       );
     };
     loadOldMessages();
-  }, [room.id]);
+  }, [roomId]);
 
-  // 🔥 자동 스크롤 (자동 스크롤 켜져 있을 때만)
+  // 자동 스크롤
   useEffect(() => {
     if (autoScroll && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -158,7 +184,7 @@ export default function ChatRoom({ room }) {
       type: "chat",
       sender: nickname.current,
       message: msg,
-      roomId: room.id,
+      roomId, // ✅ roomId 사용
     };
 
     ws.current.send(JSON.stringify(payload));
@@ -168,7 +194,7 @@ export default function ChatRoom({ room }) {
   // 초대 링크 생성
   const createInvite = async () => {
     try {
-      const res = await axios.post(`/api/chat/rooms/${room.id}/invite`);
+      const res = await axios.post(`/api/chat/rooms/${roomId}/invite`);
       const fullLink = window.location.origin + res.data;
       setInviteLink(fullLink);
       setShowModal(true);
@@ -184,10 +210,9 @@ export default function ChatRoom({ room }) {
 
   return (
     <div className="chat-room">
-
-      {/* 상단 */}
+      {/* 상단 헤더 */}
       <div className="chat-header">
-        <h2>💬 {room.name}</h2>
+        <h2>💬 {roomName || `채팅방 (${roomId})`}</h2>
         <div>
           <span className={isConnected ? "chat-connection" : "chat-disconnected"}>
             {isConnected ? "● 연결됨" : "● 끊김"}
@@ -212,11 +237,13 @@ export default function ChatRoom({ room }) {
       <div
         className="chat-messages"
         ref={chatBoxRef}
-        onScroll={handleScroll}   // 🔥 스크롤 이벤트 추가
+        onScroll={handleScroll}
       >
         {messages.map((m, i) =>
           m.systemMessage ? (
-            <div key={i} className="system-message">{m.message}</div>
+            <div key={i} className="system-message">
+              {m.message}
+            </div>
           ) : (
             <div key={i}>
               <b>{m.sender}</b>: {m.message}{" "}
@@ -227,7 +254,7 @@ export default function ChatRoom({ room }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 입력창 */}
+      {/* 입력 영역 */}
       <div className="chat-input-wrapper">
         <textarea
           value={msg}
@@ -262,10 +289,3 @@ export default function ChatRoom({ room }) {
     </div>
   );
 }
-
-ChatRoom.propTypes = {
-  room: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string,
-  }).isRequired,
-};
