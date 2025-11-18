@@ -6,29 +6,29 @@ function UserInfo({ onLogout }) {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
 
-  // ✅ 안전한 user 파싱
-  const user = (() => {
-    try {
-      return JSON.parse(localStorage.getItem("user"));
-    } catch {
-      return null;
-    }
-  })();
-
-  // ✅ API baseURL 환경변수
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
   useEffect(() => {
-    if (!user) {
-      navigate("/");
-      return;
-    }
+    // ✅ 이 안에서만 localStorage 읽고, 의존성에 'user' 안 넣기
+    try {
+      const raw = localStorage.getItem("user");
+      const parsed = raw ? JSON.parse(raw) : null;
 
-    axios
-      .get(`${API_BASE_URL}/api/user/${user.id}`)
-      .then((res) => setUserInfo(res.data))
-      .catch((err) => console.error("유저 정보 불러오기 실패:", err));
-  }, [user, navigate, API_BASE_URL]);
+      if (!parsed) {
+        navigate("/");
+        return;
+      }
+
+      axios
+        .get(`${API_BASE_URL}/api/user/${parsed.id}`)
+        .then((res) => setUserInfo(res.data))
+        .catch((err) => console.error("유저 정보 불러오기 실패:", err));
+    } catch (e) {
+      console.error("user 파싱 실패:", e);
+      navigate("/");
+    }
+  }, [navigate, API_BASE_URL]); // ✅ user 제거
 
   const handleMyPage = () => navigate("/myPage");
 

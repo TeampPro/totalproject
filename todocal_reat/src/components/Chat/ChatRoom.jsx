@@ -4,47 +4,71 @@ import PropTypes from "prop-types";
 import axios from "axios";
 import { fetchMessages } from "../../api/chatApi";
 
+import "../../styles/ChatRoom.css";
+
 export default function ChatRoom({ room }) {
   const location = useLocation();
+
+  const [memberName, setMemberName] = useState("");
   const [messages, setMessages] = useState([]);
+  const [members, setMembers] = useState([]);
   const [msg, setMsg] = useState("");
+
   const [inviteLink, setInviteLink] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
 
   const ws = useRef(null);
+  const nickname = useRef("");
   const reconnectTimer = useRef(null);
-  const messagesEndRef = useRef(null); // ✅ 새 메시지 스크롤 기준점
+  const messagesEndRef = useRef(null);
 
-  const memberName =
-    location.state?.memberName || localStorage.getItem("memberName") || "guest";
-  const nickname = useRef(memberName);
+  /* 🔥 추가된 부분: 채팅창 스크롤 상태 관리 */
+  const chatBoxRef = useRef(null); 
+  const [autoScroll, setAutoScroll] = useState(true);
 
-  // ✅ 기존 메시지 로드
+  // 🔥 사용자 스크롤 시 자동 스크롤 여부 판단
+  const handleScroll = () => {
+    if (!chatBoxRef.current) return;
+
+    const { scrollTop, clientHeight, scrollHeight } = chatBoxRef.current;
+    
+    // 사용자가 거의 맨 아래 보고 있을 때만 autoScroll 유지
+    const isBottom = scrollHeight - scrollTop - clientHeight < 50;
+
+    setAutoScroll(isBottom);
+  };
+  /* 🔥 추가 끝 */
+
+  // memberName 초기화
   useEffect(() => {
-    const loadOldMessages = async () => {
-      const data = await fetchMessages(room.id);
-      setMessages(
-        data.length > 0
-          ? data
-          : [{ sender: "SYSTEM", message: "아직 메시지가 없습니다.", time: "" }]
-      );
-    };
-    loadOldMessages();
-  }, [room.id]);
+    const nameFromState = location.state?.memberName;
+    const nameFromStorage = localStorage.getItem("memberName");
 
-  // ✅ WebSocket 연결
+    const finalName = nameFromState || nameFromStorage;
+
+    if (!finalName) {
+      alert("닉네임 정보를 찾을 수 없습니다. 초대 링크로 다시 입장해주세요.");
+      return;
+    }
+
+    setMemberName(finalName);
+    nickname.current = finalName;
+  }, []);
+
   const connectWebSocket = () => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) return;
 
     const socket = new WebSocket(
       `ws://localhost:8080/ws/chat?roomId=${room.id}&memberName=${nickname.current}`
     );
+
     ws.current = socket;
 
     socket.onopen = () => {
       console.log("✅ WebSocket 연결됨");
       setIsConnected(true);
+
       if (reconnectTimer.current) {
         clearTimeout(reconnectTimer.current);
         reconnectTimer.current = null;
@@ -53,6 +77,12 @@ export default function ChatRoom({ room }) {
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
+
+      if (Array.isArray(data.members)) {
+        setMembers(data.members);
+        return;
+      }
+
       if (data.roomId === room.id) {
         setMessages((prev) => [...prev, data]);
       }
@@ -66,12 +96,12 @@ export default function ChatRoom({ room }) {
       console.warn("❌ WebSocket 종료됨", e.code, e.reason);
       setIsConnected(false);
 
-      if (e.reason.includes("입장") || e.code === 1008) {
+      if (e.code === 1008 && e.reason === "DUPLICATE_SESSION") return;
+      if (e.code === 1008 && e.reason.includes("입장")) {
         alert("채팅방 입장 권한이 없습니다.");
         return;
       }
 
-      // 자동 재연결
       if (!reconnectTimer.current) {
         reconnectTimer.current = setTimeout(() => {
           console.log("🔁 재연결 시도 중...");
@@ -81,34 +111,41 @@ export default function ChatRoom({ room }) {
     };
   };
 
-  // ✅ WebSocket 연결 (중복 방지 포함)
   useEffect(() => {
-    // 이미 연결되어 있으면 다시 연결하지 않음
-    if (ws.current && ws.current.readyState !== WebSocket.CLOSED) {
-      console.log("⚠️ 이미 WebSocket 연결 중 — 중복 연결 방지");
-      return;
-    }
+    if (!memberName) return;
 
     connectWebSocket();
 
-    // cleanup
     return () => {
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
       if (ws.current) {
         ws.current.close();
-        ws.current = null; // ✅ 완전 초기화
+        ws.current = null;
       }
     };
-  }, []);
+  }, [memberName]);
 
-  // ✅ 새 메시지 추가 시 스크롤 맨 아래로
+  // 메시지 로드
   useEffect(() => {
-    if (messagesEndRef.current) {
+    const loadOldMessages = async () => {
+      const data = await fetchMessages(room.id);
+      setMessages(
+        data.length > 0
+          ? data
+          : [{ sender: "SYSTEM", message: "아직 메시지가 없습니다.", time: "" }]
+      );
+    };
+    loadOldMessages();
+  }, [room.id]);
+
+  // 🔥 자동 스크롤 (자동 스크롤 켜져 있을 때만)
+  useEffect(() => {
+    if (autoScroll && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, autoScroll]);
 
-  // ✅ 메시지 전송
+  // 메시지 전송
   const sendMessage = () => {
     if (!msg.trim()) return;
 
@@ -128,7 +165,7 @@ export default function ChatRoom({ room }) {
     setMsg("");
   };
 
-  // ✅ 초대 링크 생성
+  // 초대 링크 생성
   const createInvite = async () => {
     try {
       const res = await axios.post(`/api/chat/rooms/${room.id}/invite`);
@@ -146,50 +183,52 @@ export default function ChatRoom({ room }) {
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+    <div className="chat-room">
+
+      {/* 상단 */}
+      <div className="chat-header">
         <h2>💬 {room.name}</h2>
         <div>
-          <span
-            style={{
-              color: isConnected ? "green" : "red",
-              fontWeight: "bold",
-              marginRight: 10,
-            }}
-          >
+          <span className={isConnected ? "chat-connection" : "chat-disconnected"}>
             {isConnected ? "● 연결됨" : "● 끊김"}
           </span>
           <button onClick={createInvite}>🔗 초대</button>
         </div>
       </div>
 
+      {/* 참여자 목록 */}
+      <div className="chat-members-box">
+        <b>참여자 ({members.length})</b>
+        <div className="chat-members-list">
+          {members.map((m, i) => (
+            <span key={i} className="chat-member">
+              • {m}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* 메시지 리스트 */}
       <div
-        style={{
-          border: "1px solid #ccc",
-          height: 300,
-          overflowY: "auto",
-          padding: 10,
-          marginBottom: 10,
-        }}
+        className="chat-messages"
+        ref={chatBoxRef}
+        onScroll={handleScroll}   // 🔥 스크롤 이벤트 추가
       >
-        {messages.map((m, i) => (
-          <div key={i}>
-            <b>{m.sender}</b>: {m.message}{" "}
-            <span style={{ fontSize: "0.8em" }}>({m.time})</span>
-          </div>
-        ))}
-        {/* 👇 스크롤 기준점 */}
+        {messages.map((m, i) =>
+          m.systemMessage ? (
+            <div key={i} className="system-message">{m.message}</div>
+          ) : (
+            <div key={i}>
+              <b>{m.sender}</b>: {m.message}{" "}
+              <span style={{ fontSize: "0.8em" }}>({m.time})</span>
+            </div>
+          )
+        )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* ✅ 메시지 입력 + 전송 (Enter=전송, Shift+Enter=줄바꿈) */}
-      <div style={{ display: "flex", gap: 8 }}>
+      {/* 입력창 */}
+      <div className="chat-input-wrapper">
         <textarea
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
@@ -201,56 +240,18 @@ export default function ChatRoom({ room }) {
           }}
           placeholder="메시지를 입력하세요 (Shift+Enter로 줄바꿈)"
           rows={2}
-          style={{
-            flex: 1,
-            resize: "none",
-            padding: 8,
-            borderRadius: 8,
-            border: "1px solid #ccc",
-          }}
+          className="chat-textarea"
         />
-        <button
-          onClick={sendMessage}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 8,
-            border: "none",
-            backgroundColor: "#4caf50",
-            color: "white",
-            fontWeight: "bold",
-            cursor: "pointer",
-          }}
-        >
+
+        <button onClick={sendMessage} className="chat-send-btn">
           보내기
         </button>
       </div>
 
-      {/* ✅ 초대 링크 모달 */}
+      {/* 초대 모달 */}
       {showModal && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-          onClick={() => setShowModal(false)}
-        >
-          <div
-            style={{
-              background: "white",
-              padding: 20,
-              borderRadius: 10,
-              minWidth: 300,
-              textAlign: "center",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="invite-modal-bg" onClick={() => setShowModal(false)}>
+          <div className="invite-modal" onClick={(e) => e.stopPropagation()}>
             <h3>초대 링크</h3>
             <p style={{ wordBreak: "break-all" }}>{inviteLink}</p>
             <button onClick={copyLink}>복사</button>

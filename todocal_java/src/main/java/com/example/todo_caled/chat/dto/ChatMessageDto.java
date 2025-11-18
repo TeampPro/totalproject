@@ -13,4 +13,6 @@ public class ChatMessageDto {
     private String message;
     private String time;
     private String roomId;      // 채팅방 구분
+
+    private boolean systemMessage;
 }

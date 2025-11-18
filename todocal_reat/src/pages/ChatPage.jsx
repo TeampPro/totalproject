@@ -7,11 +7,11 @@ export default function ChatPage({ user }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // ✅ 로그인 사용자 이름 불러오기
+    // 로그인 사용자 이름 불러오기
     const memberName =
       user?.name || localStorage.getItem("memberName") || "guest";
 
-    // ✅ localStorage에 로그인 이름 저장
+    // localStorage에 로그인 이름 저장
     localStorage.setItem("memberName", memberName);
 
     const createRoom = async () => {

@@ -10,6 +10,7 @@ import com.example.todo_caled.chat.repository.ChatRoomMemberRepository;
 import com.example.todo_caled.chat.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -165,4 +166,31 @@ public class ChatService {
                         .build())
                 .collect(Collectors.toList());
     }
+
+    // 채팅방 30일 제한 그이후에 삭제
+    @Transactional
+    public void cleanupOldMessages() {
+        chatMessageRepository.deleteOldMessages(LocalDateTime.now().minusDays(30));
+    }
+
+//    @Transactional 임시
+//    public boolean updateNickname(String roomId, String oldName, String newName) {
+//        // 이미 존재하는 닉네임인지 확인
+//        if(chatRoomMemberRepository.existsByRoomIdAndMemberName(roomId, newName)) {
+//            return false; // 중복 방지
+//        }
+//
+//        // 기존 멤버 조회
+//        ChatRoomMember member = chatRoomMemberRepository
+//                .findByRoomIdAndMemberName(roomId, oldName)
+//                .orElse(null);
+//        if (member == null) {
+//            return false;
+//        }
+//
+//        member.setMemberName(newName);
+//        chatRoomRepository.save(member);
+//
+//        return true;
+//    }
 }

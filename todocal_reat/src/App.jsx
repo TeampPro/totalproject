@@ -4,7 +4,7 @@ import Header from "./components/Header/Header.jsx";
 import MenuBar from "./components/MenuBar/MenuBar.jsx";
 import TodoHeader from "./components/Header/TodoHeader.jsx";
 
-import WeatherBoard from "./pages/WeatherBoard";
+import WeatherBoard from "./pages/WeatherBoard";  
 import Calendar from "./pages/Calendar.jsx";
 import AllTasks from "./pages/AllTasks";
 import KakaoMapBox from "./pages/KakaoMapBox";
@@ -17,6 +17,9 @@ import Upload from "./pages/Upload.jsx";
 import MyPage from "./pages/MyPage.jsx";
 import MainPage from "./pages/MainPage.jsx";
 import TodoPage from "./components/TodoPage/TodoPage.jsx";
+import InvitePage from "./pages/InvitePage.jsx"
+
+import ChatRoomWrapper from "./components/Chat/ChatRoomWrapper.jsx"
 
 import "./App.css";
 
@@ -25,7 +28,7 @@ function App() {
 
   const isLoginOrSignUpPage =
     location.pathname === "/" || location.pathname === "/signup";
-  const isChat = location.pathname === "/chat";
+  const isChat = location.pathname.startsWith("/chat");
   const isMyPage = location.pathname === "/myPage";
   const isTodoPage = location.pathname === "/todo";
 
@@ -74,10 +77,15 @@ function App() {
             <Route path="/signup" element={<SignUp />} />
             <Route path="/beLogin" element={<BeLogin />} />
             <Route path="/upload" element={<Upload />} />
+
             <Route path="/chat" element={<ChatPage />} />
+            <Route path="/chat/:roomId" element={<ChatRoomWrapper />} />
+            <Route path="/chat/invite/:code" element={<InvitePage />} />
+
             <Route path="/main" element={<MainPage />} />
             <Route path="/myPage" element={<MyPage />} />
             <Route path="/todo" element={<TodoPage />} /> {/* TodoPage 단독 */}
+            <Route path="/chat/invite/:code" element={<InvitePage />} />
           </Routes>
         </div>
       </div>
