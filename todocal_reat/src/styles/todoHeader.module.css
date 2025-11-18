@@ -1,0 +1,66 @@
+.todoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background-color: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.todoNav {
+  display: flex;
+  gap: 10px; /* 버튼 간격 */
+}
+
+.todoBtn {
+  background: none;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #444;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.todoBtn:hover {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+/* ✅ 활성 버튼 상태 */
+.todoBtn.active {
+  background-color: #1976d2;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3);
+}
+
+/* ✅ 일정 추가 버튼 */
+.todoAddButton {
+  font-size: 1.2rem;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.todoAddButton:hover {
+  background-color: #0d47a1;
+  transform: scale(1.05);
+}
+
+.todoAddButton:active {
+  background-color: #0b3c91;
+}

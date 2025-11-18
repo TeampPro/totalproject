@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import MenuBar from "./components/MenuBar/MenuBar.jsx";
+import TodoHeader from "./components/Header/TodoHeader.jsx";
 
 import WeatherBoard from "./pages/WeatherBoard";
 import Calendar from "./pages/Calendar.jsx";
@@ -38,8 +39,6 @@ function App() {
 
   return (
     <>
-      
-
       <div className="main-layout">
         {!isLoginOrSignUpPage && !isChat && !isMyPage && !isTodoPage && (
           <div className="dashboard">
@@ -53,6 +52,11 @@ function App() {
 
             <div className="bottom-widgets">
               <div className="todo-widget">
+                <TodoHeader
+                  active={taskFilter}
+                  onChangeFilter={handleFilterChange}
+                  showAddButton={true} // 메인에서는 + 버튼 표시
+                />
                 <AllTasks key={refreshKey} filter={taskFilter} />
               </div>
               <div className="map-widget">
