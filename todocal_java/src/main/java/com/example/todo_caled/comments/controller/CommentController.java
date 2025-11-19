@@ -3,12 +3,12 @@ package com.example.todo_caled.comments.controller;
 import com.example.todo_caled.comments.dto.CommentCreateDto;
 import com.example.todo_caled.comments.dto.CommentResponseDto;
 import com.example.todo_caled.comments.dto.CommentUpdateDto;
-import com.example.todo_caled.comments.entity.Comment;
 import com.example.todo_caled.comments.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.List;
 
 @RestController
@@ -24,26 +24,33 @@ public class CommentController {
         return commentService.list(postId);
     }
 
-    // 등록 (댓글 + 대댓글)
+    // 등록
     @PostMapping("/{postId}")
-    public CommentResponseDto save(@PathVariable Long postId,
-                                   @RequestBody CommentCreateDto dto) {
+    public CommentResponseDto save(
+            @PathVariable Long postId,
+            @RequestBody CommentCreateDto dto
+    ) {
         return commentService.create(postId, dto);
     }
 
-    // 수정
+    // 수정 (작성자 검증)
     @PutMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable Long id,
-                                       @RequestBody CommentUpdateDto dto) {
-        commentService.update(id, dto.getContent());
+    public ResponseEntity<Void> update(
+            @PathVariable Long id,
+            @RequestBody CommentUpdateDto dto
+    ) {
+        commentService.update(id, dto.getContent(), dto.getWriter());
         return ResponseEntity.ok().build();
     }
 
-    // 삭제
+    // 삭제 (작성자 검증)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        commentService.delete(id);
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body
+    ) {
+        String writer = body.get("writer");
+        commentService.delete(id, writer);
         return ResponseEntity.ok().build();
     }
 }
-

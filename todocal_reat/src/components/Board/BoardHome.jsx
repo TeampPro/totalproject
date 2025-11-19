@@ -10,17 +10,63 @@ const CATEGORY_TABS = [
   { key: "qna", label: "Q&A" },
 ];
 
-const ITEMS_PER_PAGE = 10; // 🔥 페이지 당 10개
+const ITEMS_PER_PAGE = 10;
 
 const BoardHome = () => {
   const [category, setCategory] = useState("free");
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [currentPage, setCurrentPage] = useState(1); // 🔥 페이지 상태
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // 🔽 검색 UI 상태
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchField, setSearchField] = useState("title");
+  const [searchFieldLabel, setSearchFieldLabel] = useState("제목");
+
+  const [searchValue, setSearchValue] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const navigate = useNavigate();
 
+  /** 🔽 검색 기준 선택 시 실행 */
+  const selectField = (field, label) => {
+    setSearchField(field);
+    setSearchFieldLabel(label);
+    setShowDropdown(false);
+
+    setSearchValue("");
+    setStartDate("");
+    setEndDate("");
+  };
+
+  /** 🔍 검색 요청 */
+  const handleSearch = async () => {
+    try {
+      const params = { category };
+
+      if (searchField === "date") {
+        params.startDate = startDate;
+        params.endDate = endDate;
+      } else {
+        params.field = searchField;
+        params.keyword = searchValue;
+      }
+
+      const res = await axios.get("http://localhost:8080/api/board/search", {
+        params,
+      });
+
+      setPosts(res.data);
+      setCurrentPage(1);
+    } catch (err) {
+      console.error("검색 실패:", err);
+      alert("검색 중 오류 발생");
+    }
+  };
+
+  /** 게시글 리스트 불러오기 */
   const loadPosts = async (cat) => {
     try {
       setLoading(true);
@@ -29,7 +75,7 @@ const BoardHome = () => {
         `http://localhost:8080/api/board/list/${cat}`
       );
       setPosts(res.data);
-      setCurrentPage(1); // 카테고리 바뀌면 첫 페이지로
+      setCurrentPage(1);
     } catch (err) {
       console.error("게시글 목록 불러오기 실패:", err);
       setError("게시글을 불러오는 중 오류가 발생했습니다.");
@@ -42,28 +88,24 @@ const BoardHome = () => {
     loadPosts(category);
   }, [category]);
 
-  // 날짜 포맷
   const formatDate = (dateString) => {
     if (!dateString) return "-";
     return moment(dateString).format("YYYY. MM. DD.");
   };
 
-  // 🔥 공지 맨 위 + 최신순 정렬
+  /** 🔽 공지 → 최상단 + 최신순 */
   const sortedPosts = [...posts].sort((a, b) => {
     if (a.notice && !b.notice) return -1;
     if (!a.notice && b.notice) return 1;
     return b.id - a.id;
   });
 
-  // 🔥 페이지용 posts slice
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
   const currentPosts = sortedPosts.slice(startIdx, startIdx + ITEMS_PER_PAGE);
-
   const totalPages = Math.ceil(sortedPosts.length / ITEMS_PER_PAGE);
 
   return (
     <div className="board-container">
-      {/* 상단 탭 + 글쓰기 */}
       <div className="board-top">
         <div className="board-tabs">
           {CATEGORY_TABS.map((tab) => (
@@ -75,6 +117,65 @@ const BoardHome = () => {
               {tab.label}
             </button>
           ))}
+        </div>
+
+        {/* 🔍 검색 UI */}
+        <div className="search-box" style={{ position: "relative" }}>
+          {/* 검색 기준 선택 */}
+          <div
+            className="search-select"
+            onClick={() => setShowDropdown(!showDropdown)}
+          >
+            {searchFieldLabel} ▼
+          </div>
+
+          {showDropdown && (
+            <div className="search-dropdown">
+              {searchField !== "title" && (
+                <div onClick={() => selectField("title", "제목")}>제목</div>
+              )}
+              {searchField !== "writer" && (
+                <div onClick={() => selectField("writer", "작성자")}>
+                  작성자
+                </div>
+              )}
+              {searchField !== "content" && (
+                <div onClick={() => selectField("content", "내용")}>내용</div>
+              )}
+              {searchField !== "date" && (
+                <div onClick={() => selectField("date", "작성일")}>작성일</div>
+              )}
+            </div>
+          )}
+
+          {/* 검색 input */}
+          {searchField !== "date" ? (
+            <input
+              type="text"
+              placeholder="검색어 입력"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className="search-input"
+            />
+          ) : (
+            <div className="date-box">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+              <span> ~ </span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+          )}
+
+          <button className="search-btn" onClick={handleSearch}>
+            검색
+          </button>
         </div>
 
         <button
@@ -108,7 +209,6 @@ const BoardHome = () => {
               className={`board-row ${post.notice ? "notice" : ""}`}
               onClick={() => navigate(`/board/${post.id}`)}
             >
-              {/* 제목 영역 */}
               <div className="col-title">
                 <span
                   className={`post-prefix ${post.notice ? "notice-text" : ""}`}
@@ -123,19 +223,14 @@ const BoardHome = () => {
                 )}
               </div>
 
-              {/* 작성자 */}
               <div className="col-writer">{post.writer}</div>
-
-              {/* 작성일 */}
               <div className="col-date">{formatDate(post.createdAt)}</div>
-
-              {/* 조회수 */}
               <div className="col-views">{post.views}</div>
             </div>
           ))}
       </div>
 
-      {/* 🔥 페이지네이션 */}
+      {/* 페이지네이션 */}
       {totalPages > 1 && (
         <div className="pagination">
           <button

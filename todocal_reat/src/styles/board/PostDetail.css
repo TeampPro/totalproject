@@ -262,3 +262,79 @@
   padding: 8px;
   font-size: 0.9rem;
 }
+
+/* 상단 네비게이션 바 */
+.post-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* 왼쪽 버튼 (수정/삭제) */
+.left-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* 오른쪽 버튼 (이전글/다음글/목록) */
+.right-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* 공통 버튼 */
+.nav-btn,
+.edit-btn,
+.delete-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.nav-btn:hover,
+.edit-btn:hover,
+.delete-btn:hover {
+  background: #eaeaea;
+}
+
+/* 수정 버튼 파란색 */
+.edit-btn {
+  background: #4a84ff;
+  color: white;
+  border: none;
+}
+
+.edit-btn:hover {
+  background: #3a6ed9;
+}
+
+/* 삭제 버튼 빨간색 */
+.delete-btn {
+  background: #ff5a5a;
+  color: white;
+  border: none;
+}
+
+.delete-btn:hover {
+  background: #e44747;
+}
+
+/* 제목 스타일 */
+.post-title {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+/* 작성자/날짜 */
+.post-meta {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+  display: flex;
+  gap: 15px;
+}

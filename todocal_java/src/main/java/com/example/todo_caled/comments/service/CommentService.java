@@ -70,9 +70,14 @@ public class CommentService {
     }
 
     // 수정
-    public void update(Long id, String content) {
+    public void update(Long id, String content, String writer) {
         Comment c = commentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("댓글 없음"));
+
+        // 🔥 본인만 수정 가능
+        if (!c.getWriter().equals(writer)) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
 
         c.setContent(content);
         c.setUpdatedAt(LocalDateTime.now());
@@ -80,10 +85,18 @@ public class CommentService {
     }
 
     // 삭제
-    public void delete(Long id) {
-        commentRepository.deleteById(id);
-        // 필요하면: 자식 댓글까지 같이 삭제하는 로직도 추가 가능
+    public void delete(Long id, String writer) {
+        Comment c = commentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("댓글 없음"));
+
+        // 🔥 본인만 삭제 가능
+        if (!c.getWriter().equals(writer)) {
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
+
+        commentRepository.delete(c);
     }
+
 }
 
 

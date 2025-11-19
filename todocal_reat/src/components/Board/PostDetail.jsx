@@ -5,8 +5,7 @@ import "../../styles/board/PostDetail.css";
 import moment from "moment";
 
 /** ======================
- *  대댓글 트리용 재귀 컴포넌트
- *  (⚠ PostDetail 바깥에 있어야 함)
+ *  대댓글 재귀 컴포넌트
  ====================== */
 const CommentNode = React.memo(
   ({
@@ -25,15 +24,13 @@ const CommentNode = React.memo(
     onChangeReplyContent,
     onSaveReply,
     onCancelReply,
+    loginNickname,
   }) => {
     const isEditing = editingId === node.id;
     const isReplying = replyToId === node.id;
 
     return (
-      <div
-        className="comment-item"
-        style={{ marginLeft: depth * 20 }} // 들여쓰기
-      >
+      <div className="comment-item" style={{ marginLeft: depth * 20 }}>
         {isEditing ? (
           <>
             <textarea
@@ -55,8 +52,14 @@ const CommentNode = React.memo(
             </div>
 
             <div className="comment-actions">
-              <button onClick={() => onStartEdit(node)}>수정</button>
-              <button onClick={() => onDelete(node.id)}>삭제</button>
+              {node.writer === loginNickname && (
+                <button onClick={() => onStartEdit(node)}>수정</button>
+              )}
+
+              {node.writer === loginNickname && (
+                <button onClick={() => onDelete(node.id)}>삭제</button>
+              )}
+
               <button onClick={() => onStartReply(node.id)}>답글</button>
             </div>
 
@@ -74,7 +77,6 @@ const CommentNode = React.memo(
           </>
         )}
 
-        {/* 하위 댓글 */}
         {node.children.map((child) => (
           <CommentNode
             key={child.id}
@@ -93,6 +95,7 @@ const CommentNode = React.memo(
             onChangeReplyContent={onChangeReplyContent}
             onSaveReply={onSaveReply}
             onCancelReply={onCancelReply}
+            loginNickname={loginNickname}
           />
         ))}
       </div>
@@ -107,156 +110,115 @@ const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [post, setPost] = useState(null);
+  /** 로그인 사용자 닉네임 */
+  const savedUser = JSON.parse(localStorage.getItem("user"));
+  const loginNickname =
+    savedUser?.nickname || savedUser?.name || savedUser?.id || "익명";
 
-  // 댓글 상태
+  const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
+
   const [newComment, setNewComment] = useState("");
 
-  // 수정 상태
   const [editingId, setEditingId] = useState(null);
   const [editContent, setEditContent] = useState("");
 
-  // 대댓글 상태
   const [replyToId, setReplyToId] = useState(null);
   const [replyContent, setReplyContent] = useState("");
 
-  /** ======================
-   *  게시글 불러오기
-   ====================== */
+  /** 게시글 불러오기 */
   const loadPost = async () => {
     try {
       const res = await axios.get(`http://localhost:8080/api/board/${id}`);
       setPost(res.data);
     } catch (err) {
-      console.error("게시글 불러오기 실패:", err);
-      alert("게시글을 불러오지 못했습니다.");
+      alert("게시글을 불러오는 중 오류 발생");
     }
   };
 
-  /** ======================
-   *  댓글 불러오기
-   ====================== */
+  /** 댓글 불러오기 */
   const loadComments = async () => {
     try {
       const res = await axios.get(`http://localhost:8080/api/comments/${id}`);
-      setComments(res.data); // parentId 포함된 flat 구조
-    } catch (err) {
-      console.error("댓글 불러오기 실패:", err);
-    }
+      setComments(res.data);
+    } catch (err) {}
   };
 
-  /** ======================
-   *  최초 로드
-   ====================== */
+  // 🔥 이전글 이동
+  const goPrev = async () => {
+    const res = await axios.get(`http://localhost:8080/api/board/${id}/prev`);
+    if (res.data?.id) navigate(`/board/${res.data.id}`);
+    else alert("이전 글이 없습니다.");
+  };
+
+  // 🔥 다음글 이동
+  const goNext = async () => {
+    const res = await axios.get(`http://localhost:8080/api/board/${id}/next`);
+    if (res.data?.id) navigate(`/board/${res.data.id}`);
+    else alert("다음 글이 없습니다.");
+  };
+
   useEffect(() => {
     loadPost();
     loadComments();
   }, [id]);
 
-  /** ======================
-   *  댓글 등록
-   ====================== */
+  /** 댓글 */
   const handleAddComment = async () => {
-    if (!newComment.trim()) return alert("댓글을 입력해주세요.");
+    if (!newComment.trim()) return;
 
-    try {
-      const res = await axios.post(`http://localhost:8080/api/comments/${id}`, {
-        writer: "익명",
-        content: newComment,
-        parentId: null,
-      });
+    await axios.post(`http://localhost:8080/api/comments/${id}`, {
+      writer: loginNickname,
+      content: newComment,
+      parentId: null,
+    });
 
-      // 전체 reload 대신 새 댓글만 추가해도 됨
-      setComments((prev) => [...prev, res.data]);
-      setNewComment("");
-    } catch (err) {
-      console.error("댓글 등록 실패:", err);
-      alert("댓글 등록 중 오류가 발생했습니다.");
-    }
+    setNewComment("");
+    loadComments();
   };
 
-  /** ======================
-   *  대댓글 등록
-   ====================== */
+  /** 대댓글 */
   const handleAddReply = async (parentId) => {
-    if (!replyContent.trim()) {
-      alert("답글을 입력해주세요.");
-      return;
-    }
+    if (!replyContent.trim()) return;
 
-    try {
-      const res = await axios.post(`http://localhost:8080/api/comments/${id}`, {
-        writer: "익명",
-        content: replyContent,
-        parentId,
-      });
+    await axios.post(`http://localhost:8080/api/comments/${id}`, {
+      writer: loginNickname,
+      content: replyContent,
+      parentId,
+    });
 
-      setComments((prev) => [...prev, res.data]);
-      setReplyContent("");
-      // setReplyToId(parentId); // 계속 같은 대상에 답글 쓰고 싶다면 유지, 아니면 닫기
-    } catch (err) {
-      console.error("답글 등록 실패:", err);
-      alert("답글 등록 중 오류가 발생했습니다.");
-    }
+    setReplyContent("");
+    setReplyToId(null);
+    loadComments();
   };
 
-  /** ======================
-   *  댓글 수정
-   ====================== */
-  const handleEdit = async (cid) => {
-    if (!editContent.trim()) return alert("내용을 입력해주세요.");
-
-    try {
-      await axios.put(`http://localhost:8080/api/comments/${cid}`, {
-        content: editContent,
-      });
-
-      setEditingId(null);
-      setEditContent("");
-      await loadComments();
-    } catch (err) {
-      console.error("댓글 수정 실패:", err);
-      alert("댓글 수정 중 오류가 발생했습니다.");
-    }
-  };
-
-  /** ======================
-   *  댓글 삭제
-   ====================== */
   const handleDeleteComment = async (cid) => {
-    if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
-
-    try {
-      await axios.delete(`http://localhost:8080/api/comments/${cid}`);
-      await loadComments();
-    } catch (err) {
-      console.error("댓글 삭제 실패:", err);
-      alert("댓글 삭제 중 오류가 발생했습니다.");
-    }
+    await axios.delete(`http://localhost:8080/api/comments/${cid}`);
+    loadComments();
   };
 
-  /** ======================
-   *  게시글 삭제
-   ====================== */
+  const handleEdit = async (cid) => {
+    await axios.put(`http://localhost:8080/api/comments/${cid}`, {
+      content: editContent,
+      writer: loginNickname,
+    });
+
+    setEditingId(null);
+    loadComments();
+  };
+
+  /** 게시글 삭제 */
   const handleDeletePost = async () => {
-    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    await axios.delete(`http://localhost:8080/api/board/${id}`, {
+      data: { writer: loginNickname },
+    });
 
-    try {
-      await axios.delete(`http://localhost:8080/api/board/${id}`);
-      alert("삭제되었습니다.");
-      navigate("/main");
-    } catch (err) {
-      console.error("삭제 실패", err);
-      alert("삭제 중 오류 발생");
-    }
+    navigate("/main");
   };
 
-  if (!post) return <div className="post-detail-container">불러오는 중...</div>;
+  if (!post) return <div>로딩중...</div>;
 
-  /** ======================
-   *  댓글 → 트리 구조 변환
-   ====================== */
+  /** 댓글 트리 */
   const buildTree = (items) => {
     const map = {};
     items.forEach((c) => {
@@ -264,14 +226,10 @@ const PostDetail = () => {
     });
 
     const roots = [];
+
     items.forEach((c) => {
-      if (c.parentId) {
-        if (map[c.parentId]) {
-          map[c.parentId].children.push(map[c.id]);
-        }
-      } else {
-        roots.push(map[c.id]);
-      }
+      if (c.parentId) map[c.parentId]?.children.push(map[c.id]);
+      else roots.push(map[c.id]);
     });
 
     return roots;
@@ -279,49 +237,64 @@ const PostDetail = () => {
 
   const commentTree = buildTree(comments);
 
-  /** ======================
-   *  렌더링
-   ====================== */
   return (
     <div className="post-detail-container">
-      <button className="back-btn" onClick={() => navigate(-1)}>
-        ← 뒤로가기
-      </button>
+      {/* 🔥 상단 네비게이션 추가 */}
+      <div className="post-nav">
+        <div className="left-buttons">
+          {post.writer === loginNickname && (
+            <>
+              <button
+                className="edit-btn"
+                onClick={() => navigate(`/board/write?id=${post.id}`)}
+              >
+                수정
+              </button>
+              <button className="delete-btn" onClick={handleDeletePost}>
+                삭제
+              </button>
+            </>
+          )}
+        </div>
 
+        <div className="right-buttons">
+          <button className="nav-btn" onClick={goPrev}>
+            이전글
+          </button>
+          <button className="nav-btn" onClick={goNext}>
+            다음글
+          </button>
+          <button className="nav-btn" onClick={() => navigate("/main")}>
+            목록
+          </button>
+        </div>
+      </div>
+
+      {/* 제목 */}
       <h1 className="post-title">{post.title}</h1>
 
+      {/* 작성자 */}
       <div className="post-meta">
         <span>작성자: {post.writer}</span>
         <span>{moment(post.createdAt).format("YYYY.MM.DD HH:mm")}</span>
       </div>
 
+      {/* 본문 */}
       <div className="post-content">{post.content}</div>
-
-      <div className="post-actions">
-        <button
-          className="edit-btn"
-          onClick={() => navigate(`/board/write?id=${post.id}`)}
-        >
-          수정
-        </button>
-        <button className="delete-btn" onClick={handleDeletePost}>
-          삭제
-        </button>
-      </div>
 
       <h3 className="comment-title">댓글</h3>
 
+      {/* 댓글 입력 */}
       <div className="comment-form">
         <textarea
-          placeholder="댓글을 입력하세요"
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-        />
-        <button className="comment-submit" onClick={handleAddComment}>
-          등록
-        </button>
+          placeholder="댓글을 입력하세요"
+        ></textarea>
+        <button onClick={handleAddComment}>등록</button>
       </div>
 
+      {/* 댓글 리스트 */}
       <div className="comment-list">
         {commentTree.map((node) => (
           <CommentNode
@@ -333,20 +306,21 @@ const PostDetail = () => {
             replyToId={replyToId}
             replyContent={replyContent}
             onChangeEditContent={setEditContent}
-            onStartEdit={(comment) => {
-              setEditingId(comment.id);
-              setEditContent(comment.content);
+            onStartEdit={(c) => {
+              setEditingId(c.id);
+              setEditContent(c.content);
             }}
             onSaveEdit={handleEdit}
             onCancelEdit={() => setEditingId(null)}
             onDelete={handleDeleteComment}
-            onStartReply={(commentId) => {
-              setReplyToId(commentId);
+            onStartReply={(cid) => {
+              setReplyToId(cid);
               setReplyContent("");
             }}
             onChangeReplyContent={setReplyContent}
             onSaveReply={handleAddReply}
             onCancelReply={() => setReplyToId(null)}
+            loginNickname={loginNickname}
           />
         ))}
       </div>

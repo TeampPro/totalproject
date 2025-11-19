@@ -50,11 +50,6 @@ function Login() {
           })
         );
 
-
-        // 로컬에 사용자 정보 저장 (id, userType)
-        localStorage.setItem('user', JSON.stringify({ id: data.id, userType: data.userType || 'member' }));
-        localStorage.setItem('memberName', data.id);
-
         navigate('/main');
       } else {
         alert(data.message || '로그인 실패');
