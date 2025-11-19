@@ -17,9 +17,18 @@ import Upload from "./pages/Upload.jsx";
 import MyPage from "./pages/MyPage.jsx";
 import MainPage from "./pages/MainPage.jsx";
 import TodoPage from "./components/TodoPage/TodoPage.jsx";
+<<<<<<< HEAD
 import InvitePage from "./pages/InvitePage.jsx";
 import ChatRoomWrapper from "./components/Chat/ChatRoomWrapper.jsx";
 import TimeHome from "./components/TimeCalendar/TimeHome.jsx";
+=======
+import InvitePage from "./pages/InvitePage.jsx"
+import BoardHome from "./components/Board/BoardHome.jsx";
+import PostDetail from "./components/Board/PostDetail.jsx";
+import PostWrite from "./components/Board/PostWrite.jsx";
+
+import ChatRoomWrapper from "./components/Chat/ChatRoomWrapper.jsx"
+>>>>>>> origin/feature/todo
 
 import "./App.css";
 
@@ -31,6 +40,8 @@ function App() {
   const isChat = location.pathname.startsWith("/chat");
   const isMyPage = location.pathname === "/myPage";
   const isTodoPage = location.pathname === "/todo";
+  const isBoardDetail = location.pathname.startsWith("/board/");
+
 
   // ✅ 전체 tasks 상태 관리
   const [tasks, setTasks] = useState([]);
@@ -53,6 +64,7 @@ function App() {
   return (
     <>
       <div className="main-layout">
+<<<<<<< HEAD
         {!isLoginOrSignUpPage && !isChat && !isMyPage && !isTodoPage && (
           <div className="dashboard">
             <div className="weather-widget">
@@ -71,13 +83,32 @@ function App() {
                   showAddButton={true} // 메인에서는 + 버튼 표시
                 />
                 <AllTasks tasks={tasks} filter={taskFilter} />
+=======
+        {!isLoginOrSignUpPage &&
+          !isChat &&
+          !isMyPage &&
+          !isTodoPage &&
+          !isBoardDetail && (
+            <div className="dashboard">
+              <div className="weather-widget">
+                <WeatherBoard />
+>>>>>>> origin/feature/todo
               </div>
-              <div className="map-widget">
-                <KakaoMapBox />
+
+              <div className="calendar-widget">
+                <TimeHome onTodosChange={handleTodosChange} />
+              </div>
+
+              <div className="bottom-widgets">
+                <div className="todo-widget">
+                  <BoardHome /> {/* ← 게시판으로 변경 */}
+                </div>
+                <div className="map-widget">
+                  <KakaoMapBox />
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         <div className="content">
           <Routes>
@@ -88,6 +119,11 @@ function App() {
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/chat/:roomId" element={<ChatRoomWrapper />} />
             <Route path="/chat/invite/:code" element={<InvitePage />} />
+<<<<<<< HEAD
+=======
+            <Route path="/board/:id" element={<PostDetail />} />
+            <Route path="/board/write" element={<PostWrite />} />
+>>>>>>> origin/feature/todo
             <Route path="/main" element={<MainPage />} />
             <Route path="/myPage" element={<MyPage />} />
             <Route path="/todo" element={<TodoPage tasks={tasks} setTasks={setTasks} />} />

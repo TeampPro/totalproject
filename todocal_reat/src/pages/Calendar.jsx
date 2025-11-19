@@ -316,7 +316,7 @@ function Calendar({ onTodosChange }) {
               setShowModal(true);
             }}
           >
-            +
+            일정 추가
           </button>
 =======
           <button onClick={()=>setMoment(today.clone().subtract(1,"month"))}>◀</button>

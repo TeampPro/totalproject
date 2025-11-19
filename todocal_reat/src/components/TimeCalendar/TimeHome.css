@@ -42,3 +42,37 @@
   width: 100%;
   display: block;    /* flex를 끄면 캘린더가 full width 사용 */
 }
+
+.time-top-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  margin-bottom: 12px;
+}
+
+/* 가운데 정렬 */
+.tabs-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+}
+
+/* + 버튼 오른쪽 끝 */
+.add-btn {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background-color: #1976d2;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+

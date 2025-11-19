@@ -89,3 +89,32 @@
   align-items: center;
   margin-bottom: 16px;
 }
+
+.taskDates {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+/* 작성일 왼쪽 */
+.createdAt {
+  flex: 1;
+}
+
+/* D-Day 가운데 */
+.dday {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  color: #1976d2;
+}
+
+/* 약속일 오른쪽 */
+.promiseDate {
+  flex: 1;
+  text-align: right;
+  font-weight: 500;
+}
