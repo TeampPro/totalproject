@@ -67,15 +67,11 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
   // 저장 또는 수정
 >>>>>>> origin/login
   const handleSave = async () => {
-    if (!todo.title.trim()) {
-      alert("제목을 입력해주세요!");
-      return;
-    }
+    if (!todo.title.trim()) { alert("제목을 입력해주세요!"); return; }
 
 <<<<<<< HEAD
 <<<<<<< HEAD
     const start = `${todo.date}T${todo.time || "00:00"}:00`;
-
     const end = todo.endTime
       ? `${todo.date}T${todo.endTime}:00`
       : moment(start).add(1, "hour").format("YYYY-MM-DDTHH:mm:ss");
@@ -110,7 +106,10 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
       }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
       alert(isEdit ? "할 일이 수정되었습니다." : "할 일이 저장되었습니다.");
+=======
+>>>>>>> origin/feature/develop
       onSave(res.data);
 =======
     // ★ ownerId 설정
@@ -180,6 +179,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
   const handleDelete = async () => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
     try {
+<<<<<<< HEAD
       await axios.delete(`http://localhost:8080/api/todos/${todo.id}`);
       alert("삭제되었습니다!");
 
@@ -188,6 +188,10 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
         deleted: true,
       });
 
+=======
+      await axios.delete(`http://localhost:8080/api/tasks/${todo.id}`);
+      onSave({ id: todo.id, deleted: true });
+>>>>>>> origin/feature/develop
       onClose();
     } catch (err) {
       console.error("❌ 삭제 실패:", err);
@@ -200,6 +204,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
       <div className="todo-modal" onClick={(e) => e.stopPropagation()}>
         <h3>{isEdit ? "할 일 수정 / 삭제" : "새로운 할 일 추가"}</h3>
 
+<<<<<<< HEAD
         <label>
           날짜
           <input
@@ -245,14 +250,28 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
             value={todo.promiseTime}
             onChange={handleChange("promiseTime")}
           />
+=======
+        <label>날짜
+          <input type="date" value={todo.date} onChange={handleChange("date")} />
         </label>
-
+        <label>시작 시간
+          <input type="time" value={todo.time} onChange={handleChange("time")} />
+        </label>
+        <label>종료 시간
+          <input type="time" value={todo.endTime} onChange={handleChange("endTime")} />
+        </label>
+        <label>제목
+          <input type="text" value={todo.title} onChange={handleChange("title")} />
+        </label>
+        <label>내용
+          <textarea value={todo.content} onChange={handleChange("content")} />
+        </label>
+        <label>약속 장소
+          <input type="text" value={todo.location} onChange={handleChange("location")} />
+>>>>>>> origin/feature/develop
+        </label>
         <label className="shared-check">
-          <input
-            type="checkbox"
-            checked={todo.shared}
-            onChange={handleChange("shared")}
-          />
+          <input type="checkbox" checked={todo.shared} onChange={handleChange("shared")} />
           공유 일정으로 표시
         </label>
 
