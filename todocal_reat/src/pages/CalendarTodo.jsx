@@ -21,6 +21,10 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
     shared: editTodo?.shared ?? false,
   });
 
+<<<<<<< HEAD
+=======
+  // 수정/추가 모드 전환 시 동기화
+>>>>>>> origin/login
   useEffect(() => {
     if (isEdit && editTodo) {
       setTodo({
@@ -44,12 +48,17 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
     setTodo((prev) => ({ ...prev, [key]: value }));
   };
 
+<<<<<<< HEAD
+=======
+  // 저장 또는 수정
+>>>>>>> origin/login
   const handleSave = async () => {
     if (!todo.title.trim()) {
       alert("제목을 입력해주세요!");
       return;
     }
 
+<<<<<<< HEAD
     const start = `${todo.date}T${todo.time || "00:00"}:00`;
 
     const end = todo.endTime
@@ -72,6 +81,51 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
 
       alert(isEdit ? "할 일이 수정되었습니다." : "할 일이 저장되었습니다.");
       onSave(res.data);
+=======
+    // ★ ownerId 설정
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+
+    const payload = {
+      title: todo.title.trim(),
+      content: todo.content?.trim() ?? "",
+      promiseDate: moment(todo.tDate).format("YYYY-MM-DDTHH:mm:ss"),
+      location: todo.location ?? "",
+      promiseTime: todo.promiseTime ?? "",
+      shared: todo.shared ?? false,
+      ownerId: storedUser?.id || null, // ★ 추가
+    };
+
+    try {
+      let res;
+      if (isEdit && todo.id != null) {
+        // 수정
+        res = await axios.put(
+          `http://localhost:8080/api/todos/${todo.id}`,
+          payload
+        );
+        alert("할 일이 수정되었습니다!");
+      } else {
+        // 추가
+        res = await axios.post("http://localhost:8080/api/todos", payload);
+        alert("할 일이 추가되었습니다!");
+      }
+
+      const saved = res?.data ?? {};
+      const normalized = {
+        id: saved.id ?? todo.id,
+        title: saved.title ?? todo.title,
+        content: saved.content ?? todo.content,
+        tDate: moment(todo.tDate).format("YYYY-MM-DD"),
+        promiseDate:
+          saved.promiseDate ??
+          moment(todo.tDate).format("YYYY-MM-DD"),
+        location: saved.location ?? todo.location,
+        promiseTime: saved.promiseTime ?? todo.promiseTime,
+        shared: saved.shared ?? todo.shared,
+      };
+
+      onSave(normalized);
+>>>>>>> origin/login
       onClose();
     } catch (err) {
       console.error("❌ 저장 실패:", err);
@@ -79,6 +133,10 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
     }
   };
 
+<<<<<<< HEAD
+=======
+  // 삭제
+>>>>>>> origin/login
   const handleDelete = async () => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
 

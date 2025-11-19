@@ -29,7 +29,20 @@ const TodoPage = () => {
 
   // 서버에서 실제 데이터 fetch
   useEffect(() => {
-    fetch("http://localhost:8080/api/tasks")
+    // ★ userId 쿼리 추가
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const params = new URLSearchParams();
+
+    if (storedUser && storedUser.id) {
+      params.append("userId", storedUser.id);
+    }
+
+    const query = params.toString();
+    const url = query
+      ? `http://localhost:8080/api/tasks?${query}`
+      : "http://localhost:8080/api/tasks";
+
+    fetch(url)
       .then((res) => res.json())
       .then((data) => setRawTasks(data))
       .catch((err) => console.error(err));
@@ -55,7 +68,7 @@ const TodoPage = () => {
         t._m.isBetween(startOfMonth, endOfMonth, null, "[]")
       );
     } else if (filter === "shared") {
-      tasks = tasks.filter((t) => t.shared === true);
+      tasks = tasks.filter((t) => t.shared === true); // 공유 일정만
     }
 
     tasks.sort((a, b) => a._m.valueOf() - b._m.valueOf());
@@ -100,6 +113,7 @@ const TodoPage = () => {
 
   return (
     <div className={classes.todoPageContainer}>
+<<<<<<< HEAD
       {/* ⭐ TodoHeader + 글작성하기 버튼을 한 줄에 배치 */}
       <div className={classes.topBar}>
         <TodoHeader
@@ -108,12 +122,19 @@ const TodoPage = () => {
           showAddButton={false} // TodoHeader는 + 버튼 숨김
         />
 
+=======
+      <div className={classes.todoHeaderContainer}>
+        <TodoHeader
+          onChangeFilter={setFilter}
+          active={filter}
+          showAddButton={false}
+        />
+>>>>>>> origin/login
         <button className={classes.writeButton} onClick={handleAddClick}>
           글작성하기
         </button>
       </div>
 
-      {/* 리스트 */}
       <div className={classes.taskList}>
         {pagedTasks.length === 0 && (
           <div className={classes.empty}>데이터가 없습니다.</div>
@@ -144,7 +165,6 @@ const TodoPage = () => {
         />
       )}
 
-      {/* 페이지네이션 */}
       {totalPages > 1 && (
         <div className={classes.pagination}>
           {Array.from({ length: totalPages }, (_, i) => (

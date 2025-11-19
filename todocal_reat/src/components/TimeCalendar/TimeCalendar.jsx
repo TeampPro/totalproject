@@ -18,7 +18,20 @@ function TimeCalendar({ selectedDate }) {
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/todos/all");
+      // ★ userId 쿼리 추가
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      const params = new URLSearchParams();
+
+      if (storedUser && storedUser.id) {
+        params.append("userId", storedUser.id);
+      }
+
+      const query = params.toString();
+      const url = query
+        ? `http://localhost:8080/api/todos/all?${query}`
+        : "http://localhost:8080/api/todos/all";
+
+      const res = await axios.get(url);
       const filtered = res.data.filter(
         (e) =>
           e.promiseDate && moment(e.promiseDate).isSame(selectedDate, "day")
