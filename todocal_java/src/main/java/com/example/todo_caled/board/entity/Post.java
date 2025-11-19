@@ -32,4 +32,7 @@ public class Post {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt;
+
+    @Transient
+    private long commentCount;
 }

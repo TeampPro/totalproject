@@ -69,6 +69,7 @@ public class UserController {
         res.put("name", user.getName());
         res.put("email", user.getEmail());
         res.put("userType", user.getUserType());
+        res.put("nickname", user.getNickname());
         return ResponseEntity.ok(res);
     }
 

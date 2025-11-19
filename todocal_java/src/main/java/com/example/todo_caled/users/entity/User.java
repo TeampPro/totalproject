@@ -26,6 +26,9 @@ public class User {
     @Column(length = 50)
     private String name; // 비회원 가능
 
+    @Column(length = 50)
+    private String nickname;  // 🔥 닉네임 추가
+
     @Column(length = 100)
     private String kakaoId;
 

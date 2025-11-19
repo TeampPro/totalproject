@@ -6,14 +6,26 @@ import "../../styles/board/PostWrite.css";
 const PostWrite = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const editId = searchParams.get("id"); // 수정 모드 여부
+  const editId = searchParams.get("id");
+
+  // 🔥 로그인 유저 정보 불러오기
+  const user = JSON.parse(localStorage.getItem("user"));
+  const loginName =
+    user?.nickname || // 🔥 닉네임이 있으면 무조건 이걸 사용
+    user?.name || // 닉네임 없으면 이름
+    user?.id || // 둘 다 없으면 아이디
+    "익명";
+
+
 
   const [category, setCategory] = useState("free");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [writer, setWriter] = useState("tester"); // 로그인 연동하면 수정 가능
 
-  // ⭐ 수정 모드일 경우 기존 글 불러오기
+  // ✔ writer 기본값을 로그인 사용자 이름으로 설정
+  const [writer, setWriter] = useState(loginName);
+
+  // ⭐ 수정 시 기존 데이터 불러오기
   useEffect(() => {
     if (!editId) return;
 
@@ -24,13 +36,13 @@ const PostWrite = () => {
       setCategory(p.category);
       setTitle(p.title);
       setContent(p.content);
-      setWriter(p.writer);
+      setWriter(p.writer); // 기존 작성자 유지
     };
 
     loadPost();
   }, [editId]);
 
-  // ⭐ 저장
+  // ⭐ 저장 처리
   const handleSave = async () => {
     if (!title.trim()) return alert("제목을 입력하세요!");
     if (!content.trim()) return alert("내용을 입력하세요!");
@@ -39,12 +51,10 @@ const PostWrite = () => {
 
     try {
       if (editId) {
-        // ⭐ 수정 모드 → PUT 실행
         await axios.put(`http://localhost:8080/api/board/${editId}`, payload);
         alert("수정되었습니다!");
         navigate(`/board/${editId}`);
       } else {
-        // ⭐ 신규 작성 → POST 실행
         const res = await axios.post(
           `http://localhost:8080/api/board/create`,
           payload
