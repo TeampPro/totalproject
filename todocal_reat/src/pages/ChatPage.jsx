@@ -34,33 +34,49 @@ export default function ChatPage({ user }) {
   }, [user]);
 
   // ✅ 방 입장
-  const handleEnterRoom = (room) => {
-    const memberName = localStorage.getItem("memberName");
-    navigate(`/chat/${room.id}`, {
-      state: { memberName : room.name },
-    });
+  const handleEnterRoom = async (room) => {
+    try {
+      const memberName =
+        user?.name || localStorage.getItem("memberName") || "guest";
+
+      // 항상 최신 memberName 저장
+      localStorage.setItem("memberName", memberName);
+
+      // 입장(멤버 등록) - 여러 번 호출해도 서버에서 한 번만 추가되게 구현되어 있음
+      await axios.post(`/api/chat/rooms/${room.id}/join`, null, {
+        params: { memberName },
+      });
+
+      // 채팅방 화면으로 이동 (방 이름도 같이 넘겨서 제목 표시)
+      navigate(`/chat/${room.id}`, {
+        state: { memberName, roomName: room.name },
+      });
+    } catch (err) {
+      console.error("❌ 채팅방 입장 오류:", err);
+      alert("채팅방에 입장할 수 없습니다.");
+    }
   };
 
   // ✅ 새 채팅방 생성
   const handleCreateRoom = async () => {
     try {
-      const memberName = localStorage.getItem("memberName");
-
-      // 필요하면 방 이름을 생성 시점에 받으려면 주석 해제해서 사용
-      // const name = window.prompt("채팅방 이름을 입력하세요", `${memberName}의 채팅방`);
-      // if (name === null) return;
+      const memberName =
+        user?.name || localStorage.getItem("memberName") || "guest";
+      localStorage.setItem("memberName", memberName);
 
       const res = await axios.post("/api/chat/rooms", null, {
-        params: { memberName }, // name을 query나 body로 넘기려면 백엔드에 맞게 수정
+        params: { memberName },
       });
 
       if (res.data && res.data.id) {
-        // 리스트에 추가
-        setRooms((prev) => [...prev, res.data]);
+        const createdRoom = res.data;
 
-        // 바로 입장
-        navigate(`/chat/${res.data.id}`, {
-          state: { memberName },
+        // 리스트에 추가
+        setRooms((prev) => [...prev, createdRoom]);
+
+        // 바로 입장 (방 이름도 같이 전달)
+        navigate(`/chat/${createdRoom.id}`, {
+          state: { memberName, roomName: createdRoom.name },
         });
       } else {
         alert("채팅방 생성에 실패했습니다.");

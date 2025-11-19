@@ -7,21 +7,32 @@ import "../styles/Calendar.css";
 
 function Calendar({ onTodosChange }) {
   const navigate = useNavigate();
-  const [getMoment,setMoment] = useState(moment());
+
+  // 현재 보고 있는 달
+  const [getMoment, setMoment] = useState(moment());
   const today = getMoment;
-  const [holidays,setHolidays] = useState([]);
-  const [todos,setTodos] = useState([]);
-  const [showModal,setShowModal] = useState(false);
-  const [editTodo,setEditTodo] = useState(null);
-  const [selectedDate,setSelectedDate] = useState(moment());
-  const [showMonthPicker,setShowMonthPicker] = useState(false);
-  const [selectedYear,setSelectedYear] = useState(today.year());
-  const [selectedMonth,setSelectedMonth] = useState(today.month()+1);
+
+  const [holidays, setHolidays] = useState([]);
+  const [todos, setTodos] = useState([]);
+
+  const [showModal, setShowModal] = useState(false);
+  const [editTodo, setEditTodo] = useState(null);
+
+  const [selectedDate, setSelectedDate] = useState(moment());
+
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(today.year());
+  const [selectedMonth, setSelectedMonth] = useState(today.month() + 1);
   const monthPickerRef = useRef(null);
-<<<<<<< HEAD
+
   const [dayModalTodos, setDayModalTodos] = useState(null);
 
+  // 드래그된 Todo 저장용 ref
+  const draggedTodoRef = useRef(null);
+
+  // ----------------------------
   // 공휴일 불러오기
+  // ----------------------------
   const fetchHolidays = async (year) => {
     try {
       const res = await axios.get(`http://localhost:8080/api/holidays/${year}`);
@@ -31,145 +42,151 @@ function Calendar({ onTodosChange }) {
     }
   };
 
-  // ★ Todo 불러오기 (userId 기준)
+  // ----------------------------
+  // Todo 불러오기 (Task 기반, userId 필터)
+  // ----------------------------
   const fetchTodos = async () => {
-=======
-  const [dayModalTodos,setDayModalTodos] = useState(null);
-  const draggedTodoRef = useRef(null);
-
-  const fetchHolidays = async (year)=>{
-    try { const res = await axios.get(`http://localhost:8080/api/holidays/${year}`); setHolidays(res.data); }
-    catch(err){console.error(err);}
-  };
-
-  const fetchTodos = async()=>{
->>>>>>> origin/feature/develop
     try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-      const res = await axios.get("http://localhost:8080/api/tasks");
-<<<<<<< HEAD
-=======
-=======
->>>>>>> origin/login
       const storedUser = JSON.parse(localStorage.getItem("user"));
-      const params = new URLSearchParams();
 
+      const params = {};
       if (storedUser && storedUser.id) {
-        params.append("userId", storedUser.id);
+        params.userId = storedUser.id;
       }
 
-      const query = params.toString();
-      const url = query
-        ? `http://localhost:8080/api/todos/all?${query}`
-        : "http://localhost:8080/api/todos/all";
+      const res = await axios.get("http://localhost:8080/api/tasks", {
+        params,
+      });
 
-      const res = await axios.get(url);
-<<<<<<< HEAD
->>>>>>> origin/login
-=======
->>>>>>> origin/login
-      const mapped = res.data.map((todo) => ({
+      const mapped = (res.data || []).map((todo) => ({
         ...todo,
         tDate: todo.promiseDate
           ? moment(todo.promiseDate).format("YYYY-MM-DD")
           : null,
       }));
+
       setTodos(mapped);
     } catch (err) {
       console.error("❌ Todo 불러오기 실패:", err);
     }
-=======
-      const mapped=res.data.map(todo=>({...todo,tDate:todo.promiseDate?moment(todo.promiseDate).format("YYYY-MM-DD"):null}));
-      setTodos(mapped);
-    } catch(err){console.error(err);}
->>>>>>> origin/feature/develop
   };
 
-  useEffect(()=>{ fetchHolidays(today.year()); fetchTodos(); },[today]);
+  // ----------------------------
+  // 최초 로딩: 공휴일 + Todo
+  // ----------------------------
+  useEffect(() => {
+    fetchHolidays(today.year());
+    fetchTodos();
+  }, [today]);
 
-<<<<<<< HEAD
+  // ----------------------------
+  // 월 선택창 외부 클릭 닫기
+  // ----------------------------
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (monthPickerRef.current && !monthPickerRef.current.contains(e.target)) {
         setShowMonthPicker(false);
       }
     };
-    if (showMonthPicker)
+
+    if (showMonthPicker) {
       document.addEventListener("mousedown", handleClickOutside);
+    }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMonthPicker]);
 
-  const isHoliday = (date) => {
-    const formatted = date.format("YYYY-MM-DD");
-    return holidays.some((h) => h.date === formatted);
-  };
+  // ----------------------------
+  // 유틸 함수
+  // ----------------------------
+  const isHoliday = (date) =>
+    holidays.some((h) => h.date === date.format("YYYY-MM-DD"));
 
   const getHolidayName = (date) => {
-    const formatted = date.format("YYYY-MM-DD");
-    const found = holidays.find((h) => h.date === formatted);
+    const found = holidays.find((h) => h.date === date.format("YYYY-MM-DD"));
     return found ? found.name : "";
   };
 
-  const getTodosForDay = (date) => {
-    const formatted = date.format("YYYY-MM-DD");
-    return todos.filter((t) => t.tDate === formatted);
-  };
+  const getTodosForDay = (date) =>
+    todos.filter((t) => t.tDate === date.format("YYYY-MM-DD"));
 
-  const handleSave = async (savedTodo) => {
+  // ----------------------------
+  // 일정 저장 (추가/수정/삭제) - ⚠️ 서버 호출 X, 상태만 갱신
+  // CalendarTodo가 axios.post/put/delete까지 끝내고
+  // onSave(savedTodo)를 넘겨준다는 가정
+  // ----------------------------
+  const handleSave = (savedTodo) => {
     if (!savedTodo) return;
 
+    // 삭제인 경우: savedTodo = { id, deleted: true }
     if (savedTodo.deleted) {
       setTodos((prev) => prev.filter((t) => t.id !== savedTodo.id));
-=======
-  useEffect(()=>{
-    const handleClickOutside=(e)=>{ if(monthPickerRef.current && !monthPickerRef.current.contains(e.target)) setShowMonthPicker(false);}
-    if(showMonthPicker) document.addEventListener("mousedown",handleClickOutside);
-    return()=>document.removeEventListener("mousedown",handleClickOutside);
-  },[showMonthPicker]);
+      onTodosChange && onTodosChange();
+      return;
+    }
 
-  const isHoliday = date => holidays.some(h=>h.date===date.format("YYYY-MM-DD"));
-  const getHolidayName = date => { const found = holidays.find(h=>h.date===date.format("YYYY-MM-DD")); return found?found.name:""; };
-  const getTodosForDay = date => todos.filter(t=>t.tDate===date.format("YYYY-MM-DD"));
+    // 추가/수정인 경우
+    const normalized = {
+      ...savedTodo,
+      tDate: moment(
+        savedTodo.promiseDate ?? savedTodo.tDate
+      ).format("YYYY-MM-DD"),
+    };
 
-  const handleSave = async (savedTodo)=>{
-    if(!savedTodo) return;
-    const normalized = {...savedTodo,tDate:moment(savedTodo.tDate).format("YYYY-MM-DD")};
-    try {
-      if(normalized.deleted){ await axios.delete(`http://localhost:8080/api/tasks/${normalized.id}`); setTodos(prev=>prev.filter(t=>t.id!==normalized.id));}
-      else if(normalized.id){ await axios.put(`http://localhost:8080/api/tasks/${normalized.id}`,{...normalized,promiseDate:normalized.tDate}); setTodos(prev=>prev.map(t=>t.id===normalized.id?normalized:t));}
-      else{ const res=await axios.post("http://localhost:8080/api/tasks",{...normalized,promiseDate:normalized.tDate}); setTodos(prev=>[...prev,{...res.data,tDate:res.data.promiseDate}]);}
-      onTodosChange&&onTodosChange();
-    } catch(err){console.error(err);}
+    setTodos((prev) => {
+      const idx = prev.findIndex((t) => t.id === normalized.id);
+      if (idx === -1) {
+        // 새 일정
+        return [...prev, normalized];
+      }
+      // 기존 일정 수정
+      const copy = [...prev];
+      copy[idx] = normalized;
+      return copy;
+    });
+
+    onTodosChange && onTodosChange();
   };
 
-  // 드래그앤드롭 날짜 변경
+  // ----------------------------
+  // 드래그 앤 드롭
+  // (이 부분은 캘린더에서 직접 서버 업데이트)
+  // ----------------------------
   const handleDrop = async (todo, newDate) => {
     try {
       const updatedTodo = {
         ...todo,
-        promiseDate: `${newDate}T${moment(todo.promiseDate).format("HH:mm:ss")}`,
-        tDate: newDate
+        promiseDate: `${newDate}T${moment(todo.promiseDate).format(
+          "HH:mm:ss"
+        )}`,
       };
-      await axios.put(`http://localhost:8080/api/tasks/${todo.id}`, updatedTodo);
-      setTodos(prev => prev.map(t => t.id === todo.id ? updatedTodo : t));
->>>>>>> origin/feature/develop
+
+      await axios.put(
+        `http://localhost:8080/api/tasks/${todo.id}`,
+        updatedTodo
+      );
+
+      setTodos((prev) =>
+        prev.map((t) => (t.id === todo.id ? { ...updatedTodo, tDate: newDate } : t))
+      );
+
       onTodosChange && onTodosChange();
     } catch (err) {
       console.error("드래그앤드롭 저장 실패:", err);
     }
   };
 
-<<<<<<< HEAD
+  // ----------------------------
+  // 달력 생성
+  // ----------------------------
   const calendarArr = () => {
     const startDay = today.clone().startOf("month").startOf("week");
     const endDay = today.clone().endOf("month").endOf("week");
     const day = startDay.clone();
+
     const calendar = [];
 
-    while (day.isBefore(endDay, "day")) {
+    while (day.isBefore(endDay, "day") || day.isSame(endDay, "day")) {
       const current = day.clone();
-      const isToday = moment().isSame(current, "day");
       const isDiffMonth = current.month() !== today.month();
       const dayTodos = getTodosForDay(current);
 
@@ -177,9 +194,19 @@ function Calendar({ onTodosChange }) {
         <div
           key={current.format("YYYY-MM-DD")}
           className={`day-cell ${isDiffMonth ? "dimmed-date" : ""} ${
-            isToday ? "today" : ""
+            isHoliday(current) ? "holiday" : ""
           }`}
           onClick={() => setSelectedDate(current)}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={async () => {
+            if (draggedTodoRef.current) {
+              await handleDrop(
+                draggedTodoRef.current,
+                current.format("YYYY-MM-DD")
+              );
+              draggedTodoRef.current = null;
+            }
+          }}
         >
           <span className="weekday">{current.format("ddd")}</span>
           <span className="date-number">{current.format("D")}</span>
@@ -188,42 +215,22 @@ function Calendar({ onTodosChange }) {
             <small className="holiday-name">{getHolidayName(current)}</small>
           )}
 
-=======
-  const calendarArr=()=>{
-    const startDay=today.clone().startOf("month").startOf("week");
-    const endDay=today.clone().endOf("month").endOf("week");
-    const day=startDay.clone();
-    const calendar=[];
-    while(day.isBefore(endDay,"day")){
-      const current=day.clone();
-      const isDiffMonth=current.month()!==today.month();
-      const dayTodos=getTodosForDay(current);
-      calendar.push(
-        <div
-          key={current.format("YYYY-MM-DD")}
-          className={`day-cell ${isDiffMonth?"dimmed-date":""} ${isHoliday(current)?"holiday":""}`}
-          onClick={()=>setSelectedDate(current)}
-          onDragOver={e=>e.preventDefault()}
-          onDrop={async()=>{
-            if(draggedTodoRef.current){
-              await handleDrop(draggedTodoRef.current, current.format("YYYY-MM-DD"));
-              draggedTodoRef.current = null;
-            }
-          }}
-        >
-          <span className="weekday">{current.format("ddd")}</span>
-          <span className="date-number">{current.format("D")}</span>
-          {!isDiffMonth && isHoliday(current) && (<small className="holiday-name">{getHolidayName(current)}</small>)}
->>>>>>> origin/feature/develop
           <div className="todo-list">
-            {dayTodos.slice(0,2).map(todo=>(
-              <div key={todo.id} className="todo-item" draggable onDragStart={()=>draggedTodoRef.current=todo}
-                onClick={e=>{e.stopPropagation(); setEditTodo(todo); setShowModal(true);}}
+            {dayTodos.slice(0, 2).map((todo) => (
+              <div
+                key={todo.id}
+                className="todo-item"
+                draggable
+                onDragStart={() => (draggedTodoRef.current = todo)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditTodo(todo);
+                  setShowModal(true);
+                }}
               >
                 {todo.title}
               </div>
             ))}
-<<<<<<< HEAD
 
             {dayTodos.length > 2 && (
               <div
@@ -239,26 +246,30 @@ function Calendar({ onTodosChange }) {
                 +{dayTodos.length - 2}
               </div>
             )}
-=======
-            {dayTodos.length>2 && (<div className="todo-more" onClick={e=>{e.stopPropagation(); setDayModalTodos({date:current.format("YYYY-MM-DD"),list:dayTodos});}}>+{dayTodos.length-2}</div>)}
->>>>>>> origin/feature/develop
           </div>
         </div>
       );
-      day.add(1,"day");
+
+      day.add(1, "day");
     }
+
     return calendar;
   };
 
+  // ----------------------------
+  // 렌더링
+  // ----------------------------
   return (
     <>
-      <div className="calendar-overlay" onClick={()=>navigate("/")}/>
+      {/* 배경 클릭 시 메인으로 이동 */}
+      <div className="calendar-overlay" onClick={() => navigate("/")} />
+
       <div className="calendar-modal">
         <div className="calendar-control">
-<<<<<<< HEAD
           <button onClick={() => setMoment(today.clone().subtract(1, "month"))}>
             ◀
           </button>
+
           <span
             className="thisMonth clickable"
             onClick={() => setShowMonthPicker((prev) => !prev)}
@@ -283,20 +294,18 @@ function Calendar({ onTodosChange }) {
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(Number(e.target.value))}
               >
-                {Array.from({ length: 12 }, (_, i) => (
-                  <option key={i} value={i + 1}>
-                    {i + 1}월
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option key={m} value={m}>
+                    {m}월
                   </option>
                 ))}
               </select>
 
               <button
                 onClick={() => {
-                  const newDate = moment({
-                    year: selectedYear,
-                    month: selectedMonth - 1,
-                  });
-                  setMoment(newDate);
+                  setMoment(
+                    moment({ year: selectedYear, month: selectedMonth - 1 })
+                  );
                   setShowMonthPicker(false);
                 }}
               >
@@ -309,6 +318,7 @@ function Calendar({ onTodosChange }) {
             ▶
           </button>
 
+          {/* 오른쪽 + 버튼 → 일정 추가 모달 */}
           <button
             className="right-btn"
             onClick={() => {
@@ -316,24 +326,14 @@ function Calendar({ onTodosChange }) {
               setShowModal(true);
             }}
           >
-            일정 추가
+            +
           </button>
-=======
-          <button onClick={()=>setMoment(today.clone().subtract(1,"month"))}>◀</button>
-          <span className="thisMonth clickable" onClick={()=>setShowMonthPicker(prev=>!prev)}>{today.format("YYYY년 MM월")}</span>
-          {showMonthPicker && (<div className="month-picker" ref={monthPickerRef}>
-            <select value={selectedYear} onChange={e=>setSelectedYear(Number(e.target.value))}>{Array.from({length:11},(_,i)=>2020+i).map(y=><option key={y} value={y}>{y}년</option>)}</select>
-            <select value={selectedMonth} onChange={e=>setSelectedMonth(Number(e.target.value))}>{Array.from({length:12},(_,i)=>i+1).map(m=><option key={m} value={m}>{m}월</option>)}</select>
-            <button onClick={()=>{setMoment(moment({year:selectedYear,month:selectedMonth-1})); setShowMonthPicker(false);}}>이동</button>
-          </div>)}
-          <button onClick={()=>setMoment(today.clone().add(1,"month"))}>▶</button>
-          <button className="right-btn" onClick={()=>{setEditTodo(null); setShowModal(true);}}>+</button>
->>>>>>> origin/feature/develop
         </div>
+
         <div className="calendar-grid">{calendarArr()}</div>
       </div>
-<<<<<<< HEAD
 
+      {/* 일정 작성 / 수정 모달 */}
       {showModal && (
         <CalendarTodo
           onClose={() => setShowModal(false)}
@@ -343,15 +343,20 @@ function Calendar({ onTodosChange }) {
         />
       )}
 
+      {/* 하루 일정 모아보기 */}
       {dayModalTodos && (
         <div
           className="todo-day-modal-overlay"
           onClick={() => setDayModalTodos(null)}
         >
-          <div className="todo-day-modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="todo-day-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3>
               {dayModalTodos.date} 일정 ({dayModalTodos.list.length}개)
             </h3>
+
             <ul>
               {dayModalTodos.list.map((todo) => (
                 <li
@@ -366,14 +371,11 @@ function Calendar({ onTodosChange }) {
                 </li>
               ))}
             </ul>
+
             <button onClick={() => setDayModalTodos(null)}>닫기</button>
           </div>
         </div>
       )}
-=======
-      {showModal && (<CalendarTodo onClose={()=>setShowModal(false)} onSave={handleSave} editTodo={editTodo} defaultDate={selectedDate.format("YYYY-MM-DD")}/>)}
-      {dayModalTodos && (<div className="todo-day-modal-overlay" onClick={()=>setDayModalTodos(null)}><div className="todo-day-modal" onClick={e=>e.stopPropagation()}><h3>{dayModalTodos.date} 일정 ({dayModalTodos.list.length}개)</h3><ul>{dayModalTodos.list.map(todo=><li key={todo.id} onClick={()=>{setEditTodo(todo); setShowModal(true); setDayModalTodos(null);}}>{todo.title}</li>)}</ul><button onClick={()=>setDayModalTodos(null)}>닫기</button></div></div>)}
->>>>>>> origin/feature/develop
     </>
   );
 }

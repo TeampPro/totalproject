@@ -38,7 +38,7 @@ export default function ChatRoom() {
     setAutoScroll(isBottom);
   };
 
-  // ✅ memberName 초기화
+  // ✅ memberName 초기화 (state → localStorage 순서)
   useEffect(() => {
     const nameFromState = location.state?.memberName;
     const nameFromStorage = localStorage.getItem("memberName");
@@ -53,7 +53,7 @@ export default function ChatRoom() {
     nickname.current = finalName;
   }, [location.state]);
 
-  // ✅ 방 이름이 없으면 서버에서 다시 조회 (GET /api/chat/rooms/{roomId} 기준)
+  // ✅ 방 이름이 없으면 서버에서 다시 조회 (GET /api/chat/rooms/{roomId})
   useEffect(() => {
     if (roomName) return; // 이미 state에 있으면 건너뜀
 
@@ -65,19 +65,22 @@ export default function ChatRoom() {
         }
       } catch (err) {
         console.error("채팅방 정보 조회 실패:", err);
-        // 여기서 에러는 그냥 로그만 찍고, 제목은 roomId로만 표시
       }
     };
 
-    fetchRoomInfo();
+    if (roomId) {
+      fetchRoomInfo();
+    }
   }, [roomId, roomName]);
 
   const connectWebSocket = () => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) return;
+    if (!roomId || !nickname.current) return;
 
-    // ✅ roomId 사용
     const socket = new WebSocket(
-      `ws://localhost:8080/ws/chat?roomId=${roomId}&memberName=${nickname.current}`
+      `ws://localhost:8080/ws/chat?roomId=${roomId}&memberName=${encodeURIComponent(
+        nickname.current
+      )}`
     );
 
     ws.current = socket;
@@ -95,11 +98,13 @@ export default function ChatRoom() {
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
+      // 멤버 리스트 갱신 패킷
       if (Array.isArray(data.members)) {
         setMembers(data.members);
         return;
       }
 
+      // 일반 채팅 메시지
       if (data.roomId === roomId) {
         setMessages((prev) => [...prev, data]);
       }
@@ -123,8 +128,8 @@ export default function ChatRoom() {
         return;
       }
 
-      if (e.code === 1008 && e.reason.includes("입장")) {
-        alert("채팅방 입장 권한이 없습니다.");
+      if (e.code === 1003 && e.reason.includes("입장")) {
+        alert(e.reason || "채팅방 입장 권한이 없습니다.");
         return;
       }
 
@@ -137,21 +142,43 @@ export default function ChatRoom() {
     };
   };
 
+  // ✅ 방 입장(멤버 등록) 후 WebSocket 연결
   useEffect(() => {
-    if (!memberName) return;
+    if (!memberName || !roomId) return;
 
-    connectWebSocket();
+    let cancelled = false;
+
+    const joinAndConnect = async () => {
+      try {
+        // 멤버 등록 (이미 등록되어 있으면 joinRoom이 내부에서 무시)
+        await axios.post(`/api/chat/rooms/${roomId}/join`, null, {
+          params: { memberName },
+        });
+
+        if (!cancelled) {
+          connectWebSocket();
+        }
+      } catch (err) {
+        console.error("❌ 채팅방 입장 실패:", err);
+        if (!cancelled) {
+          alert("채팅방에 입장할 수 없습니다.");
+        }
+      }
+    };
+
+    joinAndConnect();
 
     return () => {
+      cancelled = true;
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
       if (ws.current) {
         ws.current.close(1000, "COMPONENT_UNMOUNT");
         ws.current = null;
       }
     };
-  }, [memberName]);
+  }, [memberName, roomId]);
 
-  // ✅ 메시지 로드 (roomId 사용)
+  // ✅ 이전 메시지 로드
   useEffect(() => {
     const loadOldMessages = async () => {
       const data = await fetchMessages(roomId);
@@ -161,7 +188,9 @@ export default function ChatRoom() {
           : [{ sender: "SYSTEM", message: "아직 메시지가 없습니다.", time: "" }]
       );
     };
-    loadOldMessages();
+    if (roomId) {
+      loadOldMessages();
+    }
   }, [roomId]);
 
   // 자동 스크롤

@@ -17,18 +17,12 @@ import Upload from "./pages/Upload.jsx";
 import MyPage from "./pages/MyPage.jsx";
 import MainPage from "./pages/MainPage.jsx";
 import TodoPage from "./components/TodoPage/TodoPage.jsx";
-<<<<<<< HEAD
 import InvitePage from "./pages/InvitePage.jsx";
-import ChatRoomWrapper from "./components/Chat/ChatRoomWrapper.jsx";
 import TimeHome from "./components/TimeCalendar/TimeHome.jsx";
-=======
-import InvitePage from "./pages/InvitePage.jsx"
 import BoardHome from "./components/Board/BoardHome.jsx";
 import PostDetail from "./components/Board/PostDetail.jsx";
 import PostWrite from "./components/Board/PostWrite.jsx";
-
 import ChatRoomWrapper from "./components/Chat/ChatRoomWrapper.jsx"
->>>>>>> origin/feature/todo
 
 import "./App.css";
 
@@ -64,26 +58,6 @@ function App() {
   return (
     <>
       <div className="main-layout">
-<<<<<<< HEAD
-        {!isLoginOrSignUpPage && !isChat && !isMyPage && !isTodoPage && (
-          <div className="dashboard">
-            <div className="weather-widget">
-              <WeatherBoard />
-            </div>
-
-            <div className="calendar-widget">
-              <Calendar tasks={tasks} setTasks={setTasks} />
-            </div>
-
-            <div className="bottom-widgets">
-              <div className="todo-widget">
-                <TodoHeader
-                  active={taskFilter}
-                  onChangeFilter={handleFilterChange}
-                  showAddButton={true} // 메인에서는 + 버튼 표시
-                />
-                <AllTasks tasks={tasks} filter={taskFilter} />
-=======
         {!isLoginOrSignUpPage &&
           !isChat &&
           !isMyPage &&
@@ -92,7 +66,6 @@ function App() {
             <div className="dashboard">
               <div className="weather-widget">
                 <WeatherBoard />
->>>>>>> origin/feature/todo
               </div>
 
               <div className="calendar-widget">
@@ -119,11 +92,8 @@ function App() {
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/chat/:roomId" element={<ChatRoomWrapper />} />
             <Route path="/chat/invite/:code" element={<InvitePage />} />
-<<<<<<< HEAD
-=======
             <Route path="/board/:id" element={<PostDetail />} />
             <Route path="/board/write" element={<PostWrite />} />
->>>>>>> origin/feature/todo
             <Route path="/main" element={<MainPage />} />
             <Route path="/myPage" element={<MyPage />} />
             <Route path="/todo" element={<TodoPage tasks={tasks} setTasks={setTasks} />} />

@@ -4,6 +4,8 @@ import com.example.todo_caled.task.entity.Task;
 import com.example.todo_caled.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import java.time.LocalDate;
@@ -22,13 +24,11 @@ public class TaskService {
         return taskRepository.findAll();
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
     // 생성
->>>>>>> origin/login
     public Task createTask(Task task) {
-=======
+        return taskRepository.save(task);
+    }
+
     public List<Task> getVisibleTasks(String userId) {
         List<Task> all = taskRepository.findAll();
 
@@ -53,7 +53,6 @@ public class TaskService {
     }
 
     public Task saveTask(Task task) {
->>>>>>> origin/login
         return taskRepository.save(task);
     }
 

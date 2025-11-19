@@ -51,7 +51,7 @@ public class TodoController {
     @PutMapping("/{id}")
     public ResponseEntity<Task> updateTodo(@PathVariable Long id, @RequestBody Task task) {
         task.setId(id);
-        Task updated = taskService.updateTask(task); // ✅ 서비스 메서드명에 맞춤
+        Task updated = taskService.updateTask(id, task); // ✅ 서비스 메서드명에 맞춤
         return ResponseEntity.ok(updated);
     }
 }

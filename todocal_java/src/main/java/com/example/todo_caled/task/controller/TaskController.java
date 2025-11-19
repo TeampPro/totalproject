@@ -28,22 +28,15 @@ public class TaskController {
      *   GET /api/tasks?userId=asd1
      * 이런 식으로 호출하게 됨.
      */
+//    @GetMapping
+//    public List<Task> getAllTasks(@RequestParam(required = false) String userId) {
+//        // userId 가 없으면 공유 일정만, 있으면 "내 일정 + 공유 일정"
+//        return taskService.getVisibleTasks(userId);
+//    }
     @GetMapping
-<<<<<<< HEAD
-<<<<<<< HEAD
-    public List<Task> all() {
-        return taskService.getAllTasks();
-=======
-    public List<Task> getAllTasks(
-            @RequestParam(required = false) String userId) {
-        // userId 가 없으면 공유 일정만, 있으면 "내 일정 + 공유 일정"
-        return taskService.getVisibleTasks(userId);
->>>>>>> origin/login
-=======
     public List<Task> all(@RequestParam(required = false) String userId) {
         List<Task> all = taskService.getAllTasks();
         return filterVisible(all, userId);
->>>>>>> origin/login
     }
 
     /**
