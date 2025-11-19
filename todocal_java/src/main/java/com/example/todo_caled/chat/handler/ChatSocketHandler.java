@@ -140,8 +140,6 @@ public class ChatSocketHandler extends TextWebSocketHandler {
         log.info("연결 종료: {}", session.getId());
     }
 
-
-
     /** 쿼리스트링 파싱 메서드 */
     private Map<String, String> parseQuery(String query) {
         Map<String, String> map = new HashMap<>();
@@ -183,7 +181,7 @@ public class ChatSocketHandler extends TextWebSocketHandler {
             }
         }
 
-        // 🔥 memberSet을 members List 로 변환
+        // memberSet을 members List 로 변환
         List<String> members = new ArrayList<>(memberSet);
 
         ChatMemberListDto dto = ChatMemberListDto.builder()
@@ -194,7 +192,7 @@ public class ChatSocketHandler extends TextWebSocketHandler {
 
         String json = gson.toJson(dto);
 
-        // 🔥 모든 세션에 전송
+        // 모든 세션에 전송
         for (WebSocketSession s : sessions) {
             if (s.isOpen()) {
                 s.sendMessage(new TextMessage(json));

@@ -56,6 +56,64 @@ public class ChatService {
                 .collect(Collectors.toList());
     }
 
+    /** roomId로 방 하나 조회 (제목 맞추는 데 사용) */
+    public ChatRoomResponseDto getRoom(String roomId) {
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
+
+        return ChatRoomResponseDto.builder()
+                .id(room.getId())
+                .name(room.getName())
+                .participantCount(room.getParticipantCount())
+                .build();
+    }
+
+    public ChatRoomResponseDto createRoomForMember(String memberName, String roomName) {
+        if (roomName == null || roomName.isBlank()) {
+            roomName = memberName + "의 채팅방";
+        }
+
+        ChatRoom room = ChatRoom.builder()
+                .id(UUID.randomUUID().toString())
+                .name(roomName)
+                .participantCount(1)
+                .build();
+        chatRoomRepository.save(room);
+
+        chatRoomMemberRepository.save(ChatRoomMember.builder()
+                .roomId(room.getId())
+                .memberName(memberName)
+                .joinedAt(LocalDateTime.now())
+                .build());
+
+        return ChatRoomResponseDto.builder()
+                .id(room.getId())
+                .name(room.getName())
+                .participantCount(room.getParticipantCount())
+                .build();
+    }
+
+    // 내방 목록
+    public List<ChatRoomResponseDto> findRoomsForMember(String memberName) {
+
+        List<ChatRoomMember> joins = chatRoomMemberRepository.findByMemberName(memberName);
+
+        List<String> roomIds = joins.stream()
+                .map(ChatRoomMember::getRoomId)
+                .distinct()
+                .toList();
+
+        List<ChatRoom> rooms = chatRoomRepository.findAllById(roomIds);
+
+        return rooms.stream()
+                .map(r -> ChatRoomResponseDto.builder()
+                        .id(r.getId())
+                        .name(r.getName())
+                        .participantCount(r.getParticipantCount())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     /** 초대 링크 생성 (기존 방에서만 호출 가능) */
     public String generateInviteLink(String roomId) {
         ChatRoom room = chatRoomRepository.findById(roomId)
@@ -105,7 +163,7 @@ public class ChatService {
         return chatRoomMemberRepository.existsByRoomIdAndMemberName(roomId, memberName);
     }
 
-    /** ✅ 로그인한 사용자가 채팅 버튼 누르면 자동 방 생성 */
+    /** 로그인한 사용자가 채팅 버튼 누르면 자동 방 생성 */
     public ChatRoomResponseDto createPersonalRoom(String memberName) {
         // 이미 생성된 개인방이 있는지 확인 (중복 방지)
         List<ChatRoom> existing = chatRoomRepository.findAll().stream()
@@ -143,7 +201,6 @@ public class ChatService {
                 .build();
     }
 
-
     /** 메시지 저장 (WebSocket 핸들러에서 호출) */
     public void saveMessage(ChatMessageDto dto) {
         ChatMessage entity = ChatMessage.builder()
@@ -167,30 +224,33 @@ public class ChatService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public ChatRoomResponseDto renameRoom(String roomId, String newName) {
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
+
+        room.setName(newName);
+        ChatRoom saved = chatRoomRepository.save(room);
+
+        // participantCount는 엔티티 필드 그대로 사용
+        return ChatRoomResponseDto.builder()
+                .id(saved.getId())
+                .name(saved.getName())
+                .participantCount(saved.getParticipantCount())
+                .build();
+    }
+
     // 채팅방 30일 제한 그이후에 삭제
     @Transactional
     public void cleanupOldMessages() {
         chatMessageRepository.deleteOldMessages(LocalDateTime.now().minusDays(30));
     }
 
-//    @Transactional 임시
-//    public boolean updateNickname(String roomId, String oldName, String newName) {
-//        // 이미 존재하는 닉네임인지 확인
-//        if(chatRoomMemberRepository.existsByRoomIdAndMemberName(roomId, newName)) {
-//            return false; // 중복 방지
-//        }
-//
-//        // 기존 멤버 조회
-//        ChatRoomMember member = chatRoomMemberRepository
-//                .findByRoomIdAndMemberName(roomId, oldName)
-//                .orElse(null);
-//        if (member == null) {
-//            return false;
-//        }
-//
-//        member.setMemberName(newName);
-//        chatRoomRepository.save(member);
-//
-//        return true;
-//    }
+    // 채팅방 삭제
+    @Transactional
+    public void deleteRoom(String roomId) {
+        chatMessageRepository.deleteByRoomId(roomId);
+        chatRoomMemberRepository.deleteByRoomId(roomId);
+        chatRoomRepository.deleteById(roomId);
+    }
 }
