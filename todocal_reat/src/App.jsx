@@ -23,6 +23,7 @@ import BoardHome from "./components/Board/BoardHome.jsx";
 import PostDetail from "./components/Board/PostDetail.jsx";
 import PostWrite from "./components/Board/PostWrite.jsx";
 import ChatRoomWrapper from "./components/Chat/ChatRoomWrapper.jsx"
+import WebSearch from "./components/Search/WebSearch.jsx";
 
 import "./App.css";
 
@@ -64,6 +65,9 @@ function App() {
           !isTodoPage &&
           !isBoardDetail && (
             <div className="dashboard">
+              <div className="search-header">
+                <WebSearch />
+              </div>
               <div className="weather-widget">
                 <WeatherBoard />
               </div>
