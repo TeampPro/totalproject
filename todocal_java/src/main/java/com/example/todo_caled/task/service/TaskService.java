@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.stream.Collectors;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -15,11 +17,16 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
 
+    // 전체 조회
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+    // 생성
+>>>>>>> origin/login
     public Task createTask(Task task) {
 =======
     public List<Task> getVisibleTasks(String userId) {
@@ -50,40 +57,35 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public Task updateTask(Long id, Task newData) {
-        Task t = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        t.setTitle(newData.getTitle());
-        t.setContent(newData.getContent());
-        t.setLocation(newData.getLocation());
-        t.setShared(newData.getShared());
-
-        if (newData.getPromiseDate() != null) {
-            t.setPromiseDate(newData.getPromiseDate());
-        }
-        if (newData.getEndDateTime() != null) {
-            t.setEndDateTime(newData.getEndDateTime());
-        }
-
-        return taskRepository.save(t);
+    // 수정 (id 기준)
+    public Task updateTask(Long id, Task task) {
+        // 필요한 경우 기존 엔티티 조회 후 필드만 갱신해도 되고,
+        // 여기서는 단순히 id만 세팅해서 upsert 처리
+        task.setId(id);
+        return taskRepository.save(task);
     }
 
+    // 삭제
     public void deleteTask(Long id) {
         taskRepository.deleteById(id);
     }
 
-    public List<Task> findByDate(LocalDate date) {
-        return taskRepository.findByPromiseDateBetween(
-                date.atStartOfDay(),
-                date.atTime(LocalTime.MAX)
-        );
+    // 단일 조회 (필요하면 사용)
+    public Task getTask(Long id) {
+        return taskRepository.findById(id).orElse(null);
     }
 
-    public List<Task> findByRange(LocalDate start, LocalDate end) {
-        return taskRepository.findByPromiseDateBetween(
-                start.atStartOfDay(),
-                end.atTime(LocalTime.MAX)
-        );
+    // 특정 날짜의 일정
+    public List<Task> findByDate(LocalDate date) {
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end   = date.atTime(LocalTime.MAX);
+        return taskRepository.findByPromiseDateBetween(start, end);
+    }
+
+    // 날짜 범위의 일정
+    public List<Task> findByRange(LocalDate startDate, LocalDate endDate) {
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end   = endDate.atTime(LocalTime.MAX);
+        return taskRepository.findByPromiseDateBetween(start, end);
     }
 }

@@ -1,10 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
+import TodoHeader from "../Header/TodoHeader.jsx";
+import TaskList from "../TaskList/TaskList";
 import classes from "../../styles/TodoPage/TodoPage.module.css";
 import moment from "moment";
-import CalendarTodo from "../../pages/CalendarTodo";
-
-// ⭐ TodoHeader 추가
-import TodoHeader from "../Header/TodoHeader";
 
 const normalize = (d) => {
   if (!d) return null;
@@ -19,13 +17,6 @@ const TodoPage = () => {
   const [rawTasks, setRawTasks] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
-  // ⭐ 글작성 모달
-  const [showModal, setShowModal] = useState(false);
-  const [editTodo, setEditTodo] = useState(null);
-
-  // ⭐ 일정 추가 모달 열기
-  const handleAddClick = () => setShowModal(true);
 
   // 서버에서 실제 데이터 fetch
   useEffect(() => {
@@ -57,7 +48,7 @@ const TodoPage = () => {
 
     let tasks = rawTasks
       .map((t) => ({ ...t, _m: normalize(t.promiseDate) }))
-      .filter((t) => t._m && t._m.isSameOrAfter(today));
+      .filter((t) => t._m && t._m.isSameOrAfter(today)); // 오늘 이전 제외
 
     if (filter === "week") {
       tasks = tasks.filter((t) =>
@@ -79,48 +70,25 @@ const TodoPage = () => {
   const pagedTasks = filteredTasks.slice(startIdx, startIdx + itemsPerPage);
   const totalPages = Math.ceil(filteredTasks.length / itemsPerPage);
 
-  // ⭐ CalendarTodo 저장 처리
-  
-  const handleSaveFromModal = (savedTodo) => {
-    if (!savedTodo) return;
-
-    // ⭐ savedTodo → rawTasks 형식으로 변환
-    const normalized = {
-      ...savedTodo,
-      tDate: savedTodo.promiseDate
-        ? moment(savedTodo.promiseDate).format("YYYY-MM-DD")
-        : null,
-    };
-
-    // ⭐ 삭제 처리
-    if (savedTodo.deleted) {
-      setRawTasks((prev) => prev.filter((t) => t.id !== savedTodo.id));
-      return;
-    }
-
-    // ⭐ 수정/추가 처리
-    setRawTasks((prev) => {
-      const exists = prev.some((t) => t.id === normalized.id);
-      return exists
-        ? prev.map((t) => (t.id === normalized.id ? normalized : t))
-        : [...prev, normalized];
-    });
-
-    setShowModal(false);
-    setEditTodo(null);
+  const handleAddClick = () => {
+    alert("일정 추가 모달 띄우기 (캘린더 스타일)");
   };
-
 
   return (
     <div className={classes.todoPageContainer}>
 <<<<<<< HEAD
+<<<<<<< HEAD
       {/* ⭐ TodoHeader + 글작성하기 버튼을 한 줄에 배치 */}
       <div className={classes.topBar}>
+=======
+      <div className={classes.todoHeaderContainer}>
+>>>>>>> origin/login
         <TodoHeader
           onChangeFilter={setFilter}
           active={filter}
-          showAddButton={false} // TodoHeader는 + 버튼 숨김
+          showAddButton={false}
         />
+<<<<<<< HEAD
 
 =======
       <div className={classes.todoHeaderContainer}>
@@ -129,6 +97,8 @@ const TodoPage = () => {
           active={filter}
           showAddButton={false}
         />
+>>>>>>> origin/login
+=======
 >>>>>>> origin/login
         <button className={classes.writeButton} onClick={handleAddClick}>
           글작성하기
@@ -140,30 +110,12 @@ const TodoPage = () => {
           <div className={classes.empty}>데이터가 없습니다.</div>
         )}
         {pagedTasks.map((task) => (
-          <div
-            key={task.id}
-            className={classes.taskItem}
-            onClick={() => {
-              setEditTodo(task);
-              setShowModal(true);
-            }}
-          >
+          <div key={task.id} className={classes.taskItem}>
             <h4>{task.title}</h4>
             <p>{task.content}</p>
           </div>
         ))}
       </div>
-      {showModal && (
-        <CalendarTodo
-          onClose={() => {
-            setShowModal(false);
-            setEditTodo(null);
-          }}
-          onSave={handleSaveFromModal}
-          editTodo={editTodo} // ⭐ 추가됨 (수정 모드 활성화)
-          defaultDate={moment().format("YYYY-MM-DD")}
-        />
-      )}
 
       {totalPages > 1 && (
         <div className={classes.pagination}>
