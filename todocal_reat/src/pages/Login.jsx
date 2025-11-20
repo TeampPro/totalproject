@@ -46,7 +46,7 @@ function Login() {
             name: data.name,
             email: data.email,
             nickname: data.nickname, // 🔥 추가
-            userType: data.userType,
+            userType: data.userType || "member",
           })
         );
 

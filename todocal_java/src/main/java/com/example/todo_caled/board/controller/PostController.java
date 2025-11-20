@@ -33,20 +33,17 @@ public class PostController {
         return postService.getPost(id);
     }
 
-    // UPDATE (작성자 검증 필요)
+    // UPDATE
     @PutMapping("/{id}")
-    public Post update(
-            @PathVariable Long id,
-            @RequestBody Post req
-    ) {
+    public Post update(@PathVariable Long id, @RequestBody Post req) {
         return postService.update(id, req);
     }
 
-    // DELETE (작성자 검증 필요)
+    // DELETE
     @DeleteMapping("/{id}")
     public Map<String, Object> delete(
             @PathVariable Long id,
-            @RequestBody Map<String, String> body   // writer 받아옴
+            @RequestBody Map<String, String> body
     ) {
         String writer = body.get("writer");
         boolean deleted = postService.delete(id, writer);
@@ -54,22 +51,25 @@ public class PostController {
         return Map.of("success", deleted);
     }
 
+    /** 🔍 검색 API (프론트 파라미터 기준으로 수정됨) */
     @GetMapping("/search")
     public List<Post> search(
             @RequestParam String category,
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String writer,
+            @RequestParam(required = false) String field,
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate
     ) {
-        return postService.searchFilter(category, title, writer, startDate, endDate);
+        return postService.searchFilter(category, field, keyword, startDate, endDate);
     }
 
+    /* 이전 글 */
     @GetMapping("/{id}/prev")
     public Post getPrev(@PathVariable Long id) {
         return postService.getPrevPost(id);
     }
 
+    /* 다음 글 */
     @GetMapping("/{id}/next")
     public Post getNext(@PathVariable Long id) {
         return postService.getNextPost(id);

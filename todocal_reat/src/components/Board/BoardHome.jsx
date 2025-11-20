@@ -155,6 +155,7 @@ const BoardHome = () => {
               placeholder="검색어 입력"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               className="search-input"
             />
           ) : (
@@ -163,12 +164,14 @@ const BoardHome = () => {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
               <span> ~ </span>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
             </div>
           )}

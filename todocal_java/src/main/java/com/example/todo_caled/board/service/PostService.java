@@ -82,8 +82,8 @@ public class PostService {
 
     public List<Post> searchFilter(
             String category,
-            String title,
-            String writer,
+            String field,
+            String keyword,
             String startDate,
             String endDate
     ) {
@@ -98,8 +98,36 @@ public class PostService {
             end = LocalDate.parse(endDate).atTime(23, 59, 59);
         }
 
-        return postRepository.searchFilter(category, title, writer, start, end);
+        // 기본값
+        String title = null;
+        String writer = null;
+        String content = null;
+
+        // 🔥 검색 기준에 따라 매핑
+        if (keyword != null && !keyword.isEmpty()) {
+            switch (field) {
+                case "title":
+                    title = keyword;
+                    break;
+                case "writer":
+                    writer = keyword;
+                    break;
+                case "content":
+                    content = keyword;
+                    break;
+            }
+        }
+
+        return postRepository.searchFilter(
+                category,
+                title,
+                writer,
+                content,
+                start,
+                end
+        );
     }
+
 
     public Post getPrevPost(Long id) {
         return postRepository.findTopByIdLessThanOrderByIdDesc(id);

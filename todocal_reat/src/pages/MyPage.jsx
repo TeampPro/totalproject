@@ -76,7 +76,7 @@ function MyPage() {
       const formData = new FormData();
       formData.append("id", userInfo.id);
       formData.append("name", userInfo.name || "");
-      formData.append("nickname", nickname || ""); // 🔥 추가
+      formData.append("nickname", nickname || "");
       formData.append("email", userInfo.email || "");
 
       if (userInfo.profileImage instanceof File) {
@@ -97,7 +97,7 @@ function MyPage() {
         alert(data.message || "회원 정보가 성공적으로 수정되었습니다.");
         setIsEditing(false);
 
-        // 🔥 localStorage user 업데이트
+        // 🔥 localStorage 업데이트
         const savedUser = JSON.parse(localStorage.getItem("user"));
         localStorage.setItem(
           "user",
@@ -108,6 +108,19 @@ function MyPage() {
             email: userInfo.email,
           })
         );
+
+        // 🔥 state 즉시 업데이트 (중요!!)
+        setUserInfo((prev) => ({
+          ...prev,
+          nickname: nickname,
+        }));
+
+        setNickname(nickname);
+
+        // 🔥 프로필 이미지도 즉시 갱신
+        if (data.profileImage) {
+          setPreview(`http://localhost:8080/api/uploads/${data.profileImage}`);
+        }
       } else {
         alert(data.message || "수정 실패");
       }
@@ -116,6 +129,7 @@ function MyPage() {
       alert("서버 오류 발생");
     }
   };
+
 
   const handlePasswordChange = async () => {
     if (!currentPassword || !newPassword) {
