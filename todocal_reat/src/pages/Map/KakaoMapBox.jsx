@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import "../styles/KakaoMapBox.css";
+import "../../styles/KakaoMapBox.css";
 
 function KakaoMapBox() {
   const [map, setMap] = useState(null);

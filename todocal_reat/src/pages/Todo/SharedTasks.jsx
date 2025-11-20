@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import TaskList from "../components/TaskList/TaskList";
+import TaskList from "../../components/TaskList/TaskList";
 
 const SharedTasks = () => {
   const [tasks, setTasks] = useState([]);

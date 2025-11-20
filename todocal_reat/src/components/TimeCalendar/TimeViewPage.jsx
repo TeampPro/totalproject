@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import moment from "moment";
-import CalendarTodo from "../../pages/CalendarTodo";
+import CalendarTodo from "../../pages/Todo/CalendarTodo";
 import "./TimeViewPage.css";
 
 const START_HOUR = 8;
@@ -154,9 +154,29 @@ function TimeViewPage() {
             setShowModal(false);
             setSelectedEvent(null);
           }}
-          onSave={() => {
-            fetchEvents();
+          onSave={(savedTodo) => {
+            // 삭제인 경우
+            if (savedTodo?.deleted) {
+              setEvents((prev) => prev.filter((e) => e.id !== savedTodo.id));
+            } else if (savedTodo) {
+              // 추가 또는 수정인 경우
+              setEvents((prev) => {
+                const exists = prev.some((e) => e.id === savedTodo.id);
+
+                // 이미 있는 일정이면 수정
+                if (exists) {
+                  return prev.map((e) =>
+                    e.id === savedTodo.id ? { ...e, ...savedTodo } : e
+                  );
+                }
+
+                // 없는 일정이면 새로 추가
+                return [...prev, savedTodo];
+              });
+            }
+
             setShowModal(false);
+            setSelectedEvent(null);
           }}
         />
       )}
