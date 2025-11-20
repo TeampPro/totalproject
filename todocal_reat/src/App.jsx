@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import MenuBar from "./components/MenuBar/MenuBar.jsx";
 import TodoHeader from "./components/Header/TodoHeader.jsx";
 
-import WeatherBoard from "./pages/WeatherBoard";  
+import WeatherBoard from "./pages/WeatherBoard";
 import Calendar from "./pages/Calendar.jsx";
 import AllTasks from "./pages/AllTasks";
 import KakaoMapBox from "./pages/KakaoMapBox";
@@ -25,6 +25,10 @@ import PostWrite from "./components/Board/PostWrite.jsx";
 import ChatRoomWrapper from "./components/Chat/ChatRoomWrapper.jsx"
 
 import "./App.css";
+import AdminUserManage from "./components/AdminPage/AdminUserManage.jsx";
+import AdminUserInfo from "./components/AdminPage/AdminUserInfo.jsx";
+import AdminUserTasks from "./components/AdminPage/AdminUserTasks.jsx";
+import AdminTaskDetail from "./components/AdminPage/AdminTaskDetail.jsx";
 
 function App() {
   const location = useLocation();
@@ -35,6 +39,7 @@ function App() {
   const isMyPage = location.pathname === "/myPage";
   const isTodoPage = location.pathname === "/todo";
   const isBoardDetail = location.pathname.startsWith("/board/");
+  const isAdmin = location.pathname.startsWith("/admin");
 
 
   // ✅ 전체 tasks 상태 관리
@@ -96,6 +101,13 @@ function App() {
             <Route path="/board/write" element={<PostWrite />} />
             <Route path="/main" element={<MainPage />} />
             <Route path="/myPage" element={<MyPage />} />
+            {/* 관리자 회원 관리 메인 */}
+            <Route path="/admin/users" element={<AdminUserManage />} />
+            {/* as11 아이디의 정보 페이지 */}
+            <Route path="/admin/users/:userId/info" element={<AdminUserInfo />} />
+            {/* as11 아이디의 일정(활동) 페이지 */}
+            <Route path="/admin/users/:userId/tasks" element={<AdminUserTasks />} />
+            <Route path="/admin/tasks/:taskId" element={<AdminTaskDetail />} />
             <Route path="/todo" element={<TodoPage tasks={tasks} setTasks={setTasks} />} />
           </Routes>
         </div>

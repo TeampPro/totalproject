@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
+
 public interface UserRepository extends JpaRepository<User, Long> {
     User findById(String id);
     boolean existsById(String id); // User 엔티티의 id 필드 기준
@@ -17,6 +18,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.userType = 'guest' AND u.createdAt < :limit")
     List<User> findGuestUsersBefore(LocalDateTime limit);
+
 
 }
 
