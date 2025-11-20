@@ -8,6 +8,7 @@ import com.example.todo_caled.comments.entity.Comment;
 import com.example.todo_caled.comments.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -85,6 +86,7 @@ public class CommentService {
     }
 
     // 삭제
+    @Transactional
     public void delete(Long id, String writer) {
         Comment c = commentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("댓글 없음"));
@@ -94,6 +96,10 @@ public class CommentService {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
 
+        // 대댓글 먼저 삭제
+        commentRepository.deleteByParentId(id);
+
+        // 부모 댓글 삭제
         commentRepository.delete(c);
     }
 

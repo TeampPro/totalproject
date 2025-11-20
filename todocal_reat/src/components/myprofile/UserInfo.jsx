@@ -72,7 +72,10 @@ function UserInfo({ onLogout }) {
         <button style={styles.myPageBtn} onClick={handleMyPage}>
           마이페이지
         </button>
-        <button style={styles.logoutBtn} onClick={onLogout}>
+        <button style={styles.logoutBtn} onClick={() => {
+          console.log("작동")
+          onLogout();
+        }}>
           로그아웃
         </button>
       </div>

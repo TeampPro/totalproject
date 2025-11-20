@@ -76,6 +76,9 @@ public class PostService {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
 
+        // 댓글 전체 삭제
+        commentRepository.deleteByPostId(id);
+
         postRepository.delete(post);
         return true;
     }

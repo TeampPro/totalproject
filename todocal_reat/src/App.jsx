@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // 공통 레이아웃
 import MenuBar from "./components/MenuBar/MenuBar.jsx";
@@ -60,6 +61,14 @@ function App() {
 
   const handleTodosChange = () => setRefreshKey((prev) => prev + 1);
 
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    alert("로그아웃 되었습니다.");
+    navigate("/");
+  };
+
   useEffect(() => {
     fetch("http://localhost:8080/api/tasks")
       .then((res) => res.json())
@@ -82,7 +91,7 @@ function App() {
               </div>
 
               <div className="right-area">
-                <UserInfo />
+                <UserInfo onLogout={handleLogout} />
                 <WeatherBoard />
                 <div className="map-area">
                   <KakaoMapBox />

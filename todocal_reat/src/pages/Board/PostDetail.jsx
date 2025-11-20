@@ -193,9 +193,11 @@ const PostDetail = () => {
   };
 
   const handleDeleteComment = async (cid) => {
-    await axios.delete(`http://localhost:8080/api/comments/${cid}`);
+    await axios.delete(`http://localhost:8080/api/comments/${cid}`, {
+      data: { writer: loginNickname }
+    });
     loadComments();
-  };
+};
 
   const handleEdit = async (cid) => {
     await axios.put(`http://localhost:8080/api/comments/${cid}`, {

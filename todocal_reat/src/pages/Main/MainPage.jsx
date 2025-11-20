@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import UserInfo from "../../components/myprofile/UserInfo";
 
 const MainPage = () => {
   const navigate = useNavigate();
@@ -31,7 +32,6 @@ const MainPage = () => {
     <>
       {/* 🔥 UserInfo 제거됨 → 대시보드 UserInfo만 유지 */}
       <div style={styles.overlayWrapper}>
-
         {/* 우측 하단 플로팅 버튼 */}
         {user && (
           <div style={styles.menuWrapper}>

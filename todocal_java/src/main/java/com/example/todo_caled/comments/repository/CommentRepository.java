@@ -16,6 +16,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     long countByPost(Post post);
 
+    /** 닉네임 변경 시 댓글 writer 전체 교체 */
     @Transactional
     @Modifying
     @Query("UPDATE Comment c SET c.writer = :newWriter " +
@@ -26,6 +27,14 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             @Param("oldNickname") String oldNickname,
             @Param("newWriter") String newWriter
     );
+
+    /** 게시글의 모든 댓글 + 대댓글 삭제 */
+    @Transactional
+    void deleteByPostId(Long postId);
+
+    /** 특정 댓글의 모든 대댓글 삭제 */
+    @Transactional
+    void deleteByParentId(Long parentId);
 
 
 }

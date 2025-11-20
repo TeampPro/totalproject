@@ -43,8 +43,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             @Param("newWriter") String newWriter
     );
 
-
-
     // 이전글 (현재 id보다 작은 것 중 가장 큰 id)
     Post findTopByIdLessThanOrderByIdDesc(Long id);
 
