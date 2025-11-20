@@ -10,111 +10,97 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding: 10px 20px;
+  padding: 10px 20px 90px;
   box-sizing: border-box;
+
+  max-width: 1400px;
+  margin: 0 auto;
+
+  position: relative;  /* 🔥 플로팅 버튼 보이게 */
+  z-index: 1;          /* 🔥 MainPage 오버레이가 위로 */
 }
 
-/* 대시보드 전체 */
-.dashboard {
+/* ========================= */
+/*       대시보드 구조        */
+/* ========================= */
+
+.dashboard-new {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* 메인 2열 레이아웃 */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 0.9fr;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+/* 좌측 */
+.left-area {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-/* 날씨 위젯 */
-.weather-widget {
-  min-height: 80px;
+.calendar-area {
   background-color: #fff;
-  padding: 10px;
+  padding: 15px;
   border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-
-  display: flex;
-  align-items: center;        /* 수직 중앙 */
-  justify-content: flex-start; /* 좌측 정렬 */
-  overflow: hidden;
-  position: relative;
+  border: 1px solid #ccc;
+  min-height: 430px;
 }
 
-/* WeatherBoard container 조정 */
-.weather-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-/* WeatherBoard 내부 page-container 오버라이드 */
-.weather-container .page-container {
-  min-height: auto !important;  /* 100vh 제거 */
-  padding: 0;
-  justify-content: flex-start;
-  align-items: center;
-}
-
-/* 캘린더 */
-.calendar-widget {
+.board-area {
   background-color: #fff;
-  padding: 10px;
+  padding: 15px;
   border-radius: 10px;
-  min-height: 400px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  border: 1px solid #ccc;
+  min-height: 260px;
 }
 
-/* 일정 탭 버튼 (TODO 위쪽) */
-.calendar-tabs {
+/* 우측 */
+.right-area {
   display: flex;
-  gap: 10px;
-  margin: 10px 0;
-}
-
-.calendar-tabs button {
-  padding: 6px 12px;
-  background-color: #4a90e2;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.calendar-tabs button:hover {
-  background-color: #357abd;
-}
-
-/* 하단 영역 */
-.bottom-widgets {
-  display: flex;
+  flex-direction: column;
   gap: 20px;
-  flex-wrap: wrap;
+
+  width: 100%;
+  max-width: none;
+  margin-left: 10px;
 }
 
-/* TODO 영역 */
-.todo-widget {
-  flex: 2;
-  min-height: 300px;
+/* Weather container 제거 */
+.right-area > .weather-container,
+.right-area > .weather-side {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* WeatherBoard 크기 */
+.right-area > div:nth-child(2) {
+  min-height: 150px;
+  width: 100%;
+}
+
+/* KakaoMap 크기 */
+.map-area {
   background-color: #fff;
-  padding: 10px;
+  padding: 12px;
   border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  border: 1px solid #ccc;
+  width: 100%;
+  min-height: 330px;
 }
 
-/* Kakao Map */
-.map-widget {
-  flex: 1;
-  min-height: 250px;
-  background-color: #fff;
-  padding: 10px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-/* Routes 영역 */
+/* content 영역 */
 .content {
   margin-top: 20px;
 }
 
-/* 버튼 공통 */
 button {
   font-family: inherit;
   font-size: 14px;

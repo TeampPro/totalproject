@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import UserInfo from "../../myprofile/UserInfo";
 
 const MainPage = () => {
   const navigate = useNavigate();
@@ -30,55 +29,63 @@ const MainPage = () => {
 
   return (
     <>
-      {/* ✅ 상단 유저 정보 표시 */}
-      <div style={styles.userInfoWrapper}>
-        <UserInfo onLogout={handleLogout} />
+      {/* 🔥 UserInfo 제거됨 → 대시보드 UserInfo만 유지 */}
+      <div style={styles.overlayWrapper}>
+
+        {/* 우측 하단 플로팅 버튼 */}
+        {user && (
+          <div style={styles.menuWrapper}>
+            <button
+              style={styles.menuButton}
+              onClick={() => setMenuOpen((prev) => !prev)}
+            >
+              <div style={styles.bar}></div>
+              <div style={styles.bar}></div>
+              <div style={styles.bar}></div>
+            </button>
+
+            {menuOpen && (
+              <div style={styles.dropdown}>
+                <button
+                  style={styles.dropdownItem}
+                  onClick={() => navigate("/myPage")}
+                >
+                  마이페이지
+                </button>
+                <button
+                  style={styles.dropdownItem}
+                  onClick={handleLogout}
+                >
+                  로그아웃
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-
-      {/* ✅ 우측 하단 플로팅 메뉴 */}
-      {user && (
-        <div style={styles.menuWrapper}>
-          <button
-            style={styles.menuButton}
-            onClick={() => setMenuOpen((prev) => !prev)}
-          >
-            <div style={styles.bar}></div>
-            <div style={styles.bar}></div>
-            <div style={styles.bar}></div>
-          </button>
-
-          {menuOpen && (
-            <div style={styles.dropdown}>
-              <button
-                style={styles.dropdownItem}
-                onClick={() => navigate("/myPage")}
-              >
-                마이페이지
-              </button>
-              <button style={styles.dropdownItem} onClick={handleLogout}>
-                로그아웃
-              </button>
-            </div>
-          )}
-        </div>
-      )}
     </>
   );
 };
 
 const styles = {
-  userInfoWrapper: {
-    marginTop: "60px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
+  overlayWrapper: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    zIndex: 200,
+    pointerEvents: "none",
   },
+
   menuWrapper: {
     position: "fixed",
     bottom: "80px",
     right: "20px",
-    zIndex: 100,
+    zIndex: 300,
+    pointerEvents: "auto",
   },
+
   menuButton: {
     backgroundColor: "#007bff",
     border: "none",
@@ -92,6 +99,7 @@ const styles = {
     cursor: "pointer",
     boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
   },
+
   bar: {
     width: "30px",
     height: "4px",
@@ -99,6 +107,7 @@ const styles = {
     margin: "3px 0",
     borderRadius: "2px",
   },
+
   dropdown: {
     position: "absolute",
     bottom: "75px",
@@ -112,6 +121,7 @@ const styles = {
     padding: "5px 0",
     zIndex: 10,
   },
+
   dropdownItem: {
     background: "none",
     border: "none",
