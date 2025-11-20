@@ -40,13 +40,15 @@ function Login() {
         alert(data.message || '로그인 성공');
 
         localStorage.setItem(
-          'user',
-          JSON.stringify({ id: data.id, userType: data.userType || 'member' })
+          "user",
+          JSON.stringify({
+            id: data.id,
+            name: data.name,
+            email: data.email,
+            nickname: data.nickname, // 🔥 추가
+            userType: data.userType || "member",
+          })
         );
-
-        // 로컬에 사용자 정보 저장 (id, userType)
-        localStorage.setItem('user', JSON.stringify({ id: data.id, userType: data.userType || 'member' }));
-        localStorage.setItem('memberName', data.id);
 
         navigate('/main');
       } else {
@@ -71,7 +73,14 @@ function Login() {
       if (response.ok) {
         alert(`✅ ${data.message}\n\n아이디: ${data.id}\n비밀번호: ${data.password}`);
         localStorage.setItem('guestInfo', JSON.stringify({ id: data.id, password: data.password }));
-        localStorage.setItem('user', JSON.stringify({ id: data.id, userType: data.userType || 'guest' }));
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            id: data.id,
+            name: data.name || data.id, // 게스트는 name 없으니 id를 이름으로 사용
+            userType: data.userType || "guest",
+          })
+        );
 
         localStorage.setItem('memberName', data.id);
 

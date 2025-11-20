@@ -5,12 +5,15 @@ function MyPage() {
   const [userInfo, setUserInfo] = useState({
     id: "",
     name: "",
+    nickname: "", // 🔥 닉네임
     email: "",
     password: "",
     kakaoId: "",
     kakaoEmail: "",
     profileImage: null,
   });
+
+  const [nickname, setNickname] = useState(""); // 🔥 별도 상태
   const [isEditing, setIsEditing] = useState(false);
   const [userType, setUserType] = useState("member");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -36,12 +39,16 @@ function MyPage() {
         setUserInfo({
           id: data.id || "",
           name: data.name || "",
+          nickname: data.nickname || "", // 🔥 가져옴
           email: data.email || "",
           password: "",
           kakaoId: data.kakaoId || "",
           kakaoEmail: data.kakaoEmail || "",
           profileImage: null,
         });
+
+        setNickname(data.nickname || ""); // 🔥 닉네임 상태 설정
+
         if (data.profileImage) {
           setPreview(`http://localhost:8080/api/uploads/${data.profileImage}`);
         }
@@ -69,33 +76,50 @@ function MyPage() {
       const formData = new FormData();
       formData.append("id", userInfo.id);
       formData.append("name", userInfo.name || "");
+      formData.append("nickname", nickname || "");
       formData.append("email", userInfo.email || "");
+
       if (userInfo.profileImage instanceof File) {
         formData.append("profileImage", userInfo.profileImage);
       }
-      const response = await fetch("http://localhost:8080/api/user/update-with-file", {
-        method: "PUT",
-        body: formData,
-      });
+
+      const response = await fetch(
+        "http://localhost:8080/api/user/update-with-file",
+        {
+          method: "PUT",
+          body: formData,
+        }
+      );
+
       const data = await response.json().catch(() => ({}));
+
       if (response.ok) {
         alert(data.message || "회원 정보가 성공적으로 수정되었습니다.");
         setIsEditing(false);
+
+        // 🔥 localStorage 업데이트
         const savedUser = JSON.parse(localStorage.getItem("user"));
-        if (savedUser?.id) {
-          fetch(`http://localhost:8080/api/user/${savedUser.id}`)
-            .then((res) => res.json())
-            .then((d) => {
-              setUserInfo((prev) => ({
-                ...prev,
-                name: d.name || "",
-                email: d.email || "",
-                profileImage: null,
-              }));
-              if (d.profileImage) {
-                setPreview(`http://localhost:8080/api/uploads/${d.profileImage}`);
-              }
-            });
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            ...savedUser,
+            nickname: nickname,
+            name: userInfo.name,
+            email: userInfo.email,
+          })
+        );
+
+        // 🔥 state 즉시 업데이트 (중요!!)
+        setUserInfo((prev) => ({
+          ...prev,
+          nickname: nickname,
+        }));
+
+        setNickname(nickname);
+
+        // 🔥 프로필 이미지도 즉시 갱신
+        if (data.profileImage) {
+          setPreview(`http://localhost:8080/api/uploads/${data.profileImage}`);
         }
       } else {
         alert(data.message || "수정 실패");
@@ -106,21 +130,25 @@ function MyPage() {
     }
   };
 
+
   const handlePasswordChange = async () => {
     if (!currentPassword || !newPassword) {
       alert("현재 비밀번호와 새 비밀번호를 모두 입력해주세요.");
       return;
     }
     try {
-      const res = await fetch("http://localhost:8080/api/user/change-password", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: userInfo.id,
-          currentPassword,
-          newPassword,
-        }),
-      });
+      const res = await fetch(
+        "http://localhost:8080/api/user/change-password",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: userInfo.id,
+            currentPassword,
+            newPassword,
+          }),
+        }
+      );
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         alert(data.message || "비밀번호가 변경되었습니다.");
@@ -138,7 +166,10 @@ function MyPage() {
   const handleDeleteAccount = async () => {
     if (!window.confirm("정말로 회원탈퇴 하시겠습니까?")) return;
     try {
-      const res = await fetch(`http://localhost:8080/api/user/delete/${userInfo.id}`, { method: "DELETE" });
+      const res = await fetch(
+        `http://localhost:8080/api/user/delete/${userInfo.id}`,
+        { method: "DELETE" }
+      );
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         alert(data.message || "회원탈퇴가 완료되었습니다.");
@@ -167,10 +198,12 @@ function MyPage() {
             <input type="file" accept="image/*" onChange={handleImageChange} />
           )}
         </div>
+
         <div style={styles.infoGroup}>
           <label>아이디</label>
-          <input type="text" value={userInfo.id} disabled style={styles.input} />
+          <input value={userInfo.id} disabled style={styles.input} />
         </div>
+
         <div style={styles.infoGroup}>
           <label>이름</label>
           <input
@@ -182,6 +215,18 @@ function MyPage() {
             style={styles.input}
           />
         </div>
+
+        <div style={styles.infoGroup}>
+          <label>닉네임</label>
+          <input
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            disabled={!isEditing || userType === "guest"}
+            placeholder="게시판에 표시될 이름"
+            style={styles.input}
+          />
+        </div>
+
         <div style={styles.infoGroup}>
           <label>이메일</label>
           <input
@@ -193,8 +238,9 @@ function MyPage() {
             style={styles.input}
           />
         </div>
+
         {userType === "guest" ? (
-          <p style={styles.warning}>⚠️ 비회원은 정보 수정이 불가능합니다.</p>
+          <p style={styles.warning}>⚠ 비회원은 정보 수정이 불가능합니다.</p>
         ) : (
           <>
             {isEditing ? (
@@ -202,12 +248,16 @@ function MyPage() {
                 저장하기
               </button>
             ) : (
-              <button style={styles.editButton} onClick={() => setIsEditing(true)}>
+              <button
+                style={styles.editButton}
+                onClick={() => setIsEditing(true)}
+              >
                 수정하기
               </button>
             )}
           </>
         )}
+
         {userType !== "guest" && (
           <div style={styles.passwordBox}>
             <h4>비밀번호 변경</h4>
@@ -225,16 +275,21 @@ function MyPage() {
               onChange={(e) => setNewPassword(e.target.value)}
               style={styles.input}
             />
-            <button style={styles.passwordButton} onClick={handlePasswordChange}>
+            <button
+              style={styles.passwordButton}
+              onClick={handlePasswordChange}
+            >
               비밀번호 변경
             </button>
           </div>
         )}
+
         {userType !== "guest" && (
           <button style={styles.deleteButton} onClick={handleDeleteAccount}>
             회원탈퇴
           </button>
         )}
+
         <button style={styles.backButton} onClick={() => navigate("/main")}>
           메인으로
         </button>

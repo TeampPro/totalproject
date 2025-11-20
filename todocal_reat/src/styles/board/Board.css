@@ -216,3 +216,69 @@
   font-size: 14px;
   color: #444;
 }
+
+/* 검색 바 전체 */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+/* 검색 기준 선택 상자 */
+.search-select {
+  position: relative;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #fff;
+}
+
+/* 드롭다운 메뉴 */
+.search-dropdown {
+  position: absolute;
+  top: 100%;            /* 🔥 버튼 바로 아래에 붙도록 설정 */
+  left: 0;
+  width: 120px;         /* 원하는 넓이로 조절 */
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-top: 4px;      /* 버튼과 살짝 간격 */
+  z-index: 999;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.search-dropdown div {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.search-dropdown div:hover {
+  background: #f1f1f1;
+}
+
+
+/* 입력 칸 */
+.search-input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 200px;
+}
+
+/* 날짜 */
+.date-box {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.search-btn {
+  padding: 8px 14px;
+  background: #1976d2;
+  color: white;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
