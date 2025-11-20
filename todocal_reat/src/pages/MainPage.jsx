@@ -63,6 +63,44 @@ const MainPage = () => {
           </div>
         )}
       </div>
+
+      {/* ✅ 우측 하단 플로팅 메뉴 */}
+      {user && (
+        <div style={styles.menuWrapper}>
+          <button
+            style={styles.menuButton}
+            onClick={() => setMenuOpen((prev) => !prev)}
+          >
+            <div style={styles.bar}></div>
+            <div style={styles.bar}></div>
+            <div style={styles.bar}></div>
+          </button>
+
+          {menuOpen && (
+            <div style={styles.dropdown}>
+              {/* ✅ 관리자 전용 메뉴 */}
+              {user?.userType === "ADMIN" && (
+                <button
+                  style={styles.dropdownItem}
+                  onClick={() => navigate("/admin/users")}  // 회원관리 페이지(추후 구현)
+                >
+                  회원관리
+                </button>
+              )}
+
+              <button
+                style={styles.dropdownItem}
+                onClick={() => navigate("/myPage")}
+              >
+                마이페이지
+              </button>
+              <button style={styles.dropdownItem} onClick={handleLogout}>
+                로그아웃
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 };
@@ -120,15 +158,17 @@ const styles = {
     flexDirection: "column",
     padding: "5px 0",
     zIndex: 10,
+    minWidth: "120px",
   },
 
   dropdownItem: {
     background: "none",
     border: "none",
-    padding: "10px 20px",
+    padding: "8px 16px",
     textAlign: "left",
     cursor: "pointer",
-    fontSize: "15px",
+    fontSize: "14px",
+    whiteSpace: "nowrap",
   },
 };
 

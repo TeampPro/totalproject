@@ -85,6 +85,14 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
 
+    // 일정 단건 조회 (관리자 상세보기 등에서 사용)
+    // GET /api/tasks/{id}
+    @GetMapping("/{id}")
+    public ResponseEntity<Task> getOne(@PathVariable Long id) {
+        return taskService.getTaskById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
     /**
      * 특정 날짜의 일정 조회
      * - 비로그인 / 로그인 모두 "보여야 하는 것만" 필터링
@@ -125,6 +133,10 @@ public class TaskController {
      *  - userId 있음: ownerId = userId 이거나 shared = true 인 일정만
      */
     private List<Task> filterVisible(List<Task> all, String userId) {
+        // ✅ 관리자(admin)는 모든 일정 조회
+        if ("admin".equals(userId)) {
+            return all;
+        }
         // 비로그인 → 공유 일정만
         if (userId == null || userId.isBlank()) {
             return all.stream()
