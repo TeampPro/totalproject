@@ -1,31 +1,44 @@
-// src/App.jsx
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+
+// 공통 레이아웃 컴포넌트
 import MenuBar from "./components/MenuBar/MenuBar.jsx";
 import TodoHeader from "./components/Header/TodoHeader.jsx";
 
-import WeatherBoard from "./pages/WeatherBoard";  
-import Calendar from "./pages/Calendar.jsx";
-import AllTasks from "./pages/AllTasks";
-import KakaoMapBox from "./pages/KakaoMapBox";
-
-import Login from "./pages/Login.jsx";
-import SignUp from "./pages/SignUp.jsx";
-import BeLogin from "./pages/BeLogin.jsx";
-import ChatPage from "./pages/ChatPage.jsx";
-import Upload from "./pages/Upload.jsx";
-import MyPage from "./pages/MyPage.jsx";
-import MainPage from "./pages/MainPage.jsx";
-import TodoPage from "./components/TodoPage/TodoPage.jsx";
-import InvitePage from "./pages/InvitePage.jsx";
+// 대시보드 위젯들
+import WeatherBoard from "./pages/Weather/WeatherBoard.jsx";
+import KakaoMapBox from "./pages/Map/KakaoMapBox.jsx";
 import TimeHome from "./components/TimeCalendar/TimeHome.jsx";
-import BoardHome from "./components/Board/BoardHome.jsx";
-import PostDetail from "./components/Board/PostDetail.jsx";
-import PostWrite from "./components/Board/PostWrite.jsx";
-import ChatRoomWrapper from "./components/Chat/ChatRoomWrapper.jsx"
+import BoardHome from "./pages/Board/BoardHome.jsx";
+
+// Auth 관련 페이지
+import Login from "./pages/Auth/Login.jsx";
+import SignUp from "./pages/Auth/SignUp.jsx";
+import BeLogin from "./pages/Auth/BeLogin.jsx";
+
+// 메인 / 마이페이지
+import MainPage from "./pages/Main/MainPage.jsx";
+import MyPage from "./pages/My/MyPage.jsx";
+import Upload from "./pages/My/Upload.jsx";
+
+// Todo 관련 페이지
+import TodoPage from "./pages/Todo/TodoPage.jsx";
+import Calendar from "./pages/Todo/Calendar.jsx";
+import AllTasks from "./pages/Todo/AllTasks.jsx";
+
+// 채팅 관련
+import ChatPage from "./pages/Chat/ChatPage.jsx";
+import InvitePage from "./pages/Chat/InvitePage.jsx";
+import ChatRoomWrapper from "./components/Chat/ChatRoomWrapper.jsx";
+
+import PostDetail from "./pages/Board/PostDetail.jsx"
+import PostWrite from "./pages/Board/PostWrite.jsx"
+
+// 검색 컴포넌트
 import WebSearch from "./components/Search/WebSearch.jsx";
 
 import "./App.css";
+
 
 function App() {
   const location = useLocation();
@@ -79,7 +92,7 @@ function App() {
               <div className="bottom-widgets">
                 <div className="todo-widget">
                   <BoardHome /> {/* ← 게시판으로 변경 */}
-                </div>
+                </div>  
                 <div className="map-widget">
                   <KakaoMapBox />
                 </div>

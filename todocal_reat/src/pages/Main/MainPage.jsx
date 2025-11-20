@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import UserInfo from "../../myprofile/UserInfo";
+import UserInfo from "../../components/myprofile/UserInfo";
 
 const MainPage = () => {
   const navigate = useNavigate();

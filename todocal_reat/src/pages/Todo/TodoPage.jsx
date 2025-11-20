@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
-import TodoHeader from "../Header/TodoHeader";
-import TaskList from "../TaskList/TaskList";
+import TodoHeader from "../../components/Header/TodoHeader";
+import TaskList from "../../components/TaskList/TaskList";
 import classes from "../../styles/TodoPage/TodoPage.module.css";
 import moment from "moment";
-import CalendarTodo from "../../pages/CalendarTodo";
-import Calendar from "../../pages/Calendar";
+import CalendarTodo from "./CalendarTodo";
+import Calendar from "./Calendar";
 
 const normalize = (d) => {
   if (!d) return null;

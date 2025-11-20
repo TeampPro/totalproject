@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import moment from "moment";
-import TaskList from "../components/TaskList/TaskList";
+import TaskList from "../../components/TaskList/TaskList";
 
 const normalize = (d) => {
   if (!d) return null;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import moment from "moment";
-import CalendarTodo from "../../pages/CalendarTodo";
+import CalendarTodo from "../../pages/Todo/CalendarTodo";
 import "./TimeViewPage.css";
 
 const START_HOUR = 8;

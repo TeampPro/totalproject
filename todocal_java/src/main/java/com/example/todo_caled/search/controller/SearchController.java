@@ -3,9 +3,13 @@ package com.example.todo_caled.search.controller;
 import com.example.todo_caled.search.dto.SearchRequest;
 import com.example.todo_caled.search.dto.SearchResponse;
 import com.example.todo_caled.search.dto.SearchResultDto;
+import com.example.todo_caled.search.service.GoogleSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -14,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SearchController {
 
-    private final com.example.todo_caled.search.service.GoogleSearchService googleSearchService;
+    private final GoogleSearchService googleSearchService;
 
     @PostMapping("/google")
     public ResponseEntity<SearchResponse> searchGoogle(@RequestBody SearchRequest request) {

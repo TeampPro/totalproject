@@ -1,4 +1,4 @@
-import AddForm from "../components/AddForm/AddForm";
+import AddForm from "../../components/AddForm/AddForm";
 import { useNavigate } from "react-router-dom";
 
 const AddTaskPage = () => {
