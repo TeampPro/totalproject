@@ -14,6 +14,7 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   width: 350px;
   text-align: center;
+  margin-top: 40px;
 }
 
 /* 제목 */
@@ -100,4 +101,52 @@
   width: 22px;
   height: 22px;
   object-fit: contain;
+}
+
+.login-container {
+  background-color: #F5FBFF; /* 시안과 동일 */
+  padding-top: 80px;
+  min-height: 100vh;
+}
+
+.login-card {
+  background: #ffffff;       /* 흰색 카드 */
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.logo-header-container {
+  background-color: #F5FBFF;
+}
+
+/* 전체 배경 (피그마처럼 연한 파란색) */
+.login-page {
+  min-height: 100vh;
+  background: #f2f9ff;    /* 피그마 배경색 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Logo 밑 공간 */
+.login-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;       /* 로고와 로그인창 간격 */
+}
+
+/* 로그인 카드 */
+.login-card {
+  width: 380px;
+  background: white;
+  padding: 35px 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.logo-header-container {
+  margin-top: 40px;
+  margin-bottom: 10px; /* 로고 아래 콘텐츠랑 간격 */
 }

@@ -1,0 +1,35 @@
+.logo-header-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin-top: 80px;
+  position: relative;
+}
+
+.logo-left-img {
+  width: 140px;
+  position: absolute;
+  left: 18%;
+  top: -20px; /* 살짝 위 */
+}
+
+.logo-right-img {
+  width: 130px;
+  position: absolute;
+  right: 18%;
+  top: 30px; /* 살짝 아래 */
+}
+
+.logo-center-box {
+  text-align: center;
+}
+
+.logo-text {
+  width: 260px;
+}
+
+.logo-subtitle {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #555;
+}

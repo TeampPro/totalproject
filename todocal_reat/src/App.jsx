@@ -41,6 +41,8 @@ import WebSearch from "./components/Search/WebSearch.jsx";
 // ❗❗ 누락되어 있던 import 추가
 import UserInfo from "./components/myprofile/UserInfo.jsx";
 
+// 로고
+
 // 관리자 페이지 import 추가
 import AdminUserManage from "./components/AdminPage/AdminUserManage.jsx";
 import AdminUserInfo from "./components/AdminPage/AdminUserInfo.jsx";
@@ -82,6 +84,9 @@ function App() {
           <div className="dashboard-new">
             <div className="main-grid">
               <div className="left-area">
+                <div className="search-area">
+                  <WebSearch />
+                </div>
                 <div className="calendar-area">
                   <TimeHome onTodosChange={handleTodosChange} />
                 </div>
@@ -120,12 +125,21 @@ function App() {
 
             {/* 관리자 */}
             <Route path="/admin/users" element={<AdminUserManage />} />
-            <Route path="/admin/users/:userId/info" element={<AdminUserInfo />} />
-            <Route path="/admin/users/:userId/tasks" element={<AdminUserTasks />} />
+            <Route
+              path="/admin/users/:userId/info"
+              element={<AdminUserInfo />}
+            />
+            <Route
+              path="/admin/users/:userId/tasks"
+              element={<AdminUserTasks />}
+            />
             <Route path="/admin/tasks/:taskId" element={<AdminTaskDetail />} />
 
             {/* Todo */}
-            <Route path="/todo" element={<TodoPage tasks={tasks} setTasks={setTasks} />} />
+            <Route
+              path="/todo"
+              element={<TodoPage tasks={tasks} setTasks={setTasks} />}
+            />
           </Routes>
         </div>
       </div>

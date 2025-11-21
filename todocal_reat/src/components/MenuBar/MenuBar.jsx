@@ -8,13 +8,22 @@ export default function MenuBar() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="menu-bar">
-      <button className={isActive("/dashboard") ? "active" : ""} onClick={() => navigate("/main")}>
-        홈
-      </button>
-      <button className={isActive("/chat") ? "active" : ""} onClick={() => navigate("/chat")}>
-        채팅
-      </button>
+    <div className="floating-bar">
+      <div
+        className={`menu-btn ${isActive("/main") ? "active" : ""}`}
+        onClick={() => navigate("/main")}
+      >
+        <img src="/icons/home.png" alt="home" />
+        <span>홈</span>
+      </div>
+
+      <div
+        className={`menu-btn ${isActive("/chat") ? "active" : ""}`}
+        onClick={() => navigate("/chat")}
+      >
+        <img src="/icons/chat.png" alt="chat" />
+        <span>채팅</span>
+      </div>
     </div>
   );
 }

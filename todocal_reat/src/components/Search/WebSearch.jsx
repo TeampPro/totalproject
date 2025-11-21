@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { searchGoogle } from "../../api/searchApi";
+import "../../styles/Search/WebSearch.css";
 
 function WebSearch() {
   const [query, setQuery] = useState("");

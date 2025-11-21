@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/Auth/Login.css";
+import LogoHeader from "../../components/LogoHeader/LogoHeader.jsx";
 
 function Login() {
   const [id, setId] = useState("");
@@ -108,52 +109,57 @@ function Login() {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h2 className="login-title">로그인</h2>
+    <div className="login-fullpage">
 
-        <form onSubmit={handleSubmit} className="login-form">
-          <input
-            type="text"
-            value={id}
-            onChange={(e) => setId(e.target.value)}
-            placeholder="아이디"
-            className="login-input"
-          />
+      {/* 🔵 Planix 로고 헤더 */}
+      <LogoHeader />
 
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="비밀번호"
-            className="login-input"
-          />
+      <div className="login-container">
+        <div className="login-card">
+          <h2 className="login-title">로그인</h2>
 
-          <button type="submit" className="login-btn">
-            로그인
-          </button>
-        </form>
-
-        <p className="login-footer">
-          계정이 없으신가요?{" "}
-          <span className="login-link" onClick={() => navigate("/signup")}>
-            회원가입
-          </span>
-        </p>
-
-        <div className="login-bottom-buttons">
-          <button onClick={handleGuestSignup} className="sub-btn">
-            비회원 회원가입
-          </button>
-
-          <button onClick={handleKakaoLogin} className="sub-btn kakao-btn">
-            <img
-              src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_small.png"
-              alt="Kakao Logo"
-              className="kakao-logo"
+          <form onSubmit={handleSubmit} className="login-form">
+            <input
+              type="text"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              placeholder="아이디"
+              className="login-input"
             />
-            카카오로 로그인
-          </button>
+
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호"
+              className="login-input"
+            />
+
+            <button type="submit" className="login-btn">
+              로그인
+            </button>
+          </form>
+
+          <p className="login-footer">
+            계정이 없으신가요?{" "}
+            <span className="login-link" onClick={() => navigate("/signup")}>
+              회원가입
+            </span>
+          </p>
+
+          <div className="login-bottom-buttons">
+            <button onClick={handleGuestSignup} className="sub-btn">
+              비회원 회원가입
+            </button>
+
+            <button onClick={handleKakaoLogin} className="sub-btn kakao-btn">
+              <img
+                src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_small.png"
+                className="kakao-logo"
+              />
+              카카오로 로그인
+            </button>
+          </div>
         </div>
       </div>
     </div>

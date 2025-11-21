@@ -1,35 +1,53 @@
-/* src/styles/MenuBar.css */
-.menu-bar {
+.floating-bar {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 60px;
-  background-color: #fff;
-  border-top: 1px solid #ddd;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  height: 70px;
+
+  background: white;
+  border-radius: 35px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
-  z-index: 100;
+  justify-content: space-around;
+
+  z-index: 999;
 }
 
-.menu-bar button {
-  background: none;
-  border: none;
-  font-size: 1rem;
+.menu-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 8px;
-  transition: background 0.2s;
+
+  transition: all 0.2s ease;
 }
 
-.menu-bar button:hover {
-  background-color: #f0f0f0;
+.menu-btn img {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 4px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
 }
 
-.menu-bar button.active {
-  font-weight: bold;
+.menu-btn span {
+  font-size: 13px;
+  color: #333;
+}
+
+.menu-btn:hover img {
+  opacity: 1;
+}
+
+.menu-btn.active img {
+  opacity: 1;
+}
+
+.menu-btn.active span {
   color: #2575fc;
-  border-bottom: 2px solid #2575fc;
+  font-weight: bold;
 }

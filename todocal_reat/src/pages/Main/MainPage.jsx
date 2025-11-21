@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/Main/MainPage.css";
+import WebSearch from "../../components/Search/WebSearch";
 
 const MainPage = () => {
   const navigate = useNavigate();
