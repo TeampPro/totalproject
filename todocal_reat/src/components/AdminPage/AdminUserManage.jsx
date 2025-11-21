@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./AdminUserManage.css";
+import "../../styles/AdminPage/adminUserManage.css";
 
 const FILTER_OPTIONS = [
   { value: "role", label: "직책" },

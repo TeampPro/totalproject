@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import "../styles/NotFound.css"; // CSS 파일 임포트
+import "../styles/Common/NotFound.css"; // CSS 파일 임포트
 
 export default function NotFound() {
   const navigate = useNavigate();

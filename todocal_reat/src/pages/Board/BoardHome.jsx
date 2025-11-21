@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import moment from "moment";
-import "../../styles/board/Board.css";
+import "../../styles/Board/Board.css";
 
 const CATEGORY_TABS = [
   { key: "free", label: "자유게시판" },

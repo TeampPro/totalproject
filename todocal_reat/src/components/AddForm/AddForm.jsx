@@ -1,5 +1,5 @@
 import { useState } from "react";
-import classes from "../../styles/addForm.module.css";
+import classes from "../../styles/AddForm/addForm.module.css";
 
 const AddForm = ({ onAdd, onClose }) => {
   const [title, setTitle] = useState("");

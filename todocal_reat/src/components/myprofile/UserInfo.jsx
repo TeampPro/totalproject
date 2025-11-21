@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "../../styles/myprofile/UserInfo.css";
 
 function UserInfo({ onLogout }) {
   const navigate = useNavigate();
@@ -10,7 +11,6 @@ function UserInfo({ onLogout }) {
     import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
   useEffect(() => {
-    // ✅ 이 안에서만 localStorage 읽고, 의존성에 'user' 안 넣기
     try {
       const raw = localStorage.getItem("user");
       const parsed = raw ? JSON.parse(raw) : null;
@@ -28,21 +28,21 @@ function UserInfo({ onLogout }) {
       console.error("user 파싱 실패:", e);
       navigate("/");
     }
-  }, [navigate, API_BASE_URL]); // ✅ user 제거
+  }, [navigate, API_BASE_URL]);
 
   const handleMyPage = () => navigate("/myPage");
 
   if (!userInfo) {
     return (
-      <div style={styles.loadingBox}>
+      <div className="loading-box">
         <p>내 정보 불러오는 중...</p>
       </div>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.profileSection}>
+    <div className="container">
+      <div className="profile-section">
         <img
           src={
             userInfo.profileImage
@@ -50,102 +50,45 @@ function UserInfo({ onLogout }) {
               : "https://cdn-icons-png.flaticon.com/512/847/847969.png"
           }
           alt="프로필"
-          style={styles.profileImage}
+          className="profile-image"
         />
-        <div style={styles.infoBox}>
-          <h2 style={styles.name}>이름: {userInfo.name || "이름 미등록"}</h2>
-          <p style={styles.infoText}>
+
+        <div className="info-box">
+          <h2 className="name">이름: {userInfo.name || "이름 미등록"}</h2>
+
+          <p className="info-text">
             <strong>아이디:</strong> {userInfo.id || "미등록"}
           </p>
-          <p style={styles.infoText}>
+
+          <p className="info-text">
             <strong>이메일:</strong>{" "}
             {userInfo.email || userInfo.kakaoEmail || "미등록"}
           </p>
-          <p style={styles.infoText}>
+
+          <p className="info-text">
             <strong>카카오 연동:</strong>{" "}
             {userInfo.userType === "KAKAO" ? "✅ 연동됨" : "❌ 일반 회원"}
           </p>
         </div>
       </div>
 
-      <div style={styles.buttonGroup}>
-        <button style={styles.myPageBtn} onClick={handleMyPage}>
+      <div className="button-group">
+        <button className="my-page-btn" onClick={handleMyPage}>
           마이페이지
         </button>
-        <button style={styles.logoutBtn} onClick={() => {
-          console.log("작동")
-          onLogout();
-        }}>
+
+        <button
+          className="logout-btn"
+          onClick={() => {
+            console.log("작동");
+            onLogout();
+          }}
+        >
           로그아웃
         </button>
       </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    width: "500px",
-    margin: "40px auto",
-    padding: "30px",
-    borderRadius: "20px",
-    backgroundColor: "#fff",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  profileSection: {
-    display: "flex",
-    alignItems: "center",
-    gap: "20px",
-  },
-  profileImage: {
-    width: "100px",
-    height: "100px",
-    borderRadius: "50%",
-    objectFit: "cover",
-    border: "2px solid #007bff",
-  },
-  infoBox: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
-  name: {
-    margin: 0,
-    fontSize: "20px",
-    fontWeight: "bold",
-  },
-  infoText: {
-    margin: 0,
-    fontSize: "15px",
-  },
-  buttonGroup: {
-    marginTop: "25px",
-    display: "flex",
-    gap: "10px",
-  },
-  myPageBtn: {
-    backgroundColor: "#007bff",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    padding: "10px 16px",
-    cursor: "pointer",
-  },
-  logoutBtn: {
-    backgroundColor: "#dc3545",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    padding: "10px 16px",
-    cursor: "pointer",
-  },
-  loadingBox: {
-    textAlign: "center",
-    marginTop: "100px",
-  },
-};
 
 export default UserInfo;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import moment from "moment";
-import "./TimeCalendar.css";
+import "../../styles/TimeCalendar/TimeCalendar.css";
 import TimeEventBlock from "./TimeEventBlock";
 
 const hours = Array.from(

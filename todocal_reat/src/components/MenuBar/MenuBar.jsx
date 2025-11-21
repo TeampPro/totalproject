@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import "../../styles/MenuBar.css";
+import "../../styles/MenuBar/MenuBar.css";
 
 export default function MenuBar() {
   const navigate = useNavigate();

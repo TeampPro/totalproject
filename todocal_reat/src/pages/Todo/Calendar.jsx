@@ -3,7 +3,7 @@ import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import CalendarTodo from "./CalendarTodo";
-import "../../styles/Calendar.css";
+import "../../styles/Todo/Calendar.css";
 
 function Calendar({ onTodosChange }) {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../../styles/WeatherBoard.css";
+import "../../styles/Weather/WeatherBoard.css";
 
 export default function WeatherBoard() {
   const [data, setData] = useState([]);

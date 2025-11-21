@@ -1,0 +1,74 @@
+/* 전체 overlay (클릭 방지 레이어) */
+.overlay-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 200;
+  pointer-events: none;
+}
+
+/* 우측 하단 메뉴 */
+.menu-wrapper {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  z-index: 300;
+  pointer-events: auto;
+}
+
+/* 플로팅 버튼 */
+.menu-button {
+  background-color: #007bff;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 햄버거 모양 막대 3개 */
+.menu-bar {
+  width: 30px;
+  height: 4px;
+  background-color: #fff;
+  margin: 3px 0;
+  border-radius: 2px;
+}
+
+/* 드롭다운 메뉴 */
+.dropdown {
+  position: absolute;
+  bottom: 75px;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  padding: 5px 0;
+  min-width: 120px;
+}
+
+/* 드롭다운 항목 */
+.dropdown-item {
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* hover 효과 */
+.dropdown-item:hover {
+  background: #f0f0f0;
+}

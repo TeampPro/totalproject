@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Calendar from "../../pages/Todo/Calendar";
 import TimeViewPage from "./TimeViewPage";
-import "./TimeHome.css";
+import "../../styles/TimeCalendar/TimeHome.css";
 
 function TimeHome({ onTodosChange }) {
   const [activeTab, setActiveTab] = useState("calendar");
