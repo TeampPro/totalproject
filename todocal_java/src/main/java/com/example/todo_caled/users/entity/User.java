@@ -27,7 +27,7 @@ public class User {
     private String name; // 비회원 가능
 
     @Column(length = 50)
-    private String nickname;  // 🔥 닉네임 추가
+    private String nickname;  // 닉네임
 
     @Column(length = 100)
     private String kakaoId;
@@ -35,15 +35,21 @@ public class User {
     @Column(length = 100)
     private String kakaoEmail;
 
+    /**
+     * userType 규칙 통일:
+     *  - NORMAL : 일반 회원
+     *  - GUEST  : 비회원 (비회원 로그인)
+     *  - ADMIN  : 관리자
+     *  - KAKAO  : 카카오 로그인 회원 (프로젝트에 따라)
+     *
+     * 기본값은 NORMAL.
+     */
     @Column(nullable = false, length = 20)
-    private String userType = "NORMAL"; // NORMAL or GUEST
+    private String userType = "NORMAL";
 
     @Column(length = 255)
     private String profileImage; // 프로필 이미지 파일명
 
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-
-
 }

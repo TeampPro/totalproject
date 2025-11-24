@@ -194,7 +194,7 @@ function MyPage() {
             alt="프로필"
             style={styles.profileImage}
           />
-          {userType !== "guest" && isEditing && (
+          {userType !== "GUEST" && isEditing && (
             <input type="file" accept="image/*" onChange={handleImageChange} />
           )}
         </div>
@@ -211,7 +211,7 @@ function MyPage() {
             name="name"
             value={userInfo.name || ""}
             onChange={handleChange}
-            disabled={!isEditing || userType === "guest"}
+            disabled={!isEditing || userType === "GUEST"}
             style={styles.input}
           />
         </div>
@@ -221,7 +221,7 @@ function MyPage() {
           <input
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
-            disabled={!isEditing || userType === "guest"}
+            disabled={!isEditing || userType === "GUEST"}
             placeholder="게시판에 표시될 이름"
             style={styles.input}
           />
@@ -234,12 +234,12 @@ function MyPage() {
             name="email"
             value={userInfo.email || ""}
             onChange={handleChange}
-            disabled={!isEditing || userType === "guest"}
+            disabled={!isEditing || userType === "GUEST"}
             style={styles.input}
           />
         </div>
 
-        {userType === "guest" ? (
+        {userType === "GUEST" ? (
           <p style={styles.warning}>⚠ 비회원은 정보 수정이 불가능합니다.</p>
         ) : (
           <>
@@ -258,7 +258,7 @@ function MyPage() {
           </>
         )}
 
-        {userType !== "guest" && (
+        {userType !== "GUEST" && (
           <div style={styles.passwordBox}>
             <h4>비밀번호 변경</h4>
             <input
@@ -284,7 +284,7 @@ function MyPage() {
           </div>
         )}
 
-        {userType !== "guest" && (
+        {userType !== "GUEST" && (
           <button style={styles.deleteButton} onClick={handleDeleteAccount}>
             회원탈퇴
           </button>

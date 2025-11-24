@@ -15,6 +15,7 @@ import BoardHome from "./pages/Board/BoardHome.jsx";
 import Login from "./pages/Auth/Login.jsx";
 import SignUp from "./pages/Auth/SignUp.jsx";
 import BeLogin from "./pages/Auth/BeLogin.jsx";
+import FriendPage from "./pages/Friend/FriendPage.jsx";
 
 // 메인/마이페이지
 import MainPage from "./pages/Main/MainPage.jsx";
@@ -50,8 +51,7 @@ import AdminTaskDetail from "./components/AdminPage/AdminTaskDetail.jsx";
 import "./App.css";
 
 function App() {
-  const { pathname } = useLocation();
-
+  const { pathname } = useLocation()
   const showDashboard = pathname === "/main";
   const isLoginOrSignUpPage = pathname === "/" || pathname === "/signup";
   const isMyPage = pathname === "/myPage";
@@ -117,6 +117,9 @@ function App() {
 
             <Route path="/main" element={<MainPage />} />
             <Route path="/myPage" element={<MyPage />} />
+
+            {/* 친구창 */}
++           <Route path="/friends" element={<FriendPage />} />
 
             {/* 관리자 */}
             <Route path="/admin/users" element={<AdminUserManage />} />

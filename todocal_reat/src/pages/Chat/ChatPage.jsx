@@ -2,22 +2,56 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function ChatPage({ user }) {
+export default function ChatPage() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
+  // 🔹 로그인 사용자 정보
+  const loginUser = JSON.parse(localStorage.getItem("user") || "null");
+
+  // 🔹 채팅에서 사용할 내 닉네임 계산 함수
+  const getMemberName = () => {
+    // 1) 회원 / 관리자
+    if (loginUser && loginUser.userType !== "GUEST") {
+      const nick = loginUser.nickname || loginUser.name || loginUser.id;
+      // 회원/관리자는 guest용 memberName 안 쓰는 게 깔끔하지만,
+      // 혹시나 위해 여기에도 저장해두긴 함
+      localStorage.setItem("memberName", nick);
+      return nick;
+    }
+
+    // 2) 비회원 로그인(GUEST)
+    if (loginUser && loginUser.userType === "GUEST") {
+      // 비회원 로그인 시 user.id 나 nickname 이 있을 수 있음
+      const stored = localStorage.getItem("memberName");
+      const guestNick =
+        stored ||
+        loginUser.nickname ||
+        loginUser.name ||
+        loginUser.id ||
+        `guest_${Math.random().toString(36).substring(2, 8)}`;
+
+      localStorage.setItem("memberName", guestNick);
+      return guestNick;
+    }
+
+    // 3) 로그인 안 한 상태 (초대 링크 게스트 등)
+    const fromStorage = localStorage.getItem("memberName");
+    if (fromStorage) return fromStorage;
+
+    const fallback = "GUEST";
+    localStorage.setItem("memberName", fallback);
+    return fallback;
+  };
+
   // ✅ 채팅방 목록 불러오기
   useEffect(() => {
-    const memberName =
-      user?.name || localStorage.getItem("memberName") || "guest";
-
-    localStorage.setItem("memberName", memberName);
+    const memberName = getMemberName();
 
     const fetchRooms = async () => {
       try {
-        // 내가 참여한 방만 가져오기
         const res = await axios.get("/api/chat/rooms", {
           params: { memberName },
         });
@@ -31,23 +65,17 @@ export default function ChatPage({ user }) {
     };
 
     fetchRooms();
-  }, [user]);
+  }, []); // user prop 안 쓰므로 의존성 제거
 
   // ✅ 방 입장
   const handleEnterRoom = async (room) => {
     try {
-      const memberName =
-        user?.name || localStorage.getItem("memberName") || "guest";
+      const memberName = getMemberName();
 
-      // 항상 최신 memberName 저장
-      localStorage.setItem("memberName", memberName);
-
-      // 입장(멤버 등록) - 여러 번 호출해도 서버에서 한 번만 추가되게 구현되어 있음
       await axios.post(`/api/chat/rooms/${room.id}/join`, null, {
         params: { memberName },
       });
 
-      // 채팅방 화면으로 이동 (방 이름도 같이 넘겨서 제목 표시)
       navigate(`/chat/${room.id}`, {
         state: { memberName, roomName: room.name },
       });
@@ -60,9 +88,7 @@ export default function ChatPage({ user }) {
   // ✅ 새 채팅방 생성
   const handleCreateRoom = async () => {
     try {
-      const memberName =
-        user?.name || localStorage.getItem("memberName") || "guest";
-      localStorage.setItem("memberName", memberName);
+      const memberName = getMemberName();
 
       const res = await axios.post("/api/chat/rooms", null, {
         params: { memberName },
@@ -71,10 +97,8 @@ export default function ChatPage({ user }) {
       if (res.data && res.data.id) {
         const createdRoom = res.data;
 
-        // 리스트에 추가
         setRooms((prev) => [...prev, createdRoom]);
 
-        // 바로 입장 (방 이름도 같이 전달)
         navigate(`/chat/${createdRoom.id}`, {
           state: { memberName, roomName: createdRoom.name },
         });
@@ -89,13 +113,13 @@ export default function ChatPage({ user }) {
 
   // ✅ 방 이름 변경
   const handleRenameRoom = async (e, room) => {
-    e.stopPropagation(); // li onClick(입장) 막기
+    e.stopPropagation();
 
     const newName = window.prompt(
       "새 채팅방 이름을 입력하세요.",
       room.name || ""
     );
-    if (newName === null) return; // 취소
+    if (newName === null) return;
 
     const trimmed = newName.trim();
     if (!trimmed) {
@@ -110,11 +134,8 @@ export default function ChatPage({ user }) {
 
       const updatedName = res.data?.name ?? trimmed;
 
-      // 상태에서 해당 방 이름만 업데이트
       setRooms((prev) =>
-        prev.map((r) =>
-          r.id === room.id ? { ...r, name: updatedName } : r
-        )
+        prev.map((r) => (r.id === room.id ? { ...r, name: updatedName } : r))
       );
     } catch (err) {
       console.error("❌ 채팅방 이름 변경 오류:", err);
@@ -124,7 +145,7 @@ export default function ChatPage({ user }) {
 
   // ✅ 방 삭제
   const handleDeleteRoom = async (e, roomId) => {
-    e.stopPropagation(); // li 클릭(입장)과 구분
+    e.stopPropagation();
 
     if (!window.confirm("이 채팅방을 삭제할까요?")) return;
 

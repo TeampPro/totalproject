@@ -30,9 +30,9 @@ const MainPage = () => {
 
   return (
     <>
-      {/* 🔥 UserInfo 제거됨 → 대시보드 UserInfo만 유지 */}
+      {/* 오른쪽 아래 플로팅 메뉴를 위한 오버레이 */}
       <div style={styles.overlayWrapper}>
-        {/* 우측 하단 플로팅 버튼 */}
+        {/* 우측 하단 플로팅 버튼 (1) */}
         {user && (
           <div style={styles.menuWrapper}>
             <button
@@ -52,6 +52,15 @@ const MainPage = () => {
                 >
                   마이페이지
                 </button>
+
+                {/* 친구 페이지 이동 */}
+                <button
+                  style={styles.dropdownItem}
+                  onClick={() => navigate("/friends")}
+                >
+                  친구
+                </button>
+
                 <button
                   style={styles.dropdownItem}
                   onClick={handleLogout}
@@ -64,7 +73,7 @@ const MainPage = () => {
         )}
       </div>
 
-      {/* ✅ 우측 하단 플로팅 메뉴 */}
+      {/* 우측 하단 플로팅 메뉴 (2) */}
       {user && (
         <div style={styles.menuWrapper}>
           <button
@@ -78,11 +87,11 @@ const MainPage = () => {
 
           {menuOpen && (
             <div style={styles.dropdown}>
-              {/* ✅ 관리자 전용 메뉴 */}
+              {/* 관리자 전용 메뉴 */}
               {user?.userType === "ADMIN" && (
                 <button
                   style={styles.dropdownItem}
-                  onClick={() => navigate("/admin/users")}  // 회원관리 페이지(추후 구현)
+                  onClick={() => navigate("/admin/users")}
                 >
                   회원관리
                 </button>
@@ -94,7 +103,19 @@ const MainPage = () => {
               >
                 마이페이지
               </button>
-              <button style={styles.dropdownItem} onClick={handleLogout}>
+
+              {/* 친구 페이지 이동 */}
+              <button
+                style={styles.dropdownItem}
+                onClick={() => navigate("/friends")}
+              >
+                친구
+              </button>
+
+              <button
+                style={styles.dropdownItem}
+                onClick={handleLogout}
+              >
                 로그아웃
               </button>
             </div>

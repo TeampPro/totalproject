@@ -78,7 +78,7 @@ function Login() {
           JSON.stringify({
             id: data.id,
             name: data.name || data.id, // 게스트는 name 없으니 id를 이름으로 사용
-            userType: data.userType || "guest",
+            userType: data.userType || "GUEST",
           })
         );
 
