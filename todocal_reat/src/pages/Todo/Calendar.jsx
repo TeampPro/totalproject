@@ -7,6 +7,22 @@ import "../../styles/Todo/Calendar.css";
 
 function Calendar({ onTodosChange }) {
   const navigate = useNavigate();
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const isLoggedIn = !!storedUser;
+<button
+  className="todo-add-btn"
+  onClick={() => {
+    if (!isLoggedIn) {
+      alert("로그인이 필요합니다!");
+      return;
+    }
+
+    setEditTodo(null);
+    setShowModal(true);
+  }}
+>
+  할 일 추가
+</button>;
 
   // 현재 보고 있는 달
   const [getMoment, setMoment] = useState(moment());
@@ -297,6 +313,11 @@ function Calendar({ onTodosChange }) {
           <button
             className="todo-add-btn"
             onClick={() => {
+              if (!isLoggedIn) {
+                alert("로그인이 필요합니다!");
+                return;
+              }
+
               setEditTodo(null);
               setShowModal(true);
             }}

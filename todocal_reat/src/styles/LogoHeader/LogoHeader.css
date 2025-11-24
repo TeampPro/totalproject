@@ -1,35 +1,35 @@
 .logo-header-container {
+  width: 100%;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  margin-top: 80px;
+  align-items: center;
   position: relative;
+
+  margin-top: 60px;   /* 로고 상단 여백 */
+  margin-bottom: 0px; /* 로고 아래 여백 — 로그인 박스와 간격 */
 }
 
+/* 왼쪽 3D 캘린더 */
 .logo-left-img {
-  width: 140px;
+  width: 180px;
   position: absolute;
-  left: 18%;
-  top: -20px; /* 살짝 위 */
+  left: calc(50% - 340px); /* 로고 텍스트 기준 왼쪽 배치 */
+  top: -10px;
 }
 
+/* 오른쪽 3D 알람 */
 .logo-right-img {
-  width: 130px;
+  width: 165px;
   position: absolute;
-  right: 18%;
-  top: 30px; /* 살짝 아래 */
+  right: calc(50% - 350px); /* 로고 텍스트 기준 오른쪽 배치 */
+  top: 140px;
 }
 
+/* 중앙 로고 */
 .logo-center-box {
   text-align: center;
 }
 
 .logo-text {
   width: 260px;
-}
-
-.logo-subtitle {
-  margin-top: 5px;
-  font-size: 14px;
-  color: #555;
 }

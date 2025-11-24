@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/myprofile/UserInfo.css";
 
-function UserInfo({ onLogout }) {
+function UserInfo({ user, onLogout }) {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
 
@@ -11,24 +11,13 @@ function UserInfo({ onLogout }) {
     import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("user");
-      const parsed = raw ? JSON.parse(raw) : null;
+    if (!user) return;
 
-      if (!parsed) {
-        navigate("/");
-        return;
-      }
-
-      axios
-        .get(`${API_BASE_URL}/api/user/${parsed.id}`)
-        .then((res) => setUserInfo(res.data))
-        .catch((err) => console.error("유저 정보 불러오기 실패:", err));
-    } catch (e) {
-      console.error("user 파싱 실패:", e);
-      navigate("/");
-    }
-  }, [navigate, API_BASE_URL]);
+    axios
+      .get(`${API_BASE_URL}/api/user/${user.id}`)
+      .then((res) => setUserInfo(res.data))
+      .catch((err) => console.error("유저 정보 불러오기 실패:", err));
+  }, [user, API_BASE_URL]);
 
   const handleMyPage = () => navigate("/myPage");
 
@@ -54,20 +43,12 @@ function UserInfo({ onLogout }) {
         />
 
         <div className="info-box">
-          <h2 className="name">이름: {userInfo.name || "이름 미등록"}</h2>
-
+          <h2 className="name">이름: {userInfo.name}</h2>
           <p className="info-text">
-            <strong>아이디:</strong> {userInfo.id || "미등록"}
+            <strong>아이디:</strong> {userInfo.id}
           </p>
-
           <p className="info-text">
-            <strong>이메일:</strong>{" "}
-            {userInfo.email || userInfo.kakaoEmail || "미등록"}
-          </p>
-
-          <p className="info-text">
-            <strong>카카오 연동:</strong>{" "}
-            {userInfo.userType === "KAKAO" ? "✅ 연동됨" : "❌ 일반 회원"}
+            <strong>이메일:</strong> {userInfo.email || userInfo.kakaoEmail}
           </p>
         </div>
       </div>
@@ -77,13 +58,7 @@ function UserInfo({ onLogout }) {
           마이페이지
         </button>
 
-        <button
-          className="logout-btn"
-          onClick={() => {
-            console.log("작동");
-            onLogout();
-          }}
-        >
+        <button className="logout-btn" onClick={onLogout}>
           로그아웃
         </button>
       </div>

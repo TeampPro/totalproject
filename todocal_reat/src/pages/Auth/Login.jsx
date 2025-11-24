@@ -149,7 +149,7 @@ function Login() {
 
           <div className="login-bottom-buttons">
             <button onClick={handleGuestSignup} className="sub-btn">
-              비회원 회원가입
+              비회원 로그인
             </button>
 
             <button onClick={handleKakaoLogin} className="sub-btn kakao-btn">
