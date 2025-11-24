@@ -3,6 +3,7 @@ package com.example.todo_caled.board.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import jakarta.persistence.Transient;
 
 @Entity
 @Getter @Setter
@@ -35,4 +36,7 @@ public class Post {
 
     @Transient
     private long commentCount;
+    @Transient          // ★ DB 칼럼 안 만들고 JSON 으로만 주고받을 필드
+    private String userType;
+
 }

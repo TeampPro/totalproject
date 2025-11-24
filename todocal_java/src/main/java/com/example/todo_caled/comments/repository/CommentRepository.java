@@ -36,5 +36,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Transactional
     void deleteByParentId(Long parentId);
 
+    /** 특정 작성자가 단 모든 댓글/대댓글 삭제 */
+    @Transactional
+    void deleteByWriter(String writer);
 
 }

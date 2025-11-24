@@ -48,4 +48,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // 다음글 (현재 id보다 큰 것 중 가장 작은 id)
     Post findTopByIdGreaterThanOrderByIdAsc(Long id);
+
+    // 🔥 특정 작성자가 쓴 모든 게시글 조회
+    List<Post> findByWriter(String writer);
+
+    // 🔥 특정 작성자가 쓴 모든 게시글 삭제
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM Post p WHERE p.writer = :writer")
+    void deleteByWriter(@Param("writer") String writer);
 }

@@ -15,12 +15,13 @@ function AdminUserInfo() {
   const [loading, setLoading] = useState(!initialUser);
   const [saving, setSaving] = useState(false);
 
-  // 수정 폼 상태
+  // 🔹 수정 폼 상태 (confirmPassword 포함)
   const [form, setForm] = useState({
     name: initialUser?.name || "",
     nickname: initialUser?.nickname || "",
     userType: initialUser?.userType || "NORMAL",
     newPassword: "",
+    confirmPassword: "", // ✅ 추가
   });
 
   // 서버에서 단일 회원 정보 다시 가져오기 (새로고침·URL 직접접근 대비)
@@ -40,6 +41,7 @@ function AdminUserInfo() {
           nickname: u.nickname || "",
           userType: u.userType || "NORMAL",
           newPassword: "",
+          confirmPassword: "", // ✅ 서버에서 가져올 때도 빈 값으로 초기화
         });
       } catch (err) {
         console.error("❌ 사용자 정보 불러오기 실패:", err);
@@ -62,12 +64,30 @@ function AdminUserInfo() {
     e.preventDefault();
     if (!user) return;
 
-    // 🔥 길이 제한 전부 제거: newPassword가 있으면 그대로 보냄
+    const trimmedName = form.name.trim();
+    const trimmedNickname = form.nickname.trim();
+    const trimmedNewPw = form.newPassword.trim();
+    const trimmedConfirm = form.confirmPassword.trim(); // ✅ 추가
+
+    if (!trimmedName) {
+      alert("이름을 입력해주세요.");
+      return;
+    }
+
+    // ✅ 새 비밀번호 / 확인값이 하나라도 들어있으면 서로 같은지만 체크
+    if (trimmedNewPw || trimmedConfirm) {
+      if (trimmedNewPw !== trimmedConfirm) {
+        alert("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+        return;
+      }
+    }
+
+    // 🔥 길이 제한 없음: newPassword가 있으면 그대로 보냄
     const payload = {
-      name: form.name,
-      nickname: form.nickname,
+      name: trimmedName,
+      nickname: trimmedNickname,
       userType: form.userType,
-      newPassword: form.newPassword || null, // 비워두면 변경 없음
+      newPassword: trimmedNewPw || null, // 비워두면 변경 없음
     };
 
     try {
@@ -87,7 +107,8 @@ function AdminUserInfo() {
         name: updated.name || "",
         nickname: updated.nickname || "",
         userType: updated.userType || "NORMAL",
-        newPassword: "", // 저장 후 비밀번호 입력칸 비우기
+        newPassword: "",      // ✅ 저장 후 비밀번호 입력칸 비우기
+        confirmPassword: "",  // ✅ 확인칸도 같이 비우기
       }));
     } catch (err) {
       console.error("❌ 회원 정보 수정 실패:", err);
@@ -140,7 +161,7 @@ function AdminUserInfo() {
           />
         </div>
 
-        {/* 닉네임 수정 (지금은 서버에서 안 쓰더라도 폼은 미리 만들어 둠) */}
+        {/* 닉네임 수정 */}
         <div style={{ marginTop: 12 }}>
           <label style={{ display: "block", marginBottom: 4 }}>닉네임</label>
           <input
@@ -181,6 +202,20 @@ function AdminUserInfo() {
           <small style={{ opacity: 0.7 }}>
             비워두면 비밀번호는 변경되지 않습니다. (길이 제한 없음)
           </small>
+        </div>
+
+        {/* ✅ 새 비밀번호 확인 */}
+        <div style={{ marginTop: 12 }}>
+          <label style={{ display: "block", marginBottom: 4 }}>
+            새 비밀번호 확인
+          </label>
+          <input
+            type="password"
+            value={form.confirmPassword}
+            onChange={handleChange("confirmPassword")}
+            style={{ width: "100%", padding: 8 }}
+            placeholder="위의 새 비밀번호와 동일하게 입력"
+          />
         </div>
 
         <div

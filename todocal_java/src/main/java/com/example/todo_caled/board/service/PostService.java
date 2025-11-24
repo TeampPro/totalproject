@@ -19,6 +19,18 @@ public class PostService {
 
     // CREATE
     public Post create(Post post) {
+        String category = post.getCategory();
+        String userType = post.getUserType();  // @Transient 로 받은 값
+
+        if (("NOTICE".equalsIgnoreCase(category) || "공지사항".equals(category))) {
+
+            if (!"ADMIN".equalsIgnoreCase(userType)) {
+                // 프론트에서 alert 띄우게 하고 싶으면 RuntimeException 그대로 써도 되고,
+                // 커스텀 예외 만들어도 됨
+                throw new RuntimeException("공지사항은 관리자만 작성할 수 있습니다.");
+            }
+        }
+
         post.setCreatedAt(LocalDateTime.now());
         return postRepository.save(post);
     }
@@ -66,13 +78,15 @@ public class PostService {
         return postRepository.save(post);
     }
 
-    // DELETE
-    public boolean delete(Long id, String writer) {
+    // 관리자 권한까지 고려한 삭제
+    public boolean delete(Long id, String writer, String userType) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("게시글 없음"));
 
-        // 🔥 작성자 검증
-        if (!post.getWriter().equals(writer)) {
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(userType);
+
+        // 작성자도 아니고 관리자도 아니면 막기
+        if (!post.getWriter().equals(writer) && !isAdmin) {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
 

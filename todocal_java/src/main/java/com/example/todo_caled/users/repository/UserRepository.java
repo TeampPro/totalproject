@@ -19,6 +19,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.userType = 'guest' AND u.createdAt < :limit")
     List<User> findGuestUsersBefore(LocalDateTime limit);
 
-
+    List<User> findByUserTypeNotIgnoreCase(String userType);
 }
 

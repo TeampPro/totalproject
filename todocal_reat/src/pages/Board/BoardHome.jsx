@@ -19,6 +19,9 @@ const BoardHome = () => {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
+  // ✅ 공지사항 전용 상태
+  const [noticePosts, setNoticePosts] = useState([]);
+
   // 🔽 검색 UI 상태
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchField, setSearchField] = useState("title");
@@ -29,6 +32,10 @@ const BoardHome = () => {
   const [endDate, setEndDate] = useState("");
 
   const navigate = useNavigate();
+
+  // 🔥 로그인 유저 정보 (공지 권한 체크용)
+  const savedUser = JSON.parse(localStorage.getItem("user"));
+  const loginUserType = savedUser?.userType || "NORMAL"; // ADMIN / NORMAL / guest 등
 
   /** 🔽 검색 기준 선택 시 실행 */
   const selectField = (field, label) => {
@@ -66,7 +73,7 @@ const BoardHome = () => {
     }
   };
 
-  /** 게시글 리스트 불러오기 */
+  /** 게시글 리스트 불러오기 (현재 카테고리용) */
   const loadPosts = async (cat) => {
     try {
       setLoading(true);
@@ -84,25 +91,60 @@ const BoardHome = () => {
     }
   };
 
+  // ✅ 현재 선택된 카테고리 게시글
   useEffect(() => {
     loadPosts(category);
   }, [category]);
+
+  // ✅ 공지사항(공지 카테고리) 목록은 한 번만 따로 가져오기
+  useEffect(() => {
+    const loadNoticePosts = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:8080/api/board/list/notice"
+        );
+        setNoticePosts(res.data);
+      } catch (err) {
+        console.error("공지사항 목록 불러오기 실패:", err);
+      }
+    };
+
+    loadNoticePosts();
+  }, []);
 
   const formatDate = (dateString) => {
     if (!dateString) return "-";
     return moment(dateString).format("YYYY. MM. DD.");
   };
 
-  /** 🔽 공지 → 최상단 + 최신순 */
+  /** 🔽 공지 → 최상단 + 최신순 (현재 카테고리 안에서) */
   const sortedPosts = [...posts].sort((a, b) => {
     if (a.notice && !b.notice) return -1;
     if (!a.notice && b.notice) return 1;
     return b.id - a.id;
   });
 
+  /** 🔽 공지 카테고리 전체 중에서도 최신순으로 */
+  const sortedNoticePosts = [...noticePosts].sort((a, b) => b.id - a.id);
+
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
   const currentPosts = sortedPosts.slice(startIdx, startIdx + ITEMS_PER_PAGE);
   const totalPages = Math.ceil(sortedPosts.length / ITEMS_PER_PAGE);
+
+  /** 글쓰기 클릭 */
+  const handleClickWrite = () => {
+    // 현재 탭이 공지사항인데, 관리자가 아니면 바로 막기
+    if (
+      (category === "notice" || category.toLowerCase() === "notice") &&
+      loginUserType !== "ADMIN"
+    ) {
+      alert("공지사항은 관리자만 작성할 수 있습니다.");
+      return;
+    }
+
+    // 그 외 경우는 현재 탭 기준으로 글쓰기 페이지로 이동
+    navigate(`/board/write?category=${category}`);
+  };
 
   return (
     <div className="board-container">
@@ -181,15 +223,50 @@ const BoardHome = () => {
           </button>
         </div>
 
-        <button
-          className="board-write-btn"
-          onClick={() => navigate("/board/write")}
-        >
-          글쓰기
-        </button>
+        {/* 글쓰기 버튼 (공지 탭은 관리자만 노출) */}
+        {(category !== "notice" || loginUserType === "ADMIN") && (
+          <button className="board-write-btn" onClick={handleClickWrite}>
+            글쓰기
+          </button>
+        )}
       </div>
 
-      {/* 리스트 */}
+      {/* ✅ 자유/QA 탭에서 항상 상단에 노출되는 공지사항 영역 */}
+      {category !== "notice" && sortedNoticePosts.length > 0 && (
+        <div className="board-notice-wrapper">
+          <div className="board-header notice-header">
+            <span className="col-title">공지사항</span>
+            <span className="col-writer">작성자</span>
+            <span className="col-date">작성일</span>
+            <span className="col-views">조회수</span>
+          </div>
+
+          <div className="board-list notice-list">
+            {sortedNoticePosts.map((post) => (
+              <div
+                key={post.id}
+                className="board-row notice"
+                onClick={() => navigate(`/board/${post.id}`)}
+              >
+                <div className="col-title">
+                  <span className="post-prefix notice-text">[공지]</span>
+                  <span className="post-title">{post.title}</span>
+                  {post.commentCount > 0 && (
+                    <span className="comment-count">
+                      [{post.commentCount}]
+                    </span>
+                  )}
+                </div>
+                <div className="col-writer">{post.writer}</div>
+                <div className="col-date">{formatDate(post.createdAt)}</div>
+                <div className="col-views">{post.views}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 리스트 (현재 카테고리 글) */}
       <div className="board-header">
         <span className="col-title">제목</span>
         <span className="col-writer">작성자</span>

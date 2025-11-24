@@ -29,7 +29,7 @@ public class PostController {
 
     // DETAIL
     @GetMapping("/{id}")
-    public Post getPost(@PathVariable Long id) {
+    public Post getPost(@PathVariable Long id)   {
         return postService.getPost(id);
     }
 
@@ -46,7 +46,9 @@ public class PostController {
             @RequestBody Map<String, String> body
     ) {
         String writer = body.get("writer");
-        boolean deleted = postService.delete(id, writer);
+        String userType = body.get("userType");
+
+        boolean deleted = postService.delete(id, writer, userType);
 
         return Map.of("success", deleted);
     }

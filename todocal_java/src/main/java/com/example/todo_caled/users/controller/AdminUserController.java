@@ -8,6 +8,9 @@ import com.example.todo_caled.users.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import com.example.todo_caled.board.repository.PostRepository;
+import com.example.todo_caled.comments.repository.CommentRepository;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,12 +23,19 @@ public class AdminUserController {
     private final TaskRepository taskRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+
     public AdminUserController(UserRepository userRepository,
                                TaskRepository taskRepository,
-                               PasswordEncoder passwordEncoder) {
+                               PasswordEncoder passwordEncoder,
+                               PostRepository postRepository,
+                               CommentRepository commentRepository) {
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
         this.passwordEncoder = passwordEncoder;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
     }
 
     /**
@@ -34,7 +44,7 @@ public class AdminUserController {
      */
     @GetMapping("/users")
     public ResponseEntity<List<AdminUserDto>> getAllUsers() {
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.findByUserTypeNotIgnoreCase("ADMIN");
 
         List<AdminUserDto> result = users.stream()
                 .map(u -> {
@@ -147,19 +157,32 @@ public class AdminUserController {
 
     /**
      * ✅ 회원 탈퇴 (로그인 아이디 기준)
-     *  프론트: DELETE http://localhost:8080/api/admin/users/{id}
-     *  - {id} 자리에 로그인 아이디(User.id)가 들어온다고 가정
+     *  - 관리자에서 회원 삭제할 때도 게시판 writer 를 deleteUser 로 변경
      */
     @DeleteMapping("/users/{id}")
     public ResponseEntity<Void> deleteUserByLoginId(@PathVariable("id") String loginId) {
 
-        // UserRepository 에 이미 String id 버전 findById 정의돼 있는 구조 기준
         User user = userRepository.findById(loginId);
         if (user == null) {
             return ResponseEntity.notFound().build();
         }
 
+        // 탈퇴 후 게시판/댓글에 표시될 공통 이름
+        String deletedWriter = "deleteUser";
+
+        String oldId = user.getId();
+        String oldName = user.getName();
+        String oldNickname = user.getNickname(); // User 엔티티에 nickname 필드 있는 기준
+
+        // 이 유저가 쓴 게시글 작성자명 변경
+        postRepository.updateWriterAll(oldId, oldName, oldNickname, deletedWriter);
+
+        // 이 유저가 쓴 댓글 작성자명 변경
+        commentRepository.updateWriterAll(oldId, oldName, oldNickname, deletedWriter);
+
+        // 마지막으로 회원 삭제
         userRepository.delete(user);
+
         return ResponseEntity.noContent().build();
     }
 }

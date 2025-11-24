@@ -43,14 +43,16 @@ public class CommentController {
         return ResponseEntity.ok().build();
     }
 
-    // 삭제 (작성자 검증)
+    // 삭제 (작성자 + 관리자 권한)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
             @RequestBody Map<String, String> body
     ) {
         String writer = body.get("writer");
-        commentService.delete(id, writer);
+        String userType = body.get("userType"); // ★ 추가
+
+        commentService.delete(id, writer, userType);
         return ResponseEntity.ok().build();
     }
 }

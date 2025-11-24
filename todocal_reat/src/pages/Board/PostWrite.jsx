@@ -16,7 +16,7 @@ const PostWrite = () => {
     user?.id || // 둘 다 없으면 아이디
     "익명";
 
-
+  const loginUserType = user?.userType || "NORMAL"; // ★ ADMIN / NORMAL / guest 등
 
   const [category, setCategory] = useState("free");
   const [title, setTitle] = useState("");
@@ -47,7 +47,17 @@ const PostWrite = () => {
     if (!title.trim()) return alert("제목을 입력하세요!");
     if (!content.trim()) return alert("내용을 입력하세요!");
 
-    const payload = { category, title, content, writer };
+    // ★ 프론트단에서도 한 번 더 막기 (공지사항 + 관리자 아닌 경우)
+    if (
+      (category === "notice" || category.toLowerCase() === "notice") &&
+      loginUserType !== "ADMIN"
+    ) {
+      alert("공지사항은 관리자만 작성할 수 있습니다.");
+      return;
+    }
+
+    // ★ userType 을 같이 보냄 (@Transient 필드로 전달)
+    const payload = { category, title, content, writer, userType: loginUserType };
 
     try {
       if (editId) {
@@ -64,7 +74,8 @@ const PostWrite = () => {
       }
     } catch (err) {
       console.error(err);
-      alert("저장 실패!");
+      // 백엔드에서 RuntimeException("공지사항은 관리자만...") 던지면 여기로 들어옴
+      alert(err.response?.data?.message || "저장 실패!");
     }
   };
 

@@ -87,12 +87,14 @@ public class CommentService {
 
     // 삭제
     @Transactional
-    public void delete(Long id, String writer) {
+    public void delete(Long id, String writer, String userType) {
         Comment c = commentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("댓글 없음"));
 
-        // 🔥 본인만 삭제 가능
-        if (!c.getWriter().equals(writer)) {
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(userType);
+
+        // 작성자도 아니고 관리자도 아니면 막기
+        if (!c.getWriter().equals(writer) && !isAdmin) {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
 

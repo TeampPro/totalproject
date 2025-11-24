@@ -1,5 +1,6 @@
 package com.example.todo_caled.users.controller;
 
+import com.example.todo_caled.board.entity.Post;
 import com.example.todo_caled.board.repository.PostRepository;
 import com.example.todo_caled.comments.repository.CommentRepository;
 import com.example.todo_caled.users.entity.User;
@@ -228,6 +229,19 @@ public class UserController {
                     .body(Map.of("message", "존재하지 않는 사용자입니다."));
         }
 
+        String deletedWriter = "deleteUser";
+        // 게시판(Post) / 댓글(Comment)에 기록되어 있을 수 있는 작성자 값 후보
+        String oldId = user.getId();
+        String oldName = user.getName();
+        String oldNickname = user.getNickname();
+
+        // 🔥 1) 이 유저가 쓴 게시글의 writer 를 전부 '딜리트유저' 로 변경
+        postRepository.updateWriterAll(oldId, oldName, oldNickname, deletedWriter);
+
+        // 🔥 2) 이 유저가 쓴 댓글의 writer 도 전부 '딜리트유저' 로 변경
+        commentRepository.updateWriterAll(oldId, oldName, oldNickname, deletedWriter);
+
+        // 🔥 3) 마지막으로 회원 삭제 (계정만 제거)
         userRepository.delete(user);
         return ResponseEntity.ok(Map.of("message", "회원탈퇴가 완료되었습니다."));
     }

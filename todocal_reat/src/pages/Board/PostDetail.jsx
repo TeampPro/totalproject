@@ -7,101 +7,104 @@ import moment from "moment";
 /** ======================
  *  대댓글 재귀 컴포넌트
  ====================== */
-const CommentNode = React.memo(
-  ({
-    node,
-    depth = 0,
-    editingId,
-    editContent,
-    replyToId,
-    replyContent,
-    onChangeEditContent,
-    onStartEdit,
-    onSaveEdit,
-    onCancelEdit,
-    onDelete,
-    onStartReply,
-    onChangeReplyContent,
-    onSaveReply,
-    onCancelReply,
-    loginNickname,
-  }) => {
-    const isEditing = editingId === node.id;
-    const isReplying = replyToId === node.id;
+const CommentNode = React.memo(function CommentNode({
+  node,
+  depth = 0,
+  editingId,
+  editContent,
+  replyToId,
+  replyContent,
+  onChangeEditContent,
+  onStartEdit,
+  onSaveEdit,
+  onCancelEdit,
+  onDelete,
+  onStartReply,
+  onChangeReplyContent,
+  onSaveReply,
+  onCancelReply,
+  loginNickname,
+  loginUserType, // ★ 추가: 관리자 여부 확인용
+}) {
+  const isEditing = editingId === node.id;
+  const isReplying = replyToId === node.id;
+  const isAdmin = loginUserType === "ADMIN"; // ★
 
-    return (
-      <div className="comment-item" style={{ marginLeft: depth * 20 }}>
-        {isEditing ? (
-          <>
-            <textarea
-              value={editContent}
-              onChange={(e) => onChangeEditContent(e.target.value)}
-            />
-            <div className="comment-actions">
-              <button onClick={() => onSaveEdit(node.id)}>저장</button>
-              <button onClick={onCancelEdit}>취소</button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="comment-content">{node.content}</div>
-
-            <div className="comment-meta">
-              <span>{node.writer}</span>
-              <span>{moment(node.createdAt).format("YYYY.MM.DD HH:mm")}</span>
-            </div>
-
-            <div className="comment-actions">
-              {node.writer === loginNickname && (
-                <button onClick={() => onStartEdit(node)}>수정</button>
-              )}
-
-              {node.writer === loginNickname && (
-                <button onClick={() => onDelete(node.id)}>삭제</button>
-              )}
-
-              <button onClick={() => onStartReply(node.id)}>답글</button>
-            </div>
-
-            {isReplying && (
-              <div className="reply-form">
-                <textarea
-                  value={replyContent}
-                  onChange={(e) => onChangeReplyContent(e.target.value)}
-                  placeholder="답글을 입력하세요"
-                />
-                <button onClick={() => onSaveReply(node.id)}>등록</button>
-                <button onClick={onCancelReply}>취소</button>
-              </div>
-            )}
-          </>
-        )}
-
-        {node.children.map((child) => (
-          <CommentNode
-            key={child.id}
-            node={child}
-            depth={depth + 1}
-            editingId={editingId}
-            editContent={editContent}
-            replyToId={replyToId}
-            replyContent={replyContent}
-            onChangeEditContent={onChangeEditContent}
-            onStartEdit={onStartEdit}
-            onSaveEdit={onSaveEdit}
-            onCancelEdit={onCancelEdit}
-            onDelete={onDelete}
-            onStartReply={onStartReply}
-            onChangeReplyContent={onChangeReplyContent}
-            onSaveReply={onSaveReply}
-            onCancelReply={onCancelReply}
-            loginNickname={loginNickname}
+  return (
+    <div className="comment-item" style={{ marginLeft: depth * 20 }}>
+      {isEditing ? (
+        <>
+          <textarea
+            value={editContent}
+            onChange={(e) => onChangeEditContent(e.target.value)}
           />
-        ))}
-      </div>
-    );
-  }
-);
+          <div className="comment-actions">
+            <button onClick={() => onSaveEdit(node.id)}>저장</button>
+            <button onClick={onCancelEdit}>취소</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="comment-content">{node.content}</div>
+
+          <div className="comment-meta">
+            <span>{node.writer}</span>
+            <span>{moment(node.createdAt).format("YYYY.MM.DD HH:mm")}</span>
+          </div>
+
+          <div className="comment-actions">
+            {/* 댓글 수정은 기존처럼 본인만 가능 (백엔드도 writer 체크일 가능성 높아서 유지) */}
+            {node.writer === loginNickname && (
+              <button onClick={() => onStartEdit(node)}>수정</button>
+            )}
+
+            {/* 삭제는 관리자 + 작성자 모두 가능 */}
+            {(node.writer === loginNickname || isAdmin) && (
+              <button onClick={() => onDelete(node.id)}>삭제</button>
+            )}
+
+            <button onClick={() => onStartReply(node.id)}>답글</button>
+          </div>
+
+          {isReplying && (
+            <div className="reply-form">
+              <textarea
+                value={replyContent}
+                onChange={(e) => onChangeReplyContent(e.target.value)}
+                placeholder="답글을 입력하세요"
+              />
+              <button onClick={() => onSaveReply(node.id)}>등록</button>
+              <button onClick={onCancelReply}>취소</button>
+            </div>
+          )}
+        </>
+      )}
+
+      {node.children.map((child) => (
+        <CommentNode
+          key={child.id}
+          node={child}
+          depth={depth + 1}
+          editingId={editingId}
+          editContent={editContent}
+          replyToId={replyToId}
+          replyContent={replyContent}
+          onChangeEditContent={onChangeEditContent}
+          onStartEdit={onStartEdit}
+          onSaveEdit={onSaveEdit}
+          onCancelEdit={onCancelEdit}
+          onDelete={onDelete}
+          onStartReply={onStartReply}
+          onChangeReplyContent={onChangeReplyContent}
+          onSaveReply={onSaveReply}
+          onCancelReply={onCancelReply}
+          loginNickname={loginNickname}
+          loginUserType={loginUserType} // ★ 자식에게도 전달
+        />
+      ))}
+    </div>
+  );
+});
 
 /** ======================
  *  게시글 상세
@@ -114,6 +117,9 @@ const PostDetail = () => {
   const savedUser = JSON.parse(localStorage.getItem("user"));
   const loginNickname =
     savedUser?.nickname || savedUser?.name || savedUser?.id || "익명";
+
+  const loginUserType = savedUser?.userType || "NORMAL"; // ★ ADMIN/NORMAL 등
+  const isAdmin = loginUserType === "ADMIN"; // ★
 
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
@@ -141,7 +147,9 @@ const PostDetail = () => {
     try {
       const res = await axios.get(`http://localhost:8080/api/comments/${id}`);
       setComments(res.data);
-    } catch (err) {}
+    } catch (err) {
+      // 필요 시 에러 처리 추가
+    }
   };
 
   // 🔥 이전글 이동
@@ -194,10 +202,13 @@ const PostDetail = () => {
 
   const handleDeleteComment = async (cid) => {
     await axios.delete(`http://localhost:8080/api/comments/${cid}`, {
-      data: { writer: loginNickname }
+      data: {
+        writer: loginNickname,
+        userType: loginUserType, // ★ 관리자 여부 백엔드로 전달
+      },
     });
     loadComments();
-};
+  };
 
   const handleEdit = async (cid) => {
     await axios.put(`http://localhost:8080/api/comments/${cid}`, {
@@ -210,13 +221,28 @@ const PostDetail = () => {
   };
 
   /** 게시글 삭제 */
-  const handleDeletePost = async () => {
+const handleDeletePost = async () => {
+  // 🔥 1단계: 확인창 먼저 띄우기
+  const ok = window.confirm("정말 이 게시글을 삭제하시겠습니까?");
+  if (!ok) {
+    return; // 사용자가 취소 누르면 아무 것도 안 함
+  }
+
+  try {
     await axios.delete(`http://localhost:8080/api/board/${id}`, {
-      data: { writer: loginNickname },
+      data: {
+        writer: loginNickname,
+        userType: loginUserType, // 관리자 / 일반 여부 전달
+      },
     });
 
+    alert("게시글이 삭제되었습니다.");
     navigate("/main");
-  };
+  } catch (err) {
+    console.error(err);
+    alert("게시글 삭제 중 오류가 발생했습니다.");
+  }
+};
 
   if (!post) return <div>로딩중...</div>;
 
@@ -241,21 +267,23 @@ const PostDetail = () => {
 
   return (
     <div className="post-detail-container">
-      {/* 🔥 상단 네비게이션 추가 */}
+      {/* 🔥 상단 네비게이션 */}
       <div className="post-nav">
         <div className="left-buttons">
+          {/* 글 수정은 기존처럼 작성자만, 삭제는 관리자도 가능 */}
           {post.writer === loginNickname && (
-            <>
-              <button
-                className="edit-btn"
-                onClick={() => navigate(`/board/write?id=${post.id}`)}
-              >
-                수정
-              </button>
-              <button className="delete-btn" onClick={handleDeletePost}>
-                삭제
-              </button>
-            </>
+            <button
+              className="edit-btn"
+              onClick={() => navigate(`/board/write?id=${post.id}`)}
+            >
+              수정
+            </button>
+          )}
+
+          {(post.writer === loginNickname || isAdmin) && (
+            <button className="delete-btn" onClick={handleDeletePost}>
+              삭제
+            </button>
           )}
         </div>
 
@@ -323,6 +351,7 @@ const PostDetail = () => {
             onSaveReply={handleAddReply}
             onCancelReply={() => setReplyToId(null)}
             loginNickname={loginNickname}
+            loginUserType={loginUserType} // 관리자 여부 전달
           />
         ))}
       </div>

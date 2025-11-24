@@ -125,7 +125,6 @@ function AdminUserManage() {
 
       {/* 검색 영역 */}
       <section className="admin-user-search">
-        {/* 필터 선택 (직책/이름/닉네임) */}
         <div className="search-filter-box">
           <select
             value={filterType}
@@ -158,7 +157,6 @@ function AdminUserManage() {
 
       {/* 회원 목록 영역 */}
       <section className="admin-user-list-section">
-        {/* 헤더: 번호 / 이름 / 아이디 / 닉네임 / 활동내역 / 버튼 / 탈퇴 */}
         <div className="admin-user-list-header">
           <div className="col-number">번호</div>
           <div className="col-name">이름</div>
@@ -189,7 +187,6 @@ function AdminUserManage() {
                   {user.activityCount ?? 0}
                 </div>
 
-                {/* 파란 동그라미 두 개: 회원정보 / 활동내역 */}
                 <div className="col-buttons">
                   <button
                     className="circle-btn"
@@ -207,7 +204,6 @@ function AdminUserManage() {
                   </button>
                 </div>
 
-                {/* 빨간 회원탈퇴 버튼 */}
                 <div className="col-delete">
                   <button
                     className="delete-btn"
