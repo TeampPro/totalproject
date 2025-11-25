@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
-import {
-  fetchFriends,
-  fetchFriendRequests,
-  sendFriendRequest,
-  acceptFriendRequest,
-  rejectFriendRequest,
-} from "../../api/friendApi";
-import "../../styles/friend/FriendPage.css"; // 🔥 CSS 분리
+import { fetchFriends, fetchFriendRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest } from "../../api/friendApi";
+import "../../styles/friend/FriendPage.css";
 
 export default function FriendPage() {
   const [friends, setFriends] = useState([]);
