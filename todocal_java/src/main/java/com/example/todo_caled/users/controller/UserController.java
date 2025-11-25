@@ -1,15 +1,16 @@
-package com.example.todo_caled.users.controller;
+    package com.example.todo_caled.users.controller;
 
-import com.example.todo_caled.board.entity.Post;
+
 import com.example.todo_caled.board.repository.PostRepository;
 import com.example.todo_caled.comments.repository.CommentRepository;
 import com.example.todo_caled.users.entity.User;
 import com.example.todo_caled.users.repository.UserRepository;
+import com.example.todo_caled.users.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.*;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +26,14 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    // 🔥 닉네임 변경 시 게시글/댓글 일괄 업데이트에 사용
+    @Autowired
+    private UserService userService;
+
+    // 🔥 SecurityConfig 에서 등록한 PasswordEncoder 빈 사용
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Autowired
     private PostRepository postRepository;
 
@@ -32,7 +41,6 @@ public class UserController {
     private CommentRepository commentRepository;
 
     private final Path uploadRoot = Paths.get("./uploads");
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     // 🔹 회원가입
     @PostMapping("/signup")
@@ -44,16 +52,18 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
         }
 
+        // 비밀번호 BCrypt 암호화
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // userType 기본값은 엔티티에서 NORMAL 로 설정됨
         userRepository.save(user);
 
         res.put("message", "회원가입이 완료되었습니다.");
         return ResponseEntity.ok(res);
     }
 
-    // 🔹 로그인
+    // 🔹 로그인 (현재는 JWT 없이 단순 검증 + 정보 반환)
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> req) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> req) {
         String id = req.get("id");
         String password = req.get("password");
 
@@ -68,13 +78,15 @@ public class UserController {
                     .body(Map.of("message", "비밀번호가 올바르지 않습니다."));
         }
 
-        Map<String, String> res = new HashMap<>();
+        Map<String, Object> res = new HashMap<>();
         res.put("message", "로그인 성공");
         res.put("id", user.getId());
         res.put("name", user.getName());
         res.put("email", user.getEmail());
         res.put("nickname", user.getNickname());
         res.put("userType", user.getUserType());
+
+        // 나중에 JWT 붙인다면: 여기서 토큰 만들어서 res.put("token", token) 추가
 
         return ResponseEntity.ok(res);
     }
@@ -90,7 +102,9 @@ public class UserController {
         guest.setPassword(passwordEncoder.encode(guestPw));
         guest.setName("비회원");
         guest.setEmail("guest@temp.com");
-        guest.setUserType("guest");
+
+        // 🔥 userType 은 대문자 GUEST 로 통일
+        guest.setUserType("GUEST");
 
         userRepository.save(guest);
 
@@ -124,8 +138,10 @@ public class UserController {
     }
 
     // 🔹 회원 정보 + 닉네임 변경 + 프로필 이미지
-    @PutMapping(value = "/user/update-with-file",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(
+            value = "/user/update-with-file",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
     public ResponseEntity<?> updateUserWithFile(
             @RequestParam("id") String id,
             @RequestParam(value = "name", required = false) String name,
@@ -139,12 +155,14 @@ public class UserController {
                 return ResponseEntity.status(404)
                         .body(Map.of("message", "해당 사용자가 존재하지 않습니다."));
             }
-            if ("guest".equalsIgnoreCase(user.getUserType())) {
+
+            // 🔐 비회원(GUEST)은 정보 수정 불가
+            if ("GUEST".equalsIgnoreCase(user.getUserType())) {
                 return ResponseEntity.status(403)
                         .body(Map.of("message", "비회원은 정보 수정이 불가능합니다."));
             }
 
-            // 기존 값 (기존 글/댓글 writer 업데이트용)
+            // 기존 값 (게시글/댓글 작성자 업데이트용)
             String oldId = user.getId();
             String oldName = user.getName();
             String oldNickname = user.getNickname();
@@ -171,10 +189,9 @@ public class UserController {
 
             userRepository.save(user);
 
-            // 🔥 닉네임이 바뀐 경우: 기존 작성자 전부 새 닉네임으로
+            // 🔥 닉네임이 바뀐 경우: 글/댓글 작성자 닉네임도 일괄 변경
             if (nickname != null && !nickname.equals(oldNickname)) {
-                postRepository.updateWriterAll(oldId, oldName, oldNickname, nickname);
-                commentRepository.updateWriterAll(oldId, oldName, oldNickname, nickname);
+                userService.updateNicknameForAll(oldId, oldName, oldNickname, nickname);
             }
 
             Map<String, Object> resp = new HashMap<>();
@@ -205,10 +222,13 @@ public class UserController {
             return ResponseEntity.status(404)
                     .body(Map.of("message", "존재하지 않는 사용자입니다."));
         }
-        if ("guest".equalsIgnoreCase(user.getUserType())) {
+
+        // 비회원은 비밀번호 변경 불가
+        if ("GUEST".equalsIgnoreCase(user.getUserType())) {
             return ResponseEntity.status(403)
                     .body(Map.of("message", "비회원은 비밀번호 변경이 불가능합니다."));
         }
+
         if (!passwordEncoder.matches(currentPw, user.getPassword())) {
             return ResponseEntity.status(400)
                     .body(Map.of("message", "현재 비밀번호가 올바르지 않습니다."));
@@ -270,7 +290,7 @@ public class UserController {
         }
     }
 
-    // 랜덤 문자열 생성
+    // 랜덤 문자열 생성 (비회원 계정용)
     private String randomString(int length) {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         Random random = new Random();

@@ -40,7 +40,7 @@ public class AdminUserController {
 
     /**
      * ✅ 전체 회원 조회 + 활동내역(일정 수)
-     *  프론트: GET http://localhost:8080/api/admin/users
+     *  - GET /api/admin/users
      */
     @GetMapping("/users")
     public ResponseEntity<List<AdminUserDto>> getAllUsers() {
@@ -48,21 +48,10 @@ public class AdminUserController {
 
         List<AdminUserDto> result = users.stream()
                 .map(u -> {
-                    // 🔹 User 엔티티 기준
-                    //  - PK: userId (Long, 지금은 안 씀)
-                    //  - 로그인 아이디: id (String)  ← Task.ownerId에도 이 값이 들어감
-                    String loginId = u.getId();        // 로그인용 아이디 (예: dd)
-                    String name = u.getName();         // 이름
-
-                    // 🔹 닉네임은 당장 엔티티에 없을 수도 있으니 안전하게 처리
-                    //  - 나중에 User 엔티티에 nickname 필드 만들면 여기만 고치면 됨
-                    String nickname = "";              // 일단 빈 문자열로 내려보냄
-                    // 만약 User에 getNickName() 이라는 메서드가 있으면:
-                    // String nickname = u.getNickName();
-
-                    String userType = u.getUserType(); // NORMAL / GUEST / ADMIN 등
-
-                    // 🔹 일정 개수 = tasks.ownerId = 로그인 아이디 기준 카운트
+                    String loginId = u.getId();           // 로그인용 아이디
+                    String name = u.getName();
+                    String nickname = u.getNickname();    // 🔥 실제 닉네임 사용
+                    String userType = u.getUserType();    // NORMAL / GUEST / ADMIN / KAKAO 등
                     long activityCount = taskRepository.countByOwnerId(loginId);
 
                     return new AdminUserDto(
@@ -77,9 +66,10 @@ public class AdminUserController {
 
         return ResponseEntity.ok(result);
     }
+
     /**
      * ✅ 단일 회원 조회
-     *  프론트: GET http://localhost:8080/api/admin/users/{id}
+     *  - GET /api/admin/users/{id}
      *  - {id} 는 로그인 아이디(User.id)
      */
     @GetMapping("/users/{id}")
@@ -90,7 +80,7 @@ public class AdminUserController {
         }
 
         String name = user.getName();
-        String nickname = ""; // 닉네임 필드가 생기면 user.getNickname() 으로 변경
+        String nickname = user.getNickname();     // 🔥 닉네임 사용
         String userType = user.getUserType();
         long activityCount = taskRepository.countByOwnerId(loginId);
 
@@ -107,8 +97,8 @@ public class AdminUserController {
 
     /**
      * ✅ 회원 정보 수정 + (선택) 비밀번호 재설정
-     *  프론트: PUT http://localhost:8080/api/admin/users/{id}
-     *  Body: AdminUserUpdateRequest
+     *  - PUT /api/admin/users/{id}
+     *  - Body: AdminUserUpdateRequest
      */
     @PutMapping("/users/{id}")
     public ResponseEntity<AdminUserDto> updateUser(
@@ -125,11 +115,12 @@ public class AdminUserController {
             user.setName(request.getName());
         }
 
-        // 닉네임은 현재 User 엔티티에 필드가 없다고 가정 → 일단 무시
-        // 나중에 User 에 nickname 필드가 생기면:
-        // if (request.getNickname() != null) { user.setNickname(request.getNickname()); }
+        // 🔥 닉네임 수정
+        if (request.getNickname() != null && !request.getNickname().isBlank()) {
+            user.setNickname(request.getNickname());
+        }
 
-        // 직책/권한 수정
+        // 직책/권한(userType) 수정
         if (request.getUserType() != null && !request.getUserType().isBlank()) {
             user.setUserType(request.getUserType());
         }
@@ -146,7 +137,7 @@ public class AdminUserController {
         AdminUserDto dto = new AdminUserDto(
                 user.getId(),
                 user.getName(),
-                "", // 닉네임은 아직 없음
+                user.getNickname(),
                 user.getUserType(),
                 activityCount
         );
@@ -154,14 +145,12 @@ public class AdminUserController {
         return ResponseEntity.ok(dto);
     }
 
-
     /**
      * ✅ 회원 탈퇴 (로그인 아이디 기준)
-     *  - 관리자에서 회원 삭제할 때도 게시판 writer 를 deleteUser 로 변경
+     *  - DELETE /api/admin/users/{id}
      */
     @DeleteMapping("/users/{id}")
     public ResponseEntity<Void> deleteUserByLoginId(@PathVariable("id") String loginId) {
-
         User user = userRepository.findById(loginId);
         if (user == null) {
             return ResponseEntity.notFound().build();

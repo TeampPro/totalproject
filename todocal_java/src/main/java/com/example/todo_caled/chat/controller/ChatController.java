@@ -72,7 +72,7 @@ public class ChatController {
             @RequestParam(required = false) String memberName
     ) {
         if (memberName == null || memberName.isBlank()) {
-            memberName = "guest";
+            memberName = "GUEST";
         }
         return chatService.joinByInvite(code, memberName);
     }

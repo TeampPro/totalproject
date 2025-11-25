@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { fetchMessages } from "../../api/chatApi";
 
@@ -7,9 +7,13 @@ import "../../styles/ChatRoom.css";
 
 export default function ChatRoom() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { roomId } = useParams();
 
-  // ✅ 방 제목: 라우터 state에서 우선 가져오고, 없으면 나중에 서버에서 조회
+  // 로그인된 사용자
+  const loginUser = JSON.parse(localStorage.getItem("user") || "null");
+
+  // 방 이름(state → 서버 조회 순)
   const initialRoomName = location.state?.roomName || "";
   const [roomName, setRoomName] = useState(initialRoomName);
 
@@ -27,7 +31,6 @@ export default function ChatRoom() {
   const reconnectTimer = useRef(null);
   const messagesEndRef = useRef(null);
 
-  // 스크롤 관련
   const chatBoxRef = useRef(null);
   const [autoScroll, setAutoScroll] = useState(true);
 
@@ -38,41 +41,76 @@ export default function ChatRoom() {
     setAutoScroll(isBottom);
   };
 
-  // ✅ memberName 초기화 (state → localStorage 순서)
-  useEffect(() => {
-    const nameFromState = location.state?.memberName;
-    const nameFromStorage = localStorage.getItem("memberName");
-    const finalName = nameFromState || nameFromStorage;
+  /** -----------------------------------------------------
+   * 🎯 닉네임 결정 규칙 완성본
+   * -----------------------------------------------------
+   * 1) 회원(userType = NORMAL/ADMIN) → DB 닉네임
+   * 2) 비회원 로그인(userType = GUEST) → guest_랜덤
+   * 3) 초대 링크 게스트 → 닉네임 입력해서 들어온 값 사용
+   * 4) 초대 링크 게스트 재입장 → localStorage.memberName 사용
+   * 5) 아무 정보도 없으면 → 초대 링크 닉네임 입력 페이지로 보내기
+   * ----------------------------------------------------- */
 
-    if (!finalName) {
-      alert("닉네임 정보를 찾을 수 없습니다. 초대 링크로 다시 입장해주세요.");
+  useEffect(() => {
+    /** 1) 로그인한 회원/관리자 */
+    if (loginUser && loginUser.userType !== "GUEST") {
+      const nick = loginUser.nickname || loginUser.name || loginUser.id;
+      nickname.current = nick;
+      setMemberName(nick);
       return;
     }
 
-    setMemberName(finalName);
-    nickname.current = finalName;
-  }, [location.state]);
+    /** 2) 비회원 로그인(GUEST) → guest_random */
+    if (loginUser && loginUser.userType === "GUEST") {
+      let guestNick =
+        loginUser.nickname ||
+        loginUser.name ||
+        loginUser.id ||
+        `guest_${Math.random().toString(36).substring(2, 8)}`;
 
-  // ✅ 방 이름이 없으면 서버에서 다시 조회 (GET /api/chat/rooms/{roomId})
+      nickname.current = guestNick;
+      setMemberName(guestNick);
+      return;
+    }
+
+    /** 3) 초대링크 게스트(초대 → 닉네임 입력) */
+    const invitedName = location.state?.memberName;
+    if (invitedName) {
+      nickname.current = invitedName;
+      localStorage.setItem("memberName", invitedName);
+      setMemberName(invitedName);
+      return;
+    }
+
+    /** 4) 초대링크 게스트 재입장 */
+    const storedGuestName = localStorage.getItem("memberName");
+    if (storedGuestName) {
+      nickname.current = storedGuestName;
+      setMemberName(storedGuestName);
+      return;
+    }
+
+    /** 5) 아무 정보도 없다 → 초대 링크 닉네임 입력 페이지로 돌아가기 */
+    alert("닉네임 정보가 없습니다. 초대 링크로 입장해주세요.");
+    navigate("/chat/invite");
+  }, []);
+
+  /** 방 이름 조회 */
   useEffect(() => {
-    if (roomName) return; // 이미 state에 있으면 건너뜀
+    if (roomName) return;
 
     const fetchRoomInfo = async () => {
       try {
         const res = await axios.get(`/api/chat/rooms/${roomId}`);
-        if (res.data?.name) {
-          setRoomName(res.data.name);
-        }
+        if (res.data?.name) setRoomName(res.data.name);
       } catch (err) {
         console.error("채팅방 정보 조회 실패:", err);
       }
     };
-
-    if (roomId) {
-      fetchRoomInfo();
-    }
+    if (roomId) fetchRoomInfo();
   }, [roomId, roomName]);
 
+  /** WebSocket 연결 */
   const connectWebSocket = () => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) return;
     if (!roomId || !nickname.current) return;
@@ -98,13 +136,11 @@ export default function ChatRoom() {
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
-      // 멤버 리스트 갱신 패킷
       if (Array.isArray(data.members)) {
         setMembers(data.members);
         return;
       }
 
-      // 일반 채팅 메시지
       if (data.roomId === roomId) {
         setMessages((prev) => [...prev, data]);
       }
@@ -118,31 +154,18 @@ export default function ChatRoom() {
       console.warn("❌ WebSocket 종료됨", e.code, e.reason);
       setIsConnected(false);
 
-      if (e.code === 1000) {
-        console.log("✅ 정상 종료이므로 재연결하지 않습니다.");
-        return;
-      }
-
-      if (e.code === 1008 && e.reason === "DUPLICATE_SESSION") {
-        console.warn("중복 접속으로 기존 세션이 정리되었습니다. 재연결 중단.");
-        return;
-      }
-
-      if (e.code === 1003 && e.reason.includes("입장")) {
+      if (e.code === 1000) return;
+      if (e.code === 1008) return;
+      if (e.code === 1003) {
         alert(e.reason || "채팅방 입장 권한이 없습니다.");
         return;
       }
 
-      if (!reconnectTimer.current) {
-        reconnectTimer.current = setTimeout(() => {
-          console.log("🔁 재연결 시도 중...");
-          connectWebSocket();
-        }, 2000);
-      }
+      reconnectTimer.current = setTimeout(() => connectWebSocket(), 2000);
     };
   };
 
-  // ✅ 방 입장(멤버 등록) 후 WebSocket 연결
+  /** WebSocket + 방 입장 */
   useEffect(() => {
     if (!memberName || !roomId) return;
 
@@ -150,19 +173,14 @@ export default function ChatRoom() {
 
     const joinAndConnect = async () => {
       try {
-        // 멤버 등록 (이미 등록되어 있으면 joinRoom이 내부에서 무시)
         await axios.post(`/api/chat/rooms/${roomId}/join`, null, {
           params: { memberName },
         });
 
-        if (!cancelled) {
-          connectWebSocket();
-        }
+        if (!cancelled) connectWebSocket();
       } catch (err) {
         console.error("❌ 채팅방 입장 실패:", err);
-        if (!cancelled) {
-          alert("채팅방에 입장할 수 없습니다.");
-        }
+        if (!cancelled) alert("채팅방 입장 실패");
       }
     };
 
@@ -178,7 +196,7 @@ export default function ChatRoom() {
     };
   }, [memberName, roomId]);
 
-  // ✅ 이전 메시지 로드
+  /** 이전 메시지 */
   useEffect(() => {
     const loadOldMessages = async () => {
       const data = await fetchMessages(roomId);
@@ -188,39 +206,38 @@ export default function ChatRoom() {
           : [{ sender: "SYSTEM", message: "아직 메시지가 없습니다.", time: "" }]
       );
     };
-    if (roomId) {
-      loadOldMessages();
-    }
+    if (roomId) loadOldMessages();
   }, [roomId]);
 
-  // 자동 스크롤
+  /** 자동 스크롤 */
   useEffect(() => {
     if (autoScroll && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, autoScroll]);
 
-  // 메시지 전송
+  /** 메시지 전송 */
   const sendMessage = () => {
     if (!msg.trim()) return;
 
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
-      alert("서버와의 연결이 끊어졌습니다. 잠시 후 다시 시도해주세요.");
+      alert("서버와 연결이 끊어졌습니다.");
       return;
     }
 
-    const payload = {
-      type: "chat",
-      sender: nickname.current,
-      message: msg,
-      roomId, // ✅ roomId 사용
-    };
+    ws.current.send(
+      JSON.stringify({
+        type: "chat",
+        sender: nickname.current,
+        message: msg,
+        roomId,
+      })
+    );
 
-    ws.current.send(JSON.stringify(payload));
     setMsg("");
   };
 
-  // 초대 링크 생성
+  /** 초대 링크 생성 */
   const createInvite = async () => {
     try {
       const res = await axios.post(`/api/chat/rooms/${roomId}/invite`);
@@ -239,7 +256,7 @@ export default function ChatRoom() {
 
   return (
     <div className="chat-room">
-      {/* 상단 헤더 */}
+      {/* 헤더 */}
       <div className="chat-header">
         <h2>💬 {roomName || `채팅방 (${roomId})`}</h2>
         <div>
@@ -250,29 +267,21 @@ export default function ChatRoom() {
         </div>
       </div>
 
-      {/* 참여자 목록 */}
+      {/* 참여자 */}
       <div className="chat-members-box">
         <b>참여자 ({members.length})</b>
         <div className="chat-members-list">
           {members.map((m, i) => (
-            <span key={i} className="chat-member">
-              • {m}
-            </span>
+            <span key={i} className="chat-member">• {m}</span>
           ))}
         </div>
       </div>
 
-      {/* 메시지 리스트 */}
-      <div
-        className="chat-messages"
-        ref={chatBoxRef}
-        onScroll={handleScroll}
-      >
+      {/* 메시지 */}
+      <div className="chat-messages" ref={chatBoxRef} onScroll={handleScroll}>
         {messages.map((m, i) =>
           m.systemMessage ? (
-            <div key={i} className="system-message">
-              {m.message}
-            </div>
+            <div key={i} className="system-message">{m.message}</div>
           ) : (
             <div key={i}>
               <b>{m.sender}</b>: {m.message}{" "}
@@ -283,7 +292,7 @@ export default function ChatRoom() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 입력 영역 */}
+      {/* 입력 */}
       <div className="chat-input-wrapper">
         <textarea
           value={msg}
@@ -294,7 +303,7 @@ export default function ChatRoom() {
               sendMessage();
             }
           }}
-          placeholder="메시지를 입력하세요 (Shift+Enter로 줄바꿈)"
+          placeholder="메시지 입력 (Shift+Enter 줄바꿈)"
           rows={2}
           className="chat-textarea"
         />
