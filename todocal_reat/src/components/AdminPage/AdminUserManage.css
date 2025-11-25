@@ -136,7 +136,6 @@
   border-bottom: none;
 }
 
-
 /* 비어 있을 때 */
 .admin-user-empty {
   padding: 20px;
@@ -184,4 +183,14 @@
 
 .delete-btn:hover {
   background-color: rgba(231, 76, 60, 0.18);
+}
+
+/* 정렬 가능한 헤더 */
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable:hover {
+  text-decoration: underline;
 }
