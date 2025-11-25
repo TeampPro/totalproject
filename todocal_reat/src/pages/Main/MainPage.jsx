@@ -51,6 +51,15 @@ const MainPage = ({ user, setUser }) => {
                   마이페이지
                 </button>
 
+                {user?.userType === "ADMIN" && (
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigate("/admin/users")}
+                  >
+                    회원관리
+                  </button>
+                )}
+
                 <button className="dropdown-item" onClick={handleLogout}>
                   로그아웃
                 </button>

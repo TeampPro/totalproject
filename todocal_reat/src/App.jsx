@@ -16,7 +16,7 @@ import SignUp from "./pages/Auth/SignUp.jsx";
 import BeLogin from "./pages/Auth/BeLogin.jsx";
 import FriendPage from "./pages/Friend/FriendPage.jsx";
 
-// 메인/마이페이지
+// Main / My
 import MainPage from "./pages/Main/MainPage.jsx";
 import MyPage from "./pages/My/MyPage.jsx";
 import Upload from "./pages/My/Upload.jsx";
@@ -24,16 +24,16 @@ import Upload from "./pages/My/Upload.jsx";
 // Todo
 import TodoPage from "./pages/Todo/TodoPage.jsx";
 
-// 게시판
+// Board
 import PostDetail from "./pages/Board/PostDetail.jsx";
 import PostWrite from "./pages/Board/PostWrite.jsx";
 
-// 채팅
+// Chat
 import ChatPage from "./pages/Chat/ChatPage.jsx";
 import InvitePage from "./pages/Chat/InvitePage.jsx";
 import ChatRoomWrapper from "./components/Chat/ChatRoomWrapper.jsx";
 
-// 관리자
+// Admin
 import AdminUserManage from "./components/AdminPage/AdminUserManage.jsx";
 import AdminUserInfo from "./components/AdminPage/AdminUserInfo.jsx";
 import AdminUserTasks from "./components/AdminPage/AdminUserTasks.jsx";
@@ -45,7 +45,6 @@ function App() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  // 로그인 상태
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -65,10 +64,8 @@ function App() {
     navigate("/main");
   };
 
-  // 메뉴바 숨길 페이지
   const noMenu =
     pathname === "/login" || pathname === "/signup" || pathname === "/beLogin";
-
   const isMyPage = pathname === "/myPage";
 
   return (
@@ -87,15 +84,15 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/beLogin" element={<BeLogin setUser={setUser} />} />
 
-          {/* 마이페이지 */}
+          {/* My */}
           <Route path="/myPage" element={<MyPage onLogout={handleLogout} />} />
           <Route path="/upload" element={<Upload />} />
 
-          {/* 게시판 */}
+          {/* Board */}
           <Route path="/board/:id" element={<PostDetail />} />
           <Route path="/board/write" element={<PostWrite />} />
 
-          {/* 관리자 */}
+          {/* Admin */}
           <Route path="/admin/users" element={<AdminUserManage />} />
           <Route path="/admin/users/:userId/info" element={<AdminUserInfo />} />
           <Route
@@ -104,14 +101,9 @@ function App() {
           />
           <Route path="/admin/tasks/:taskId" element={<AdminTaskDetail />} />
 
-            {/* 친구창 */}
-+           <Route path="/friends" element={<FriendPage />} />
+          {/* Friends */}
+          <Route path="/friends" element={<FriendPage />} />
 
-            {/* 관리자 */}
-            <Route path="/admin/users" element={<AdminUserManage />} />
-            <Route path="/admin/users/:userId/info" element={<AdminUserInfo />} />
-            <Route path="/admin/users/:userId/tasks" element={<AdminUserTasks />} />
-            <Route path="/admin/tasks/:taskId" element={<AdminTaskDetail />} />
           {/* Todo */}
           <Route path="/todo" element={<TodoPage />} />
 
@@ -122,7 +114,6 @@ function App() {
         </Routes>
       </div>
 
-      {/* 메뉴바 표시 */}
       {!noMenu && !isMyPage && <MenuBar user={user} />}
     </>
   );

@@ -173,7 +173,7 @@ function MyPage() {
     <div className="mypage-container">
       <div className="mypage-card">
         <h2 className="mypage-title">마이페이지</h2>
-
+        
         <div className="mypage-profile-wrap">
           <img
             src={preview || "/default-profile.png"}
