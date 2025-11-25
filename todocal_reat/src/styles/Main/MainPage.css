@@ -106,3 +106,49 @@
   flex-direction: column;
   gap: 20px;
 }
+
+/* 로그인 시 상단 고정 프로필 카드 */
+.profile-top-wrapper {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  z-index: 500;
+  pointer-events: auto;
+}
+
+/* 프로필 카드 기본 */
+.user-info-card {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 작은 버전 */
+.user-info-card.small {
+  padding: 12px;
+  width: 180px;
+}
+
+.profile-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+}
+
+.profile-img.small {
+  width: 42px;
+  height: 42px;
+}
+
+.user-info-card .name {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.user-info-card.small .name {
+  font-size: 14px;
+}

@@ -27,6 +27,11 @@ const MainPage = ({ user, setUser }) => {
         {!user && <RightAuthBox />}
 
         {user && (
+          <div className="profile-top-wrapper">
+            <UserInfo user={user} small />
+          </div>
+        )}
+        {user && (
           <div className="menu-wrapper">
             <button
               className="menu-button"
