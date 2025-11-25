@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "../../styles/Auth/Login.css";
 import LogoHeader from "../../components/LogoHeader/LogoHeader.jsx";
 
-function Login() {
+function Login({ setUser }) {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ function Login() {
     script.src = "https://developers.kakao.com/sdk/js/kakao.js";
     script.async = true;
     script.onload = () => {
-      if (!window.Kakao.isInitialized()) {
+      if (window.Kakao && !window.Kakao.isInitialized()) {
         window.Kakao.init("ea5df118a470f99f77bbff428c5d972e");
       }
     };
@@ -41,16 +41,17 @@ function Login() {
       if (response.ok) {
         alert(data.message || "로그인 성공");
 
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            id: data.id,
-            name: data.name,
-            email: data.email,
-            nickname: data.nickname,
-            userType: data.userType || "member",
-          })
-        );
+        const userData = {
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          nickname: data.nickname,
+          userType: data.userType || "member",
+        };
+
+        // ✅ localStorage + React 상태 둘 다 갱신
+        localStorage.setItem("user", JSON.stringify(userData));
+        setUser(userData);
 
         navigate("/main");
       } else {
@@ -62,7 +63,7 @@ function Login() {
     }
   };
 
-  // 비회원 회원가입
+  // 비회원 회원가입 + 로그인
   const handleGuestSignup = async () => {
     try {
       const response = await fetch("http://localhost:8080/api/belogin", {
@@ -81,14 +82,16 @@ function Login() {
           "guestInfo",
           JSON.stringify({ id: data.id, password: data.password })
         );
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            id: data.id,
-            name: data.id,
-            userType: data.userType || "guest",
-          })
-        );
+
+        const guestUser = {
+          id: data.id,
+          name: data.id,
+          userType: data.userType || "guest",
+        };
+
+        // ✅ guest도 동일하게 상태 갱신
+        localStorage.setItem("user", JSON.stringify(guestUser));
+        setUser(guestUser);
 
         localStorage.setItem("memberName", data.id);
 
@@ -110,7 +113,6 @@ function Login() {
 
   return (
     <div className="login-fullpage">
-
       {/* 🔵 Planix 로고 헤더 */}
       <LogoHeader />
 

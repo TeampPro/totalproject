@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/myprofile/UserInfo.css";
 
-function UserInfo({ user, onLogout }) {
+function UserInfo({ user, onLogout, small }) {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
 
@@ -23,14 +23,14 @@ function UserInfo({ user, onLogout }) {
 
   if (!userInfo) {
     return (
-      <div className="loading-box">
+      <div className={`loading-box ${small ? "small" : ""}`}>
         <p>내 정보 불러오는 중...</p>
       </div>
     );
   }
 
   return (
-    <div className="container">
+    <div className={`user-info-container ${small ? "small" : ""}`}>
       <div className="profile-section">
         <img
           src={
@@ -39,29 +39,36 @@ function UserInfo({ user, onLogout }) {
               : "https://cdn-icons-png.flaticon.com/512/847/847969.png"
           }
           alt="프로필"
-          className="profile-image"
+          className={`profile-image ${small ? "small" : ""}`}
         />
 
         <div className="info-box">
-          <h2 className="name">이름: {userInfo.name}</h2>
-          <p className="info-text">
-            <strong>아이디:</strong> {userInfo.id}
-          </p>
-          <p className="info-text">
-            <strong>이메일:</strong> {userInfo.email || userInfo.kakaoEmail}
-          </p>
+          <h2 className={`name ${small ? "small" : ""}`}>{userInfo.name} 님</h2>
+
+          {!small && (
+            <>
+              <p className="info-text">
+                <strong>아이디:</strong> {userInfo.id}
+              </p>
+              <p className="info-text">
+                <strong>이메일:</strong> {userInfo.email || userInfo.kakaoEmail}
+              </p>
+            </>
+          )}
         </div>
       </div>
 
-      <div className="button-group">
-        <button className="my-page-btn" onClick={handleMyPage}>
-          마이페이지
-        </button>
+      {!small && (
+        <div className="button-group">
+          <button className="my-page-btn" onClick={handleMyPage}>
+            마이페이지
+          </button>
 
-        <button className="logout-btn" onClick={onLogout}>
-          로그아웃
-        </button>
-      </div>
+          <button className="logout-btn" onClick={onLogout}>
+            로그아웃
+          </button>
+        </div>
+      )}
     </div>
   );
 }
