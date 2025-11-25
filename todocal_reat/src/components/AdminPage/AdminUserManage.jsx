@@ -1,4 +1,3 @@
-// src/components/AdminPage/AdminUserManage.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -36,6 +35,12 @@ function AdminUserManage() {
   const [filterType, setFilterType] = useState("name");
   const [keyword, setKeyword] = useState("");
 
+  // 정렬 상태
+  const [sortConfig, setSortConfig] = useState({
+    key: "number", // number | name | id | nickname | activity
+    direction: "asc", // asc | desc
+  });
+
   // 관리자 체크
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("user"));
@@ -59,28 +64,90 @@ function AdminUserManage() {
     fetchUsers();
   }, []);
 
-  // 검색 필터
+  // 헤더 클릭 시 정렬 변경
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return {
+          key,
+          direction: prev.direction === "asc" ? "desc" : "asc",
+        };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  // 검색 + 정렬
   const filtered = useMemo(() => {
     const q = keyword.trim().toLowerCase();
-    if (!q) return users;
+    let base = users;
 
-    return users.filter((u) => {
-      const nameText = getUserName(u).toLowerCase();
-      const nickText = getUserNickname(u).toLowerCase();
-      const roleText = getRoleText(u).toLowerCase();
+    if (q) {
+      base = users.filter((u) => {
+        const nameText = getUserName(u).toLowerCase();
+        const nickText = getUserNickname(u).toLowerCase();
+        const roleText = getRoleText(u).toLowerCase();
 
-      if (filterType === "role") {
-        return roleText.includes(q);
+        if (filterType === "role") {
+          return roleText.includes(q);
+        }
+        if (filterType === "name") {
+          return nameText.includes(q);
+        }
+        if (filterType === "nickname") {
+          return nickText.includes(q);
+        }
+        return false;
+      });
+    }
+
+    const arr = [...base];
+
+    if (!sortConfig) return arr;
+
+    arr.sort((a, b) => {
+      let result = 0;
+
+      switch (sortConfig.key) {
+        case "number": {
+          const idxA = users.indexOf(a);
+          const idxB = users.indexOf(b);
+          result = idxA - idxB;
+          break;
+        }
+        case "name": {
+          const nameA = getUserName(a);
+          const nameB = getUserName(b);
+          result = nameA.localeCompare(nameB, "ko");
+          break;
+        }
+        case "id": {
+          const idA = (a.id || "").toString();
+          const idB = (b.id || "").toString();
+          result = idA.localeCompare(idB, "ko");
+          break;
+        }
+        case "nickname": {
+          const nA = getUserNickname(a);
+          const nB = getUserNickname(b);
+          result = nA.localeCompare(nB, "ko");
+          break;
+        }
+        case "activity": {
+          const cA = a.activityCount ?? 0;
+          const cB = b.activityCount ?? 0;
+          result = cA - cB;
+          break;
+        }
+        default:
+          result = 0;
       }
-      if (filterType === "name") {
-        return nameText.includes(q);
-      }
-      if (filterType === "nickname") {
-        return nickText.includes(q);
-      }
-      return false;
+
+      return sortConfig.direction === "asc" ? result : -result;
     });
-  }, [users, filterType, keyword]);
+
+    return arr;
+  }, [users, filterType, keyword, sortConfig]);
 
   // 회원 정보 페이지로 이동
   const handleGoUserInfo = (user) => {
@@ -160,11 +227,46 @@ function AdminUserManage() {
       <section className="admin-user-list-section">
         {/* 헤더: 번호 / 이름 / 아이디 / 닉네임 / 활동내역 / 버튼 / 탈퇴 */}
         <div className="admin-user-list-header">
-          <div className="col-number">번호</div>
-          <div className="col-name">이름</div>
-          <div className="col-userid">아이디</div>
-          <div className="col-nickname">닉네임</div>
-          <div className="col-activity">활동내역(숫자)</div>
+          <div
+            className="col-number sortable"
+            onClick={() => handleSort("number")}
+          >
+            번호{" "}
+            {sortConfig.key === "number" &&
+              (sortConfig.direction === "asc" ? "▲" : "▼")}
+          </div>
+          <div
+            className="col-name sortable"
+            onClick={() => handleSort("name")}
+          >
+            이름{" "}
+            {sortConfig.key === "name" &&
+              (sortConfig.direction === "asc" ? "▲" : "▼")}
+          </div>
+          <div
+            className="col-userid sortable"
+            onClick={() => handleSort("id")}
+          >
+            아이디{" "}
+            {sortConfig.key === "id" &&
+              (sortConfig.direction === "asc" ? "▲" : "▼")}
+          </div>
+          <div
+            className="col-nickname sortable"
+            onClick={() => handleSort("nickname")}
+          >
+            닉네임{" "}
+            {sortConfig.key === "nickname" &&
+              (sortConfig.direction === "asc" ? "▲" : "▼")}
+          </div>
+          <div
+            className="col-activity sortable"
+            onClick={() => handleSort("activity")}
+          >
+            활동내역(숫자){" "}
+            {sortConfig.key === "activity" &&
+              (sortConfig.direction === "asc" ? "▲" : "▼")}
+          </div>
           <div className="col-buttons" />
           <div className="col-delete">회원탈퇴</div>
         </div>
