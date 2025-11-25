@@ -1,0 +1,84 @@
+.chat-container {
+  padding: 16px;
+  font-family: Arial, sans-serif;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.create-room-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #4caf50;
+  color: #fff;
+  cursor: pointer;
+}
+
+.loading {
+  padding: 20px;
+}
+
+.chat-room-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.chat-room-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-bottom: 8px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.chat-room-item:hover {
+  background: #f5f5f5;
+}
+
+.chat-room-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-room-name {
+  font-weight: bold;
+}
+
+.chat-room-participants {
+  font-size: 12px;
+  color: #666;
+}
+
+.chat-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.rename-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid #1976d2;
+  background: #fff;
+  cursor: pointer;
+}
+
+.delete-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid #f44336;
+  background: #fff;
+  color: #f44336;
+  cursor: pointer;
+}

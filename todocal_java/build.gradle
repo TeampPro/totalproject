@@ -65,5 +65,5 @@ tasks.named('test') {
 }
 
 tasks.withType(JavaExec).configureEach {
-	jvmArgs "Defile.encoding=UTF-8"
+	jvmArgs "-Defile.encoding=UTF-8"
 }

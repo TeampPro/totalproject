@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import moment from "moment";
-import "../../styles/CalendarTodo.css";
+import "../../styles/Todo/CalendarTodo.css";
 
 /**
  * props:
@@ -45,6 +45,13 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
       shared: false,
     };
   });
+
+  // 로그인 유저에서 ownerId 꺼내기
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const isLoggedIn = !!storedUser?.id;
+  const isGuest = storedUser?.id?.startsWith("guest_"); // guest_로 시작하면 비회원
+  const canShare = !!storedUser?.id && !isGuest;  
+  const isOwner = storedUser?.id === editTodo?.ownerId;
 
   // editTodo / defaultDate 변경 시 동기화
   useEffect(() => {
@@ -93,18 +100,16 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
       ? `${todo.date}T${todo.endTime}:00`
       : moment(start).add(1, "hour").format("YYYY-MM-DDTHH:mm:ss");
 
-    // 로그인 유저에서 ownerId 꺼내기
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-
     const payload = {
       title: todo.title.trim(),
       content: todo.content?.trim() ?? "",
-      promiseDate: start,      // ✅ Task.promiseDate(시작)
-      endDateTime: end,        // ✅ Task.endDateTime(종료)
+      promiseDate: start,
+      endDateTime: end,
       location: todo.location ?? "",
-      shared: todo.shared ?? false,
-      ownerId: storedUser?.id || null, // ✅ 작성자
+      shared: canShare ? todo.shared ?? false : false, // 🔥 게스트면 무조건 false
+      ownerId: storedUser?.id || null,
     };
+
 
     try {
       let res;
@@ -117,10 +122,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
         alert("할 일이 수정되었습니다.");
       } else {
         // 추가
-        res = await axios.post(
-          "http://localhost:8080/api/tasks",
-          payload
-        );
+        res = await axios.post("http://localhost:8080/api/tasks", payload);
         alert("할 일이 저장되었습니다.");
       }
 
@@ -156,7 +158,10 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
 
     try {
-      await axios.delete(`http://localhost:8080/api/tasks/${todo.id}`);
+      const user = JSON.parse(localStorage.getItem("user"));
+      await axios.delete(
+        `http://localhost:8080/api/tasks/${todo.id}?userId=${user?.id || ""}`
+      );
       alert("삭제되었습니다.");
 
       // 상위 컴포넌트에서 목록에서 제거할 수 있도록 정보 전달
@@ -236,17 +241,28 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
         <label className="shared-check">
           <input
             type="checkbox"
-            checked={todo.shared}
-            onChange={handleChange("shared")}
+            checked={canShare ? todo.shared : false}
+            onChange={(e) => {
+              if (!canShare) {
+                alert("비회원은 공유할 수 없습니다.");
+                return; // 체크 무효
+              }
+              handleChange("shared")(e); // 진짜 회원만 상태 변경
+            }}
           />
-          공유 일정으로 표시
+          {canShare ? "공유 일정으로 표시" : "비회원은 공유 불가"}
         </label>
 
         <div className="modal-buttons">
           {isEdit ? (
             <>
-              <button onClick={handleSave}>수정</button>
-              <button onClick={handleDelete}>삭제</button>
+              <button onClick={handleSave} disabled={!isOwner}>
+                수정
+              </button>
+              <button onClick={handleDelete} disabled={!isOwner}>
+                삭제
+              </button>
+              {!isOwner && <p>※ 공유 일정은 본인만 수정/삭제할 수 있습니다.</p>}
               <button onClick={onClose}>닫기</button>
             </>
           ) : (

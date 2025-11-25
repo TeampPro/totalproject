@@ -1,0 +1,78 @@
+.time-home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  width: 100%;
+}
+
+/* 🔹 상단 탭 바 */
+.time-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* 🔹 탭 버튼 기본 스타일 */
+.tab {
+  background: #f4f4f4;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background: #eaeaea;
+}
+
+/* 🔹 활성 탭 */
+.tab.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+/* 🔹 내용 영역 */
+.time-content {
+  width: 100%;
+  display: block;    /* flex를 끄면 캘린더가 full width 사용 */
+}
+
+.time-top-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  margin-bottom: 12px;
+}
+
+/* 가운데 정렬 */
+.tabs-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+}
+
+/* + 버튼 오른쪽 끝 */
+.add-btn {
+  margin-left: auto;
+  margin-right: 10px;  /* ← 🔥 오른쪽 끝에서 10px 왼쪽으로 이동 */
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background-color: #1976d2;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

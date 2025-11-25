@@ -1,0 +1,62 @@
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #ffffff;
+}
+
+.signup-card {
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 350px;
+  text-align: center;
+}
+
+.signup-title {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.signup-input {
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.kakao-section {
+  margin-bottom: 10px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.signup-btn {
+  padding: 12px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.signup-footer {
+  margin-top: 20px;
+  color: #666;
+}
+
+.signup-link {
+  color: #2575fc;
+  cursor: pointer;
+  font-weight: bold;
+}

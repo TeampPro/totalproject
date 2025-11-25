@@ -48,11 +48,17 @@ public class TaskController {
     @PostMapping
     public Task create(@RequestBody Task task) {
 
+        boolean isGuest = task.getOwnerId() != null
+                && task.getOwnerId().startsWith("guest_");
+
+        if (isGuest) {
+            task.setShared(false);
+        }
+
         if (task.getPromiseDate() == null) {
             throw new IllegalArgumentException("시작 시간은 필수입니다.");
         }
 
-        // 종료시간 없으면 자동 +1시간
         if (task.getEndDateTime() == null) {
             task.setEndDateTime(task.getPromiseDate().plusHours(1));
         }
@@ -60,15 +66,30 @@ public class TaskController {
         return taskService.createTask(task);
     }
 
+
+
+
     /**
      * 일정 수정
      * - endDateTime 비었고 promiseDate 있으면 자동 +1시간
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Task> update(
+    public ResponseEntity<?> update(
             @PathVariable Long id,
             @RequestBody Task task
     ) {
+        Task existing = taskService.getTask(id);
+
+        if (existing == null) {
+            return ResponseEntity.status(404).body("일정 없음");
+        }
+
+        // 🔥 ownerId 불일치 → 수정 불가
+        if (task.getOwnerId() == null || !existing.getOwnerId().equals(task.getOwnerId())) {
+            return ResponseEntity.status(403).body("수정 권한이 없습니다.");
+        }
+
+        // 종료 시간이 없으면 자동 +1시간
         if (task.getPromiseDate() != null && task.getEndDateTime() == null) {
             task.setEndDateTime(task.getPromiseDate().plusHours(1));
         }
@@ -76,14 +97,32 @@ public class TaskController {
         return ResponseEntity.ok(taskService.updateTask(id, task));
     }
 
+
+
     /**
      * 일정 삭제
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(
+            @PathVariable Long id,
+            @RequestParam String userId
+    ) {
+        Task existing = taskService.getTask(id);
+
+        if (existing == null) {
+            return ResponseEntity.status(404).body("일정 없음");
+        }
+
+        // 🔥 ownerId와 요청자(userId)가 다르면 삭제 금지
+        Task t = taskService.getTask(id);
+        if (t.getOwnerId() != null && !t.getOwnerId().equals(userId)) {
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
+
         taskService.deleteTask(id);
         return ResponseEntity.noContent().build();
     }
+
 
     // 일정 단건 조회 (관리자 상세보기 등에서 사용)
     // GET /api/tasks/{id}

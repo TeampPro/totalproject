@@ -3,10 +3,26 @@ import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import CalendarTodo from "./CalendarTodo";
-import "../../styles/Calendar.css";
+import "../../styles/Todo/Calendar.css";
 
 function Calendar({ onTodosChange }) {
   const navigate = useNavigate();
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const isLoggedIn = !!storedUser;
+<button
+  className="todo-add-btn"
+  onClick={() => {
+    if (!isLoggedIn) {
+      alert("로그인이 필요합니다!");
+      return;
+    }
+
+    setEditTodo(null);
+    setShowModal(true);
+  }}
+>
+  할 일 추가
+</button>;
 
   // 현재 보고 있는 달
   const [getMoment, setMoment] = useState(moment());
@@ -84,7 +100,10 @@ function Calendar({ onTodosChange }) {
   // ----------------------------
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (monthPickerRef.current && !monthPickerRef.current.contains(e.target)) {
+      if (
+        monthPickerRef.current &&
+        !monthPickerRef.current.contains(e.target)
+      ) {
         setShowMonthPicker(false);
       }
     };
@@ -110,9 +129,7 @@ function Calendar({ onTodosChange }) {
     todos.filter((t) => t.tDate === date.format("YYYY-MM-DD"));
 
   // ----------------------------
-  // 일정 저장 (추가/수정/삭제) - ⚠️ 서버 호출 X, 상태만 갱신
-  // CalendarTodo가 axios.post/put/delete까지 끝내고
-  // onSave(savedTodo)를 넘겨준다는 가정
+  // 일정 저장 (추가/수정/삭제) - 서버 호출 X, 상태만 갱신
   // ----------------------------
   const handleSave = (savedTodo) => {
     if (!savedTodo) return;
@@ -127,9 +144,9 @@ function Calendar({ onTodosChange }) {
     // 추가/수정인 경우
     const normalized = {
       ...savedTodo,
-      tDate: moment(
-        savedTodo.promiseDate ?? savedTodo.tDate
-      ).format("YYYY-MM-DD"),
+      tDate: moment(savedTodo.promiseDate ?? savedTodo.tDate).format(
+        "YYYY-MM-DD"
+      ),
     };
 
     setTodos((prev) => {
@@ -149,7 +166,6 @@ function Calendar({ onTodosChange }) {
 
   // ----------------------------
   // 드래그 앤 드롭
-  // (이 부분은 캘린더에서 직접 서버 업데이트)
   // ----------------------------
   const handleDrop = async (todo, newDate) => {
     try {
@@ -166,7 +182,9 @@ function Calendar({ onTodosChange }) {
       );
 
       setTodos((prev) =>
-        prev.map((t) => (t.id === todo.id ? { ...updatedTodo, tDate: newDate } : t))
+        prev.map((t) =>
+          t.id === todo.id ? { ...updatedTodo, tDate: newDate } : t
+        )
       );
 
       onTodosChange && onTodosChange();
@@ -265,18 +283,49 @@ function Calendar({ onTodosChange }) {
       <div className="calendar-overlay" onClick={() => navigate("/")} />
 
       <div className="calendar-modal">
-        <div className="calendar-control">
-          <button onClick={() => setMoment(today.clone().subtract(1, "month"))}>
+        {/* 상단 헤더: ◀  YYYY년 MM월  ▶   + */}
+        <div className="calendar-header">
+          {/* 왼쪽 화살표 */}
+          <button
+            className="nav-btn left-btn"
+            onClick={() => setMoment(today.clone().subtract(1, "month"))}
+          >
             ◀
           </button>
 
-          <span
-            className="thisMonth clickable"
+          {/* 중앙 년월 */}
+          <div
+            className="current-year-month"
             onClick={() => setShowMonthPicker((prev) => !prev)}
           >
             {today.format("YYYY년 MM월")}
-          </span>
+          </div>
 
+          {/* 오른쪽 화살표 */}
+          <button
+            className="nav-btn right-btn"
+            onClick={() => setMoment(today.clone().add(1, "month"))}
+          >
+            ▶
+          </button>
+
+          {/* 할 일 추가 버튼 */}
+          <button
+            className="todo-add-btn"
+            onClick={() => {
+              if (!isLoggedIn) {
+                alert("로그인이 필요합니다!");
+                return;
+              }
+
+              setEditTodo(null);
+              setShowModal(true);
+            }}
+          >
+            할 일 추가
+          </button>
+
+          {/* 월 선택 드롭메뉴 */}
           {showMonthPicker && (
             <div className="month-picker" ref={monthPickerRef}>
               <select
@@ -313,21 +362,6 @@ function Calendar({ onTodosChange }) {
               </button>
             </div>
           )}
-
-          <button onClick={() => setMoment(today.clone().add(1, "month"))}>
-            ▶
-          </button>
-
-          {/* 오른쪽 + 버튼 → 일정 추가 모달 */}
-          <button
-            className="right-btn"
-            onClick={() => {
-              setEditTodo(null);
-              setShowModal(true);
-            }}
-          >
-            +
-          </button>
         </div>
 
         <div className="calendar-grid">{calendarArr()}</div>
@@ -349,10 +383,7 @@ function Calendar({ onTodosChange }) {
           className="todo-day-modal-overlay"
           onClick={() => setDayModalTodos(null)}
         >
-          <div
-            className="todo-day-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="todo-day-modal" onClick={(e) => e.stopPropagation()}>
             <h3>
               {dayModalTodos.date} 일정 ({dayModalTodos.list.length}개)
             </h3>

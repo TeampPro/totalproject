@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import classes from "../../styles/todoHeader.module.css";
+import classes from "../../styles/Header/todoHeader.module.css";
 
 const TodoHeader = ({ onChangeFilter, active, showAddButton = true }) => {
   const [addActive, setAddActive] = useState(false);

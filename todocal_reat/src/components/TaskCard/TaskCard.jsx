@@ -1,4 +1,4 @@
-import classes from "../../styles/taskCard.module.css";
+import classes from "../../styles/TaskCard/taskCard.module.css";
 
 const TaskCard = ({ task }) => {
   if (!task) return null;

@@ -1,0 +1,96 @@
+/* 🔥 모달 전체 오버레이 */
+.todo-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45);
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;   /* 가운데 → 위쪽으로 */
+  padding-top: 50px;         /* 화면 아래 네비바와 간격 확보 */
+
+  z-index: 9999;             /* 네비바보다 위에 오도록 */
+}
+
+/* 🔥 모달 박스 */
+.todo-modal {
+  background: white;
+  border-radius: 12px;
+
+  width: 420px;              /* → 너비 조금 넓힘 */
+  max-height: 80vh;          /* → 화면 높이를 넘지 않게 제한 */
+
+  padding: 25px;
+  overflow-y: auto;          /* 내용이 넘치면 스크롤 */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* 제목 */
+.todo-modal h3 {
+  text-align: center;
+  margin-bottom: 18px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* 라벨 + input */
+.todo-modal label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.todo-modal input,
+.todo-modal textarea {
+  margin-top: 5px;
+  padding: 10px;
+
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.todo-modal textarea {
+  resize: none;
+  height: 80px;
+}
+
+/* 버튼 */
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 10px 0;
+
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.modal-buttons button:first-child {
+  background: #4a90e2;
+  color: #fff;
+  margin-right: 8px;
+}
+
+.modal-buttons button:last-child {
+  background: #e0e0e0;
+}
+
+/* fade-in 효과 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

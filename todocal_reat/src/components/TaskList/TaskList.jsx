@@ -1,5 +1,5 @@
 import TaskCard from "../TaskCard/TaskCard";
-import classes from "../../styles/taskList.module.css";
+import classes from "../../styles/TaskList/taskList.module.css";
 
 const TaskList = ({ tasks }) => {
   if (!tasks || tasks.length === 0) {

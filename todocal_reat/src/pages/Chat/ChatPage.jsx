@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../styles/Chat/ChatPage.css"
 
 export default function ChatPage() {
   const [rooms, setRooms] = useState([]);
@@ -47,6 +48,7 @@ export default function ChatPage() {
   };
 
   // ✅ 채팅방 목록 불러오기
+  // 채팅방 목록 불러오기
   useEffect(() => {
     const memberName = getMemberName();
 
@@ -67,10 +69,12 @@ export default function ChatPage() {
     fetchRooms();
   }, []); // user prop 안 쓰므로 의존성 제거
 
-  // ✅ 방 입장
+  // 방 입장
   const handleEnterRoom = async (room) => {
     try {
       const memberName = getMemberName();
+
+      localStorage.setItem("memberName", memberName);
 
       await axios.post(`/api/chat/rooms/${room.id}/join`, null, {
         params: { memberName },
@@ -85,10 +89,12 @@ export default function ChatPage() {
     }
   };
 
-  // ✅ 새 채팅방 생성
+  // 새 채팅방 생성
   const handleCreateRoom = async () => {
     try {
       const memberName = getMemberName();
+
+      localStorage.setItem("memberName", memberName);
 
       const res = await axios.post("/api/chat/rooms", null, {
         params: { memberName },
@@ -96,7 +102,6 @@ export default function ChatPage() {
 
       if (res.data && res.data.id) {
         const createdRoom = res.data;
-
         setRooms((prev) => [...prev, createdRoom]);
 
         navigate(`/chat/${createdRoom.id}`, {
@@ -111,7 +116,7 @@ export default function ChatPage() {
     }
   };
 
-  // ✅ 방 이름 변경
+  // 방 이름 변경
   const handleRenameRoom = async (e, room) => {
     e.stopPropagation();
 
@@ -143,7 +148,7 @@ export default function ChatPage() {
     }
   };
 
-  // ✅ 방 삭제
+  // 방 삭제
   const handleDeleteRoom = async (e, roomId) => {
     e.stopPropagation();
 
@@ -158,30 +163,13 @@ export default function ChatPage() {
     }
   };
 
-  if (loading) return <p style={{ padding: 20 }}>채팅방 목록 불러오는 중...</p>;
+  if (loading) return <p className="loading">채팅방 목록 불러오는 중...</p>;
 
   return (
-    <div style={{ padding: 16 }}>
-      {/* 상단: 제목 + 새 채팅방 버튼 */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+    <div className="chat-container">
+      <div className="chat-header">
         <h2>채팅방 목록</h2>
-        <button
-          onClick={handleCreateRoom}
-          style={{
-            padding: "8px 14px",
-            borderRadius: 6,
-            border: "none",
-            background: "#4caf50",
-            color: "#fff",
-            cursor: "pointer",
-          }}
-        >
+        <button className="create-room-btn" onClick={handleCreateRoom}>
           ➕ 새 채팅방 만들기
         </button>
       </div>
@@ -189,56 +177,31 @@ export default function ChatPage() {
       {rooms.length === 0 ? (
         <p>참여 중인 채팅방이 없습니다.</p>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0, marginTop: 10 }}>
+        <ul className="chat-room-list">
           {rooms.map((room) => (
             <li
               key={room.id}
-              style={{
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid #ddd",
-                marginBottom: 8,
-                background: "#fff",
-                cursor: "pointer",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
+              className="chat-room-item"
               onClick={() => handleEnterRoom(room)}
             >
-              <div>
-                <div style={{ fontWeight: "bold" }}>{room.name}</div>
-                <div style={{ fontSize: "12px", color: "#666" }}>
+              <div className="chat-room-info">
+                <div className="chat-room-name">{room.name}</div>
+                <div className="chat-room-participants">
                   참여자: {room.participantCount ?? 0}명
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: 8 }}>
+              <div className="chat-buttons">
                 <button
+                  className="rename-btn"
                   onClick={(e) => handleRenameRoom(e, room)}
-                  style={{
-                    padding: "4px 8px",
-                    fontSize: 12,
-                    borderRadius: 6,
-                    border: "1px solid #1976d2",
-                    background: "#fff",
-                    cursor: "pointer",
-                  }}
                 >
                   이름 변경
                 </button>
 
                 <button
+                  className="delete-btn"
                   onClick={(e) => handleDeleteRoom(e, room.id)}
-                  style={{
-                    padding: "4px 8px",
-                    fontSize: 12,
-                    borderRadius: 6,
-                    border: "1px solid #f44336",
-                    background: "#fff",
-                    color: "#f44336",
-                    cursor: "pointer",
-                  }}
                 >
                   삭제
                 </button>

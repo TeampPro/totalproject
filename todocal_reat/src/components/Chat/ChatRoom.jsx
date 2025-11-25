@@ -3,7 +3,7 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { fetchMessages } from "../../api/chatApi";
 
-import "../../styles/ChatRoom.css";
+import "../../styles/Chat/ChatRoom.css";
 
 export default function ChatRoom() {
   const location = useLocation();

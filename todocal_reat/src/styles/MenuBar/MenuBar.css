@@ -1,0 +1,92 @@
+/* 전체 메뉴바 컨테이너 */
+.floating-bar {
+  position: fixed;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 480px;
+  height: 110px;
+
+  background: #ffffff;
+  border-radius: 45px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 28px;
+
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+
+  z-index: 999;
+}
+
+/* 각 메뉴 버튼 */
+.menu-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+  gap: 6px;
+  min-width: 55px; /* 버튼 간격 일정하게 */
+}
+
+/* 아이콘 기본 크기 */
+.menu-btn img {
+  width: 40px;
+  height: 40px;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+
+/* 텍스트 */
+.menu-btn span {
+  font-size: 14px;
+  color: #666;
+}
+
+/* 호버 */
+.menu-btn:hover img {
+  opacity: 1;
+}
+
+/* 📌 활성화된 메뉴(기본 아이콘만) */
+.menu-btn.active img {
+  opacity: 1;
+}
+
+.menu-btn.active span {
+  font-weight: bold;
+  /* color: #2575fc; */
+}
+
+/* 📌 HOME 버튼만 동그랗게 강조  */
+.menu-btn.home-active {
+  position: relative;
+  top: -5px; /* 위로 올려서 강조 효과 */
+}
+
+/* HOME 아이콘 */
+.menu-btn.home-active img {
+  width: 75px;
+  height: 75px;
+  padding: 0px;
+  border-radius: 0;
+  opacity: 1;
+  background: none;
+  box-shadow: none;
+}
+
+
+.menu-btn.home-active span {
+  color: #333;
+  font-weight: bold;
+}
+
+.menu-btn.home img {
+  width: 65px;
+  height: 65px;
+  opacity: 1;
+}

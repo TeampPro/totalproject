@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import moment from "moment";
 import CalendarTodo from "../../pages/Todo/CalendarTodo";
-import "./TimeViewPage.css";
+import "../../styles/TimeCalendar/TimeViewPage.css";
 
 const START_HOUR = 8;
 const END_HOUR = 20;
@@ -17,7 +17,12 @@ function TimeViewPage() {
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/tasks");
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      const userId = storedUser?.id || ""; // 로그인 안 했으면 빈 문자열
+
+      const res = await axios.get(
+        `http://localhost:8080/api/tasks?userId=${userId}`
+      );
       const all = res.data;
 
       const filtered = all.filter((e) => {
@@ -33,6 +38,7 @@ function TimeViewPage() {
       console.error("❌ 일정 불러오기 실패:", err);
     }
   };
+
 
   useEffect(() => {
     fetchEvents();

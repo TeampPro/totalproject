@@ -1,0 +1,42 @@
+.right-auth-box {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  width: 180px;
+  padding: 18px;
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.auth-login-btn,
+.auth-signup-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: #56A4FF;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.auth-signup-btn {
+  background: #9ec9ff;
+}
+
+.auth-login-btn:hover {
+  background: #3f8ce6;
+}
+
+.auth-signup-btn:hover {
+  background: #84b3f0;
+}
+
+.planix-logo {
+  width: 120px;
+  margin-bottom: 20px;
+}

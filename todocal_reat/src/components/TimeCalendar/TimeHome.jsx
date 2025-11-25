@@ -2,33 +2,54 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Calendar from "../../pages/Todo/Calendar";
 import TimeViewPage from "./TimeViewPage";
-import "./TimeHome.css";
+import "../../styles/TimeCalendar/TimeHome.css";
 
-function TimeHome({ onTodosChange }) {
+function TimeHome({ onTodosChange, disabled }) {
   const [activeTab, setActiveTab] = useState("calendar");
-  const navigate = useNavigate(); // ⭐ 추가됨
+  const navigate = useNavigate();
+
+  const requireLogin = () => {
+    if (disabled) {
+      alert("로그인이 필요합니다!");
+      return false;
+    }
+    return true;
+  };
 
   return (
     <div className={`time-home ${activeTab}`}>
-      {/* 상단 중앙탭 + 우측 +버튼 */}
       <div className="time-top-row">
         <div className="tabs-center">
           <button
             className={activeTab === "calendar" ? "tab active" : "tab"}
-            onClick={() => setActiveTab("calendar")}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (requireLogin()) setActiveTab("calendar");
+            }}
           >
             📅 캘린더
           </button>
+
           <button
             className={activeTab === "schedule" ? "tab active" : "tab"}
-            onClick={() => setActiveTab("schedule")}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (requireLogin()) setActiveTab("schedule");
+            }}
           >
             📋 스케줄표
           </button>
         </div>
 
-        {/* ⭐ 기능 연결 */}
-        <button className="add-btn" onClick={() => navigate("/todo")}>
+        {/* + 버튼 */}
+        <button
+          className="add-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!requireLogin()) return;
+            navigate("/todo");
+          }}
+        >
           +
         </button>
       </div>

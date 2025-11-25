@@ -3,7 +3,7 @@ import moment from "moment";
 import TodoHeader from "../../components/Header/TodoHeader";
 import TaskList from "../../components/TaskList/TaskList";
 import CalendarTodo from "../../pages/Todo/CalendarTodo.jsx";
-import classes from "../../styles/TodoPage/TodoPage.module.css";
+import classes from "../../styles/Todo/TodoPage.module.css";
 
 const normalize = (d) => {
   if (!d) return null;

@@ -1,0 +1,47 @@
+.invite-container {
+  padding: 40px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.invite-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.invite-code {
+  background: #eee;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.invite-input {
+  padding: 10px;
+  width: 250px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.invite-button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.invite-button:hover {
+  background: #0056b3;
+}
+
+.invite-error {
+  color: red;
+  margin-top: 5px;
+  font-size: 14px;
+}
