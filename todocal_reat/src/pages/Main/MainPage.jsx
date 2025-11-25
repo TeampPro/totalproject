@@ -23,19 +23,28 @@ const MainPage = ({ user, setUser }) => {
 
   return (
     <>
+      {/* 상단/하단에 띄워지는 것들 */}
       <div className="overlay-wrapper">
-        {!user && <RightAuthBox />}
+        {/* 로그인 X : 로그인 박스 */}
+        {!user && (
+          <div className="right-auth-fixed">
+            <RightAuthBox />
+          </div>
+        )}
 
+        {/* 로그인 O : 상단 프로필 카드 */}
         {user && (
           <div className="profile-top-wrapper">
             <UserInfo user={user} small />
           </div>
         )}
+
+        {/* 로그인 O : 우측 하단 메뉴 버튼 + 드롭다운 */}
         {user && (
           <div className="menu-wrapper">
             <button
               className="menu-button"
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={() => setMenuOpen((prev) => !prev)}
             >
               <div className="menu-bar" />
               <div className="menu-bar" />
@@ -46,12 +55,21 @@ const MainPage = ({ user, setUser }) => {
               <div className="dropdown">
                 <button
                   className="dropdown-item"
-                  onClick={() => navigate("/myPage")}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate("/myPage");
+                  }}
                 >
                   마이페이지
                 </button>
 
-                <button className="dropdown-item" onClick={handleLogout}>
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    handleLogout();
+                  }}
+                >
                   로그아웃
                 </button>
               </div>
@@ -80,7 +98,7 @@ const MainPage = ({ user, setUser }) => {
 
           {/* right */}
           <div className="right-area">
-            {user && <UserInfo user={user} />}
+            {user && <UserInfo user={user} onLogout={handleLogout} />}
             <WeatherBoard disabled={!user} />
             <div className="map-area">
               <KakaoMapBox disabled={!user} />
