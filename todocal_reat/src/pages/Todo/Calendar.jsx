@@ -1,28 +1,34 @@
-import { useState, useEffect, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import CalendarTodo from "./CalendarTodo";
 import "../../styles/Todo/Calendar.css";
 
-function Calendar({ onTodosChange }) {
+function Calendar({ onTodosChange }, ref) {
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const isLoggedIn = !!storedUser;
-<button
-  className="todo-add-btn"
-  onClick={() => {
-    if (!isLoggedIn) {
-      alert("로그인이 필요합니다!");
-      return;
-    }
+  <button
+    className="todo-add-btn"
+    onClick={() => {
+      if (!isLoggedIn) {
+        alert("로그인이 필요합니다!");
+        return;
+      }
 
-    setEditTodo(null);
-    setShowModal(true);
-  }}
->
-  할 일 추가
-</button>;
+      setEditTodo(null);
+      setShowModal(true);
+    }}
+  >
+    할 일 추가
+  </button>;
 
   // 현재 보고 있는 달
   const [getMoment, setMoment] = useState(moment());
@@ -42,9 +48,29 @@ function Calendar({ onTodosChange }) {
   const monthPickerRef = useRef(null);
 
   const [dayModalTodos, setDayModalTodos] = useState(null);
-
   // 드래그된 Todo 저장용 ref
   const draggedTodoRef = useRef(null);
+
+  // ✅ 외부에서 호출할 "할 일 추가" 함수
+  const openAddTodo = (date) => {
+    if (!isLoggedIn) {
+      alert("로그인이 필요합니다!");
+      return;
+    }
+
+    // 외부에서 날짜를 넘기면 그 날짜, 아니면 현재 선택된 날짜
+    const target = date ? moment(date) : selectedDate || moment();
+    setSelectedDate(target);
+
+    setEditTodo(null);
+    setShowModal(true);
+  };
+
+  // ✅ ref 로 메서드 노출
+  useImperativeHandle(ref, () => ({
+    openAddTodo,
+  }));
+
 
   // ----------------------------
   // 공휴일 불러오기
@@ -309,22 +335,6 @@ function Calendar({ onTodosChange }) {
             ▶
           </button>
 
-          {/* 할 일 추가 버튼 */}
-          <button
-            className="todo-add-btn"
-            onClick={() => {
-              if (!isLoggedIn) {
-                alert("로그인이 필요합니다!");
-                return;
-              }
-
-              setEditTodo(null);
-              setShowModal(true);
-            }}
-          >
-            할 일 추가
-          </button>
-
           {/* 월 선택 드롭메뉴 */}
           {showMonthPicker && (
             <div className="month-picker" ref={monthPickerRef}>
@@ -411,4 +421,4 @@ function Calendar({ onTodosChange }) {
   );
 }
 
-export default Calendar;
+export default forwardRef(Calendar);

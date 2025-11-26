@@ -1,0 +1,45 @@
+.topbar {
+  width: 100%;
+  height: 60px;
+  background: #f6fbff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 25px;
+  box-sizing: border-box;
+}
+
+/* Left side: 로고 + 글자 */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-logo {
+  width: 70px;
+  height: 70px;
+}
+
+.topbar-planix {
+  height: 26px;
+}
+
+/* Right side: 아이콘 3개 */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.topbar-icon {
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  padding: 6px;
+}
+
+.topbar-icon:hover {
+  transform: scale(1.1);
+}
