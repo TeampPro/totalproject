@@ -5,7 +5,6 @@ import "../../styles/Main/MainPage.css";
 import WebSearch from "../../components/Search/WebSearch";
 import TimeHome from "../../components/TimeCalendar/TimeHome";
 import WeatherBoard from "../../pages/Weather/WeatherBoard";
-import BoardHome from "../../pages/Board/BoardHome";
 import KakaoMapBox from "../../pages/Map/KakaoMapBox";
 
 import RightAuthBox from "../../components/RightAuthBox/RightAuthBox.jsx";
@@ -94,9 +93,10 @@ const MainPage = ({ user, setUser }) => {
               <TimeHome disabled={!user} user={user} />
             </div>
 
-            <div className="board-area">
+            {/* ✅ 메인에서 게시판 영역 제거 */}
+            {/* <div className="board-area">
               <BoardHome disabled={!user} />
-            </div>
+            </div> */}
           </div>
 
           {/* right */}

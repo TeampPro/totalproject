@@ -1,4 +1,4 @@
-/* ✅ 하나씩 나타났다 사라지는 애니메이션 */
+/* ✅ 도시별 카드가 부드럽게 바뀌도록 */
 .fade-in-out {
   opacity: 0;
   animation: fadeInOut 10s ease-in-out forwards;
@@ -23,122 +23,277 @@
   }
 }
 
-
-/* 전체 페이지 */
+/* ============================
+  전체 레이아웃
+============================ */
 .page-container {
-  min-height: 100vh;
+  width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 40px 0;
-  overflow-x: hidden;
-  
+  align-items: stretch;
+  padding: 8px 0;
+  box-sizing: border-box;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 }
 
-/* 하얀색 컨테이너 */
 .weather-container {
-  background: #fff;
-  border-radius: 20px;
-  padding: 30px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 1000px;
+  max-width: 383px; /* ⬅ 큰 컨테이너 width */
+  padding: 0 8px;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden; /* ✅ 내부 카드가 삐져나오지 않게 */
+  margin: 0 auto;
 }
 
 /* 제목 */
 .title {
-  text-align: center;
-  margin-bottom: 16px;
-  color: #333;
+  text-align: left;
+  margin-bottom: 12px;
+  color: #222;
+  font-size: 18px;
+  font-weight: 700;
 }
 
-/* 카드 묶음 */
+/* 카드 래퍼 */
 .card-wrapper {
-  display: flex;
-  flex-wrap: wrap;          /* ✅ 줄바꿈 허용 */
-  justify-content: center;  /* ✅ 가운데 정렬 */
-  align-items: center;
-  gap: 20px;
   width: 100%;
-  box-sizing: border-box;
-  overflow: hidden;         /* ✅ 내용 넘침 방지 */
-  padding: 10px;            /* ✅ 여백 추가 */
+  display: flex;
+  justify-content: center;
 }
 
-/* 개별 카드 */
+/* ============================
+  메인 카드 (383 x 249 기준)
+============================ */
 .weather-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background: #fff;
+  position: relative;
+  width: 100%;
+  max-width: 383px;
+  min-height: 249px; /* 높이 기준 */
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-left: 24px;
+  padding-bottom: 24px;
   border-radius: 16px;
-  width: 160px;
-  height: 160px;
-  text-align: center;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
-  flex-shrink: 0; /* ✅ 줄어들지 않게 고정 */
-  color: #000;
+  box-sizing: border-box;
+
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+
+  background: linear-gradient(135deg, #51a2ff 0%, #155dfc 100%);
+  opacity: 1;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .weather-card:hover {
-  transform: scale(1.05);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
 }
 
-.weather-info {
+/* 내부 335 x 109 컨테이너 */
+.weather-card-inner {
+  width: 335px;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-.weather-info .row {
+/* ============================
+  상단 영역
+============================ */
+.card-top {
   display: flex;
-  justify-content: center;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-.weather-info div {
-  color: #000;
-  font-size: 12px;
-  text-align: center;
-  min-width: 60px;
+/* 왼쪽(도시 / 시간 / 기온) : 81 x 109 기준 */
+.card-main {
+  width: 81.14px;
+  min-height: 109px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-/* 카드 내부 텍스트 */
+/* 도시명 */
 .city {
-  font-size: 15px;
-  font-weight: bold;
-  color: #444;
+  width: 81.14px;
+  height: 24px;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 24px;
+  letter-spacing: -0.31px;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* 기준 시간 */
 .time {
-  font-size: 9px;
-  color: #999;
-  margin-bottom: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
 }
 
+/* 기온 박스 (81 x 49) */
+.temp-chip {
+  width: 81.14px;
+  height: 49px;
+  margin-top: 8px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* 큰 숫자 (온도) */
+.temp-number {
+  font-size: 32px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* 아이콘 : 32 x 32, 우측 상단 */
 .icon {
-  font-size: 30px;
-  margin-bottom: 6px;
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  position: absolute;
+  top: 37px;
+  right: 24px;
 }
 
-.update-time {
+/* ============================
+  하단 정보(습도/풍속/강수형태)
+============================ */
+.weather-info {
+  width: 335px;
+  max-width: 100%;
+  min-height: 81px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #8ec5ff4d;
+
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* 각 정보 컨테이너 */
+.info-item {
+  width: 105.78px;
+  max-width: 33.333%;
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #ffffff;
+
+  align-items: center;
   text-align: center;
-  font-size: 12px;
-  color: #666;
-  margin-top: 20px;
 }
 
+/* 상단 행 : 아이콘 + 라벨 */
+.info-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* ✅ 아이콘과 글자 사이 간격 */
+  gap: 8px;
+}
+
+/* 16 x 16 아이콘 */
+.info-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+
+  /* ✅ 아이콘 오른쪽 여유 공간 */
+  margin-right: 1px;
+}
+
+/* 라벨 텍스트 */
+.info-label {
+  font-size: 14px;
+  line-height: 16px;
+  opacity: 0.9;
+}
+
+/* 숫자 값 */
+.info-value {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* ============================
+  로딩 / 메시지
+============================ */
 .loading {
-  padding: 16px;
+  width: 100%;
   text-align: center;
+  padding: 12px 0;
+  font-size: 13px;
+  color: #555;
+}
+
+/* ============================
+  반응형
+============================ */
+@media (max-width: 768px) {
+  .weather-container {
+    max-width: 100%;
+    padding: 0 12px;
+  }
+
+  .weather-card {
+    max-width: 100%;
+  }
+
+  .weather-card-inner {
+    width: 100%;
+  }
+
+  .weather-info {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .weather-card {
+    padding: 20px;
+  border-radius: 14px;
+    min-height: 220px;
+  }
+
+  .card-main {
+    width: auto;
+  }
+
+  .city {
+    width: 100%;
+  }
+
+  .weather-info {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .info-item {
+    width: 100%;
+    max-width: 100%;
+  }
 }

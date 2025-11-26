@@ -58,12 +58,12 @@ export default function MenuBar() {
         <span>홈</span>
       </div>
 
-      {/* 커뮤니티 */}
+      {/* 커뮤니티 → 게시판(/board)으로 이동 */}
       <div
         className="menu-btn"
         onClick={() => {
           if (!requireLogin()) return;
-          navigate("/community");
+          navigate("/board");
         }}
       >
         <img src={communityLogo} />

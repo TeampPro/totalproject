@@ -29,6 +29,7 @@ import SharedTodoPage from "./pages/Todo/SharedTodoPage.jsx"; // ✅ 공유일�
 // Board
 import PostDetail from "./pages/Board/PostDetail.jsx";
 import PostWrite from "./pages/Board/PostWrite.jsx";
+import BoardHome from "./pages/Board/BoardHome.jsx"; // ✅ 게시판 목록 페이지 추가
 
 // Chat
 import ChatPage from "./pages/Chat/ChatPage.jsx";
@@ -90,7 +91,10 @@ function App() {
           <Route path="/myPage" element={<MyPage onLogout={handleLogout} />} />
           <Route path="/upload" element={<Upload />} />
 
-          {/* Board */}
+          {/* Board 목록 페이지 */}
+          <Route path="/board" element={<BoardHome />} />
+
+          {/* Board 상세 / 글쓰기 */}
           <Route path="/board/:id" element={<PostDetail />} />
           <Route path="/board/write" element={<PostWrite />} />
 

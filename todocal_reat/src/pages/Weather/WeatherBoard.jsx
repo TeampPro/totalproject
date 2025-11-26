@@ -52,7 +52,8 @@ export default function WeatherBoard() {
   // ✅ 상태별 표시
   if (loading) return <div className="loading">🌥️ 날씨 불러오는 중...</div>;
   if (message) return <div className="loading">{message}</div>;
-  if (data.length === 0) return <div className="loading">⚠️ 표시할 날씨 데이터가 없습니다.</div>;
+  if (data.length === 0)
+    return <div className="loading">⚠️ 표시할 날씨 데이터가 없습니다.</div>;
 
   const w = data[currentIndex];
 
@@ -68,31 +69,72 @@ export default function WeatherBoard() {
   return (
     <div className="page-container">
       <div className="weather-container">
-        <h2 className="title">🌤️ 도시별 날씨</h2>
 
         <div className="card-wrapper">
           {w && (
             <div key={currentIndex} className="weather-card fade-in-out">
-              <div className="city">{w["도시"] ?? "도시명 없음"}</div>
-              <div className="time">
-                {formatDate(w["기준일자"])}{" "}
-                {w["기준시각"]?.slice(0, 2) ?? "??"}:00 기준
-              </div>
+              {/* 내부 335px 컨테이너 */}
+              <div className="weather-card-inner">
+                {/* 상단 영역 */}
+                <div className="card-top">
+                  <div className="card-main">
+                    <div className="city">{w["도시"] ?? "도시명 없음"}</div>
+                    <div className="time">
+                      {formatDate(w["기준일자"])}{" "}
+                      {w["기준시각"]?.slice(0, 2) ?? "??"}:00 기준
+                    </div>
 
-              <div className="icon">
-                {getWeatherIcon(w["강수형태"], w["하늘상태"])}
-              </div>
+                    {/* 기온 박스 */}
+                    <div className="temp-chip">
+                      <span className="temp-number">
+                        {w["기온"] ?? "-"}
+                      </span>
+                      <span className="temp-unit"></span>
+                    </div>
+                  </div>
 
-              <div className="weather-info">
-                <div className="row">
-                  <div>🌡️ {w["기온"] ?? "-"}</div>
-                  <div>💧 {w["습도"] ?? "-"}</div>
+                  {/* 날씨 아이콘 */}
+                  <div className="icon">
+                    {getWeatherIcon(w["강수형태"], w["하늘상태"])}
+                  </div>
                 </div>
-                <div className="row">
-                  <div>🌬️ {w["풍속"] ?? "-"}</div>
-                  <div>☔ {w["강수형태"] ?? "-"}</div>
+
+                {/* 하단 정보 : 습도 / 풍속 / 강수형태 */}
+                <div className="weather-info">
+                  <div className="info-item">
+                    <div className="info-header">
+                      <span className="info-icon">💧</span>
+                      <span className="info-label">습도</span>
+                    </div>
+                    {/* 🔧 단위 중복 방지: 값 그대로만 표시 */}
+                    <div className="info-value">
+                      {w["습도"] ?? "-"}
+                    </div>
+                  </div>
+
+                  <div className="info-item">
+                    <div className="info-header">
+                      <span className="info-icon">🌬️</span>
+                      <span className="info-label">풍속</span>
+                    </div>
+                    {/* 🔧 단위 중복 방지: 값 그대로만 표시 */}
+                    <div className="info-value">
+                      {w[" 풍속"] ?? "-"}
+                    </div>
+                  </div>
+
+                  <div className="info-item">
+                    <div className="info-header">
+                      <span className="info-icon">☔</span>
+                      <span className="info-label">강수형태</span>
+                    </div>
+                    <div className="info-value">
+                      {w[" 강수형태"] ?? "없음"}
+                    </div>
+                  </div>
                 </div>
               </div>
+              {/* /weather-card-inner */}
             </div>
           )}
         </div>
