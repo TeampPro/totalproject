@@ -1,3 +1,4 @@
+// src/components/MenuBar/MenuBar.jsx
 import { useNavigate, useLocation } from "react-router-dom";
 import "../../styles/MenuBar/MenuBar.css";
 import mytodo from "../../assets/mytodo.svg";
@@ -38,7 +39,7 @@ export default function MenuBar() {
 
       {/* 공유 일정 */}
       <div
-        className="menu-btn"
+        className={`menu-btn ${isActive("/share") ? "active" : ""}`}
         onClick={() => {
           if (!requireLogin()) return;
           navigate("/share");

@@ -1,3 +1,4 @@
+// src/App.jsx
 import { useState, useEffect } from "react";
 import {
   BrowserRouter,
@@ -23,6 +24,7 @@ import Upload from "./pages/My/Upload.jsx";
 
 // Todo
 import TodoPage from "./pages/Todo/TodoPage.jsx";
+import SharedTodoPage from "./pages/Todo/SharedTodoPage.jsx"; // ✅ 공유일정 페이지 추가
 
 // Board
 import PostDetail from "./pages/Board/PostDetail.jsx";
@@ -106,6 +108,7 @@ function App() {
 
           {/* Todo */}
           <Route path="/todo" element={<TodoPage />} />
+          <Route path="/share" element={<SharedTodoPage />} /> {/* ✅ 공유일정 라우트 */}
 
           {/* Chat */}
           <Route path="/chat" element={<ChatPage />} />

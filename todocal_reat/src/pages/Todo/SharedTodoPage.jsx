@@ -1,10 +1,9 @@
-// src/pages/Todo/TodoPage.jsx
+// src/pages/Todo/SharedTodoPage.jsx
 import { useState, useEffect, useMemo } from "react";
 import moment from "moment";
-import TodoHeader from "../../components/Header/TodoHeader";
-import TaskList from "../../components/TaskList/TaskList";
 import CalendarTodo from "../../pages/Todo/CalendarTodo.jsx";
-import classes from "../../styles/Todo/TodoPage.module.css";
+import pageClasses from "../../styles/Todo/TodoPage.module.css";
+import headerClasses from "../../styles/Header/todoHeader.module.css";
 
 const normalize = (d) => {
   if (!d) return null;
@@ -14,8 +13,7 @@ const normalize = (d) => {
     : moment(d, "YYYY-MM-DD", true).startOf("day");
 };
 
-const TodoPage = () => {
-  const [filter, setFilter] = useState("all");
+const SharedTodoPage = () => {
   const [rawTasks, setRawTasks] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
@@ -59,39 +57,22 @@ const TodoPage = () => {
     return `D+${Math.abs(diff)}`;
   };
 
-  const filteredTasks = useMemo(() => {
+  const sharedTasks = useMemo(() => {
     const today = moment().startOf("day");
-    const startOfWeek = moment().startOf("isoWeek");
-    const endOfWeek = moment().endOf("isoWeek");
-    const startOfMonth = moment().startOf("month");
-    const endOfMonth = moment().endOf("month");
 
     let tasks = rawTasks
+      .filter((t) => t.shared === true) // ✅ 공유 일정만
       .map((t) => ({ ...t, _m: normalize(t.promiseDate) }))
-      .filter((t) => t._m && t._m.isSameOrAfter(today))
-      .filter((t) => t.shared !== true); // ✅ 공유 일정은 TodoPage에서 제외
-
-    if (filter === "week") {
-      tasks = tasks.filter((t) =>
-        t._m.isBetween(startOfWeek, endOfWeek, null, "[]")
-      );
-    } else if (filter === "month") {
-      tasks = tasks.filter((t) =>
-        t._m.isBetween(startOfMonth, endOfMonth, null, "[]")
-      );
-    } else if (filter === "shared") {
-      // 현재는 UI에서 사용하지 않지만, 혹시 모를 호환성을 위해 남겨둔 분기
-      tasks = tasks.filter((t) => t.shared === true);
-    }
+      .filter((t) => t._m && t._m.isSameOrAfter(today));
 
     tasks.sort((a, b) => a._m.valueOf() - b._m.valueOf());
 
     return tasks.map(({ _m, ...rest }) => rest);
-  }, [rawTasks, filter]);
+  }, [rawTasks]);
 
   const startIdx = (currentPage - 1) * itemsPerPage;
-  const pagedTasks = filteredTasks.slice(startIdx, startIdx + itemsPerPage);
-  const totalPages = Math.ceil(filteredTasks.length / itemsPerPage);
+  const pagedTasks = sharedTasks.slice(startIdx, startIdx + itemsPerPage);
+  const totalPages = Math.ceil(sharedTasks.length / itemsPerPage);
 
   const handleSaveFromModal = (savedTodo) => {
     if (!savedTodo) return;
@@ -115,15 +96,22 @@ const TodoPage = () => {
   };
 
   return (
-    <div className={classes.todoPageContainer}>
-      <div className={classes.topBar}>
-        <TodoHeader
-          onChangeFilter={setFilter}
-          active={filter}
-          showAddButton={false}
-        />
+    <div className={pageClasses.todoPageContainer}>
+      <div className={pageClasses.topBar}>
+        {/* 🔹 공유 일정 전용 헤더 (기존 CSS 재사용) */}
+        <div className={headerClasses.todoHeader}>
+          <nav className={headerClasses.todoNav}>
+            <button
+              className={`${headerClasses.todoBtn} ${headerClasses.active}`}
+            >
+              공유일정
+            </button>
+          </nav>
+        </div>
+
+        {/* 🔹 TodoPage와 동일한 글작성하기 버튼 추가 */}
         <button
-          className={classes.writeButton}
+          className={pageClasses.writeButton}
           onClick={() => {
             setEditTodo(null);
             setShowModal(true);
@@ -132,15 +120,16 @@ const TodoPage = () => {
           글작성하기
         </button>
       </div>
-      <div className={classes.taskList}>
+
+      <div className={pageClasses.taskList}>
         {pagedTasks.length === 0 && (
-          <div className={classes.empty}>데이터가 없습니다.</div>
+          <div className={pageClasses.empty}>공유된 일정이 없습니다.</div>
         )}
 
         {pagedTasks.map((task) => (
           <div
             key={task.id}
-            className={classes.taskItem}
+            className={pageClasses.taskItem}
             onClick={() => {
               setEditTodo(task);
               setShowModal(true);
@@ -149,9 +138,9 @@ const TodoPage = () => {
             <h4>{task.title}</h4>
             <p>{task.content}</p>
 
-            <div className={classes.taskDates}>
+            <div className={pageClasses.taskDates}>
               <span>작성일: {formatDate(task.createdAt)}</span>
-              <span className={classes.dday}>{getDDay(task.promiseDate)}</span>
+              <span className={pageClasses.dday}>{getDDay(task.promiseDate)}</span>
               <span>약속일: {formatDate(task.promiseDate)}</span>
             </div>
           </div>
@@ -159,12 +148,12 @@ const TodoPage = () => {
       </div>
 
       {totalPages > 1 && (
-        <div className={classes.pagination}>
+        <div className={pageClasses.pagination}>
           {Array.from({ length: totalPages }, (_, i) => (
             <button
               key={i + 1}
-              className={`${classes.pageBtn} ${
-                currentPage === i + 1 ? classes.activePage : ""
+              className={`${pageClasses.pageBtn} ${
+                currentPage === i + 1 ? pageClasses.activePage : ""
               }`}
               onClick={() => setCurrentPage(i + 1)}
             >
@@ -189,4 +178,4 @@ const TodoPage = () => {
   );
 };
 
-export default TodoPage;
+export default SharedTodoPage;
