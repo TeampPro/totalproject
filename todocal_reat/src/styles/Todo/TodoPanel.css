@@ -1,0 +1,185 @@
+/* src/styles/Todo/TodoPanel.css */
+
+.todo-panel {
+  width: 520px;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  padding: 16px 16px 18px;
+  box-sizing: border-box;
+  margin-top: 30px;
+}
+
+/* 헤더 */
+.todo-panel-header {
+  display: flex;
+  flex-direction: column;   /* 세로로 쌓기 */
+  align-items: flex-start;  /* 왼쪽 정렬 */
+  gap: 6px;                 /* 제목 ↕ 버튼 간격 */
+  margin-bottom: 18px;
+}
+.todo-panel-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.todo-panel-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.todo-add-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #4aa8ff;
+  color: #fff;
+  cursor: pointer;
+}
+.todo-panel-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 섹션 */
+.todo-section {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  margin-top: 18px;
+}
+
+.todo-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.todo-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #555;
+}
+
+/* 리스트 & 아이템 */
+.todo-list {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.todo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  background: #f9fbff;
+  margin-bottom:6px;
+}
+
+.todo-item-done {
+  opacity: 0.7;
+}
+
+.todo-checkbox {
+  margin-top: 2px;
+}
+
+/* 내용 */
+.todo-item-main {
+  flex: 1;
+}
+
+.todo-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.todo-title {
+  font-size: 15px;      /* 🔼 13px → 15px */
+  font-weight: 500;     /* 조금 더 진하게 (선택) */
+  color: #333;
+  line-height: 1.5;     /* 줄 간격도 살짝 여유 있게 */
+}
+
+
+/* 태그 뱃지 */
+.todo-tag {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.todo-meta {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #888;
+
+  display: flex;
+  align-items: center;
+  gap: 18px;          /* D-day 와 날짜 사이 간격 */
+}
+
+.todo-meta-dday-label {
+  font-weight: 500;
+  color: #555;
+}
+
+.todo-meta-dday-value {
+  font-weight: 600;
+  color: #083DCC;    /* D-day 강조 색 (원하면 바꿔도 됨) */
+}
+
+.todo-meta-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;          /* 아이콘과 날짜 간격 */
+}
+
+.todo-meta-icon {
+  width: 14px;
+  height: 14px;
+}
+
+
+/* 제목 밑에 올 버튼 전용 */
+.todo-panel-add-btn {
+  width: 100%;
+  height: 32px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #2d8cff;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 2px 0 #1e67c0;
+  cursor: pointer;
+}
+
+.todo-panel-add-btn:hover {
+  background: #2474d5;
+}
+
+.todo-panel .todo-item {
+  border: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+}

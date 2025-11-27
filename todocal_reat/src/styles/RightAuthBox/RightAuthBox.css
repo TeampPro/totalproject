@@ -1,7 +1,5 @@
 .right-auth-box {
-  position: absolute;
-  top: 30px;
-  right: 30px;
+  /* position: absolute; top/right 제거한 상태 유지 */
   width: 180px;
   padding: 18px;
   border-radius: 14px;
@@ -9,6 +7,7 @@
   box-shadow: 0 6px 18px rgba(0,0,0,0.1);
   text-align: center;
 }
+
 
 .auth-login-btn,
 .auth-signup-btn {

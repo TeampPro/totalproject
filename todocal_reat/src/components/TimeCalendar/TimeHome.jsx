@@ -4,7 +4,7 @@ import Calendar from "../../pages/Todo/Calendar";
 import TimeViewPage from "./TimeViewPage";
 import "../../styles/TimeCalendar/TimeHome.css";
 
-function TimeHome({ onTodosChange, disabled }) {
+function TimeHome({ onTodosChange, disabled, calendarRef }) {
   const [activeTab, setActiveTab] = useState("calendar");
   const navigate = useNavigate();
 
@@ -55,7 +55,12 @@ function TimeHome({ onTodosChange, disabled }) {
       </div>
 
       <div className="time-content">
-        {activeTab === "calendar" && <Calendar onTodosChange={onTodosChange} />}
+        {activeTab === "calendar" && (
+          <Calendar
+            ref={calendarRef}
+            onTodosChange={onTodosChange} // ✅ 그냥 그대로 넘기기
+          />
+        )}
         {activeTab === "schedule" && <TimeViewPage />}
       </div>
     </div>
