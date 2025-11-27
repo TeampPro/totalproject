@@ -2,7 +2,7 @@ import Calendar from "../../pages/Todo/Calendar";
 import TimeViewPage from "./TimeViewPage";
 import "../../styles/TimeCalendar/TimeHome.css";
 
-function TimeHome({ onTodosChange }) {
+function TimeHome({ onTodosChange, calendarRef }) {
   return (
     <div className="time-home">
       {/* 상단: 캘린더 제목만 표시 */}
@@ -13,8 +13,7 @@ function TimeHome({ onTodosChange }) {
       {/* 내용: 위에는 캘린더, 아래에는 스케줄표 (항상 둘 다 보이게) */}
       <div className="time-content">
         {/* 위쪽 캘린더 */}
-        <Calendar onTodosChange={onTodosChange} />
-
+        <Calendar ref={calendarRef} onTodosChange={onTodosChange} />
         {/* 아래쪽 스케줄(타임라인) */}
         <div className="timeview-wrapper">
           <TimeViewPage />

@@ -1,8 +1,14 @@
 // src/pages/Todo/Calendar.jsx
-
-import { useState, useEffect, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
 import moment from "moment";
 import "moment/locale/ko";
+import { useNavigate } from "react-router-dom";
 import { api } from "../../api/http";
 import CalendarTodo from "./CalendarTodo";
 import "../../styles/Todo/Calendar.css";
@@ -20,8 +26,9 @@ const WEEKDAYS_LONG = [
   "토요일",
 ];
 
-function Calendar({ onTodosChange }) {
-  const storedUser = JSON.parse(localStorage.getItem("user"));
+function Calendar({ onTodosChange }, ref) {
+  const navigate = useNavigate();
+  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const isLoggedIn = !!storedUser;
 
   // 현재 보고 있는 달
@@ -43,6 +50,29 @@ function Calendar({ onTodosChange }) {
 
   const [dayModalTodos, setDayModalTodos] = useState(null);
   const draggedTodoRef = useRef(null);
+
+  // ✅ 외부에서 호출할 "할 일 추가" 함수 (ref로 노출)
+  const openAddTodo = (date) => {
+    if (!isLoggedIn) {
+      if (
+        window.confirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동할까요?")
+      ) {
+        navigate("/login");
+      }
+      return;
+    }
+
+    const target = date ? moment(date) : selectedDate || moment();
+    setSelectedDate(target);
+
+    setEditTodo(null);
+    setShowModal(true);
+  };
+
+  // ref에 메서드 공개
+  useImperativeHandle(ref, () => ({
+    openAddTodo,
+  }));
 
   // ----------------------------
   // 공휴일 불러오기
@@ -67,11 +97,11 @@ function Calendar({ onTodosChange }) {
   const fetchTodos = async () => {
     if (!isLoggedIn) return;
     try {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
+      const savedUser = JSON.parse(localStorage.getItem("user") || "null");
 
       const params = {};
-      if (storedUser && storedUser.id) {
-        params.userId = storedUser.id;
+      if (savedUser && savedUser.id) {
+        params.userId = savedUser.id;
       }
 
       const data = await api.get("/api/tasks", { params });
@@ -163,7 +193,6 @@ function Calendar({ onTodosChange }) {
         )}`,
       };
 
-      // api 래퍼 사용 (baseURL에 맞춰 자동 호출)
       await api.put(`/api/tasks/${todo.id}`, updatedTodo);
 
       setTodos((prev) =>
@@ -210,15 +239,12 @@ function Calendar({ onTodosChange }) {
             }
           }}
         >
-          {/* 날짜 숫자 */}
           <span className="date-number">{current.format("D")}</span>
 
-          {/* 공휴일 이름 */}
           {!isDiffMonth && isHoliday(current) && (
             <small className="holiday-name">{getHolidayName(current)}</small>
           )}
 
-          {/* 해당 날짜의 Todo 목록 (최대 2개 + more) */}
           <div className="todo-list">
             {dayTodos.slice(0, 2).map((todo) => (
               <div
@@ -260,7 +286,6 @@ function Calendar({ onTodosChange }) {
     return calendar;
   };
 
-  // 상단에 표시할 한글 요일 텍스트
   const headerText = `${today.format("YYYY년 MM월 DD일")} ${
     WEEKDAYS_LONG[today.day()]
   }`;
@@ -268,7 +293,7 @@ function Calendar({ onTodosChange }) {
   return (
     <div className="calendar-page">
       <div className="calendar-card">
-        {/* 상단 헤더: 이전/다음 + 오늘 날짜 (요일은 한글) */}
+        {/* 상단 헤더 */}
         <div className="calendar-header">
           <button
             className="nav-btn left-btn"
@@ -291,7 +316,7 @@ function Calendar({ onTodosChange }) {
             ▶
           </button>
 
-          {/* 월 선택 드롭메뉴 */}
+          {/* 월 선택 드롭다운 */}
           {showMonthPicker && (
             <div className="month-picker" ref={monthPickerRef}>
               <select
@@ -378,4 +403,5 @@ function Calendar({ onTodosChange }) {
   );
 }
 
-export default Calendar;
+// ✅ ref 사용 가능하게 내보내기
+export default forwardRef(Calendar);
