@@ -108,7 +108,11 @@ function Login({ setUser }) {
   // 카카오 로그인
   const handleKakaoLogin = () => {
     window.location.href =
-      "https://kauth.kakao.com/oauth/authorize?client_id=ea5df118a470f99f77bbff428c5d972e&redirect_uri=http://localhost:8080/api/kakao/callback&response_type=code";
+      "https://kauth.kakao.com/oauth/authorize" +
+      "?client_id=ea5df118a470f99f77bbff428c5d972e" +
+      "&redirect_uri=http://localhost:8080/api/kakao/callback" +
+      "&response_type=code" +
+      "&prompt=login"; // ✅ 항상 카카오 로그인 화면을 다시 띄우기
   };
 
   return (
@@ -158,6 +162,7 @@ function Login({ setUser }) {
               <img
                 src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_small.png"
                 className="kakao-logo"
+                alt="kakao-login"
               />
               카카오로 로그인
             </button>
