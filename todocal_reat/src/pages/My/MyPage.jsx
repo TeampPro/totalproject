@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../styles/My/MyPage.css"; // 🔥 CSS 임포트
+import "../../styles/My/MyPage.css";
+
+import BackIcon from "../../assets/backIcon.svg";
+import ProfileIcon from "../../assets/profileBig.svg";
+import BorderIcon from "../../assets/border.svg";
+import CreateIcon from "../../assets/create.svg"; 
 
 function MyPage() {
   const [userInfo, setUserInfo] = useState({
@@ -8,7 +13,6 @@ function MyPage() {
     name: "",
     nickname: "",
     email: "",
-    password: "",
     kakaoId: "",
     kakaoEmail: "",
     profileImage: null,
@@ -16,7 +20,7 @@ function MyPage() {
 
   const [nickname, setNickname] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const [userType, setUserType] = useState("member");
+  const [userType, setUserType] = useState("MEMBER");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [preview, setPreview] = useState(null);
@@ -26,10 +30,11 @@ function MyPage() {
     const savedUser = JSON.parse(localStorage.getItem("user"));
     if (!savedUser) {
       alert("로그인이 필요합니다.");
-      navigate("/");
+      navigate("/login");
       return;
     }
-    setUserType(savedUser.userType || "member");
+    // userType 대문자로 통일 (GUEST/NORMAL/ADMIN ...)
+    setUserType((savedUser.userType || "MEMBER").toUpperCase());
 
     fetch(`http://localhost:8080/api/user/${savedUser.id}`)
       .then((res) => {
@@ -169,104 +174,173 @@ function MyPage() {
     }
   };
 
+  const isGuest = userType === "GUEST";
+
   return (
-    <div className="mypage-container">
-      <div className="mypage-card">
-        <h2 className="mypage-title">마이페이지</h2>
-        
-        <div className="mypage-profile-wrap">
-          <img
-            src={preview || "/default-profile.png"}
-            alt="프로필"
-            className="mypage-profile-img"
-          />
-          {userType !== "GUEST" && isEditing && (
-            <input type="file" accept="image/*" onChange={handleImageChange} />
+    <div className="mypage-wrapper">
+      {/* 왼쪽 상단 뒤로가기 */}
+      <button
+        type="button"
+        className="mypage-back-icon-btn"
+        onClick={() => navigate("/main")}
+      >
+        <img src={BackIcon} alt="뒤로가기" />
+      </button>
+
+      <div className="mypage-shell">
+        {/* 프로필 아이콘 + 이름 */}
+        {/* 프로필 아이콘 + 이름 */}
+        <div className="mypage-profile-top">
+          <div className="mypage-avatar">
+            {/* 흰색/파란 테두리 svg */}
+            <img src={BorderIcon} alt="" className="mypage-avatar-border" />
+
+            {/* 안쪽 동그라미(실제 이미지) */}
+            <div className="mypage-avatar-inner">
+              {preview ? (
+                <img src={preview} alt="프로필" />
+              ) : (
+                <img src={ProfileIcon} alt="프로필 기본" />
+              )}
+            </div>
+
+            {/* 연필 아이콘 + 파일 입력 */}
+            {!isGuest && (
+              <label className="mypage-avatar-edit">
+                <img src={CreateIcon} alt="프로필 수정" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+              </label>
+            )}
+          </div>
+
+          <div className="mypage-display-name">
+            {nickname || userInfo.name || userInfo.id}
+          </div>
+        </div>
+
+        {/* 가운데 파란 테두리 박스 */}
+        <div className="mypage-main-panel">
+          <div className="mypage-main-title">마이 페이지</div>
+
+          <div className="mypage-info-grid">
+            {/* 아이디 */}
+            <div className="mypage-info-row">
+              <div className="mypage-info-label">아이디</div>
+              <div className="mypage-info-value">{userInfo.id}</div>
+            </div>
+
+            {/* 이름 */}
+            <div className="mypage-info-row">
+              <div className="mypage-info-label">이름</div>
+              <div className="mypage-info-value">
+                {isGuest || !isEditing ? (
+                  userInfo.name
+                ) : (
+                  <input
+                    name="name"
+                    value={userInfo.name}
+                    onChange={handleChange}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* 닉네임 */}
+            <div className="mypage-info-row">
+              <div className="mypage-info-label">닉네임</div>
+              <div className="mypage-info-value">
+                {isGuest || !isEditing ? (
+                  nickname
+                ) : (
+                  <input
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* 이메일 */}
+            <div className="mypage-info-row">
+              <div className="mypage-info-label">이메일</div>
+              <div className="mypage-info-value">
+                {isGuest || !isEditing ? (
+                  userInfo.email
+                ) : (
+                  <input
+                    name="email"
+                    value={userInfo.email}
+                    onChange={handleChange}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* 내 정보 수정 버튼 */}
+          {isGuest ? (
+            <p className="mypage-warning">
+              비회원은 프로필 정보를 수정할 수 없습니다.
+            </p>
+          ) : isEditing ? (
+            <button className="mypage-main-btn" onClick={handleSave}>
+              내 정보 저장
+            </button>
+          ) : (
+            <button
+              className="mypage-main-btn"
+              onClick={() => setIsEditing(true)}
+            >
+              내 정보 수정
+            </button>
           )}
         </div>
 
-        <div className="mypage-info">
-          <label>아이디</label>
-          <input value={userInfo.id} disabled className="mypage-input" />
-
-          <label>이름</label>
-          <input
-            name="name"
-            value={userInfo.name}
-            disabled={!isEditing || userType === "guest"}
-            onChange={handleChange}
-            className="mypage-input"
-          />
-
-          <label>닉네임</label>
-          <input
-            value={nickname}
-            disabled={!isEditing || userType === "guest"}
-            onChange={(e) => setNickname(e.target.value)}
-            className="mypage-input"
-          />
-
-          <label>이메일</label>
-          <input
-            name="email"
-            value={userInfo.email}
-            disabled={!isEditing || userType === "guest"}
-            onChange={handleChange}
-            className="mypage-input"
-          />
-        </div>
-
-        {userType === "guest" ? (
-          <p className="mypage-warning">⚠ 비회원은 정보 수정이 불가능합니다.</p>
-        ) : isEditing ? (
-          <button className="mypage-save-btn" onClick={handleSave}>
-            저장하기
-          </button>
-        ) : (
-          <button
-            className="mypage-edit-btn"
-            onClick={() => setIsEditing(true)}
-          >
-            수정하기
-          </button>
-        )}
-
-        {userType !== "guest" && (
-          <div className="mypage-password-box">
-            <h4>비밀번호 변경</h4>
-
-            <input
-              type="password"
-              placeholder="현재 비밀번호"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="mypage-input"
-            />
-
-            <input
-              type="password"
-              placeholder="새 비밀번호"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="mypage-input"
-            />
-
+        {/* 비밀번호 변경 섹션 */}
+        {!isGuest && (
+          <div className="mypage-password-section">
+            <div className="mypage-password-title">비밀번호 변경</div>
+            <div className="mypage-password-fields">
+              <input
+                type="password"
+                placeholder="현재 비밀번호"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+              <input
+                type="password"
+                placeholder="새 비밀번호"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
             <button
-              className="mypage-password-btn"
+              className="mypage-password-btn-new"
               onClick={handlePasswordChange}
             >
-              비밀번호 변경
+              변경하기
             </button>
           </div>
         )}
 
-        {userType !== "guest" && (
-          <button className="mypage-delete-btn" onClick={handleDeleteAccount}>
-            회원탈퇴
+        {/* 하단 버튼들 */}
+        {!isGuest && (
+          <button
+            className="mypage-footer-btn mypage-footer-btn-danger"
+            onClick={handleDeleteAccount}
+          >
+            회원 탈퇴
           </button>
         )}
 
-        <button className="mypage-back-btn" onClick={() => navigate("/main")}>
+        <button
+          className="mypage-footer-btn mypage-footer-btn-secondary"
+          onClick={() => navigate("/main")}
+        >
           메인으로
         </button>
       </div>

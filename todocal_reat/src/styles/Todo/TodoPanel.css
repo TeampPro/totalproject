@@ -13,34 +13,33 @@
 /* 헤더 */
 .todo-panel-header {
   display: flex;
-  flex-direction: column;   /* 세로로 쌓기 */
-  align-items: flex-start;  /* 왼쪽 정렬 */
-  gap: 6px;                 /* 제목 ↕ 버튼 간격 */
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
   margin-bottom: 18px;
 }
+
 .todo-panel-title-row {
   display: flex;
   align-items: center;
   gap: 6px;
 }
+
 .todo-panel-icon {
   width: 18px;
   height: 18px;
 }
 
-.todo-add-btn {
-  padding: 6px 10px;
-  font-size: 12px;
-  border-radius: 8px;
-  border: none;
-  background: #4aa8ff;
-  color: #fff;
-  cursor: pointer;
-}
 .todo-panel-title {
   font-size: 16px;
   font-weight: 600;
   color: #333;
+}
+
+.todo-panel-notice {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #9ca3af;
 }
 
 /* 섹션 */
@@ -68,10 +67,20 @@
 
 /* 리스트 & 아이템 */
 .todo-list {
-  margin-top: 15px;
+  margin-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+}
+
+.todo-list-inprogress {
+  /* 진행중: 3칸 + 여유 */
+  min-height: 3 * 40px; /* 대략 3줄 높이, 필요하면 숫자 조절 */
+}
+
+.todo-list-done {
+  /* 완료: 2칸 + 여유 */
+  min-height: 2 * 40px;
 }
 
 .todo-item {
@@ -81,7 +90,6 @@
   padding: 8px 6px;
   border-radius: 10px;
   background: #f9fbff;
-  margin-bottom:6px;
 }
 
 .todo-item-done {
@@ -104,52 +112,36 @@
 }
 
 .todo-title {
-  font-size: 15px;      /* 🔼 13px → 15px */
-  font-weight: 500;     /* 조금 더 진하게 (선택) */
-  color: #333;
-  line-height: 1.5;     /* 줄 간격도 살짝 여유 있게 */
-}
-
-
-/* 태그 뱃지 */
-.todo-tag {
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 999px;
+  font-size: 15px;
   font-weight: 500;
+  color: #333;
+  line-height: 1.5;
 }
 
 .todo-meta {
   margin-top: 4px;
   font-size: 13px;
   color: #888;
-
   display: flex;
   align-items: center;
-  gap: 18px;          /* D-day 와 날짜 사이 간격 */
-}
-
-.todo-meta-dday-label {
-  font-weight: 500;
-  color: #555;
+  gap: 18px;
 }
 
 .todo-meta-dday-value {
   font-weight: 600;
-  color: #083DCC;    /* D-day 강조 색 (원하면 바꿔도 됨) */
+  color: #083dcc;
 }
 
 .todo-meta-date {
   display: inline-flex;
   align-items: center;
-  gap: 4px;          /* 아이콘과 날짜 간격 */
+  gap: 4px;
 }
 
 .todo-meta-icon {
   width: 14px;
   height: 14px;
 }
-
 
 /* 제목 밑에 올 버튼 전용 */
 .todo-panel-add-btn {
@@ -178,34 +170,34 @@
   background: #2474d5;
 }
 
+/* 카드 안 아이템 보더 제거 */
 .todo-panel .todo-item {
   border: none !important;
   border-bottom: none !important;
   box-shadow: none !important;
 }
 
-.todo-panel-notice {
-  margin-top: 4px;
-  font-size: 12px;
-  color: #9ca3af;
-}
-
+/* +N개 텍스트 */
 .todo-more-text {
   margin-top: 6px;
   font-size: 12px;
   color: #9ca3af;
   text-align: right;
-}
-/* +N개 더 있음 텍스트 */
-.todo-more-text {
-  margin-top: 6px;
-  font-size: 12px;
-  color: #9ca3af;
-  text-align: right;
+
+  height: 18px;
+  line-height: 18px;
 }
 
-/* 자리만 차지하고 내용은 안 보이게 */
+/* 자리만 차지하고 내용은 안 보이게 (3칸 / 2칸 채우기용) */
 .todo-item-placeholder {
-  visibility: hidden;   /* 높이/여백은 유지, 내부는 안 보이게 */
-  pointer-events: none; /* 클릭도 막기 */
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.todo-section-inprogress .todo-list {
+  min-height: 230px;   /* 대략 3줄 + 간격 정도, 필요하면 숫자 조금씩 조절 */
+}
+
+.todo-section-done .todo-list {
+  min-height: 160px;   /* 대략 2줄 + 간격 */
 }
