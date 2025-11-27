@@ -2,18 +2,6 @@ import Calendar from "../../pages/Todo/Calendar";
 import TimeViewPage from "./TimeViewPage";
 import "../../styles/TimeCalendar/TimeHome.css";
 
-function TimeHome({ onTodosChange, disabled, calendarRef }) {
-  const [activeTab, setActiveTab] = useState("calendar");
-  const navigate = useNavigate();
-
-  const requireLogin = () => {
-    if (disabled) {
-      alert("로그인이 필요합니다!");
-      return false;
-    }
-    return true;
-  };
-
 function TimeHome({ onTodosChange }) {
   return (
     <div className="time-home">
@@ -24,15 +12,10 @@ function TimeHome({ onTodosChange }) {
 
       {/* 내용: 위에는 캘린더, 아래에는 스케줄표 (항상 둘 다 보이게) */}
       <div className="time-content">
-        {activeTab === "calendar" && (
-          <Calendar
-            ref={calendarRef}
-            onTodosChange={onTodosChange} // ✅ 그냥 그대로 넘기기
-          />
-        )}
-        {activeTab === "schedule" && <TimeViewPage />}
+        {/* 위쪽 캘린더 */}
         <Calendar onTodosChange={onTodosChange} />
 
+        {/* 아래쪽 스케줄(타임라인) */}
         <div className="timeview-wrapper">
           <TimeViewPage />
         </div>

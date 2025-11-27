@@ -1,21 +1,15 @@
-import {
-  useState,
-  useEffect,
-  useRef,
-  useImperativeHandle,
-  forwardRef
-} from "react";
+// src/pages/Todo/Calendar.jsx
+
+import { useState, useEffect, useRef } from "react";
 import moment from "moment";
 import "moment/locale/ko";
-import { useNavigate } from "react-router-dom";
 import { api } from "../../api/http";
 import CalendarTodo from "./CalendarTodo";
 import "../../styles/Todo/Calendar.css";
 
-  // 현재 보고 있는 달
+// moment 한국어 설정
 moment.locale("ko");
 
-const WEEKDAYS_SHORT = ["일", "월", "화", "수", "목", "금", "토"];
 const WEEKDAYS_LONG = [
   "일요일",
   "월요일",
@@ -27,7 +21,6 @@ const WEEKDAYS_LONG = [
 ];
 
 function Calendar({ onTodosChange }) {
-  const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const isLoggedIn = !!storedUser;
 
@@ -51,29 +44,6 @@ function Calendar({ onTodosChange }) {
   const [dayModalTodos, setDayModalTodos] = useState(null);
   const draggedTodoRef = useRef(null);
 
-  // // 공휴일
-  // const fetchHolidays = async (year) => {
-  // // ✅ 외부에서 호출할 "할 일 추가" 함수
-  // const openAddTodo = (date) => {
-  //   if (!isLoggedIn) {
-  //     alert("로그인이 필요합니다!");
-  //     return;
-  //   }
-
-  //   // 외부에서 날짜를 넘기면 그 날짜, 아니면 현재 선택된 날짜
-  //   const target = date ? moment(date) : selectedDate || moment();
-  //   setSelectedDate(target);
-
-  //   setEditTodo(null);
-  //   setShowModal(true);
-  // };
-
-  // // ✅ ref 로 메서드 노출
-  // useImperativeHandle(ref, () => ({
-  //   openAddTodo,
-  // }));
-
-
   // ----------------------------
   // 공휴일 불러오기
   // ----------------------------
@@ -91,7 +61,9 @@ function Calendar({ onTodosChange }) {
     }
   };
 
+  // ----------------------------
   // Todo 불러오기 (Task 기반, userId 필터)
+  // ----------------------------
   const fetchTodos = async () => {
     if (!isLoggedIn) return;
     try {
@@ -102,9 +74,7 @@ function Calendar({ onTodosChange }) {
         params.userId = storedUser.id;
       }
 
-      const data = await api.get("/api/tasks", {
-        params,
-      });
+      const data = await api.get("/api/tasks", { params });
 
       const mapped = (data || []).map((todo) => ({
         ...todo,
@@ -115,20 +85,21 @@ function Calendar({ onTodosChange }) {
 
       setTodos(mapped);
     } catch (err) {
-      console.error("Todo ???? ??:", err);
+      console.error("Todo 불러오기 실패:", err);
     }
   };
-// ----------------------------
+
+  // ----------------------------
   // 최초 로딩: 공휴일 + Todo
   // ----------------------------
-useEffect(() => {
-  fetchHolidays(today.year());
-  if (isLoggedIn) {
-    fetchTodos();
-  }
+  useEffect(() => {
+    fetchHolidays(today.year());
+    if (isLoggedIn) {
+      fetchTodos();
+    }
   }, [today, isLoggedIn]);
 
-  // 월 선택창 외부 클릭 닫기 (지금은 UI 안 쓰지만 로직은 유지)
+  // 월 선택창 외부 클릭 닫기
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -192,10 +163,8 @@ useEffect(() => {
         )}`,
       };
 
-      await api.put(
-        `http://localhost:8080/api/tasks/${todo.id}`,
-        updatedTodo
-      );
+      // api 래퍼 사용 (baseURL에 맞춰 자동 호출)
+      await api.put(`/api/tasks/${todo.id}`, updatedTodo);
 
       setTodos((prev) =>
         prev.map((t) =>
@@ -241,13 +210,15 @@ useEffect(() => {
             }
           }}
         >
-          {/* 날짜 숫자만 표시 (요일은 위 헤더에서 한 번만) */}
+          {/* 날짜 숫자 */}
           <span className="date-number">{current.format("D")}</span>
 
+          {/* 공휴일 이름 */}
           {!isDiffMonth && isHoliday(current) && (
             <small className="holiday-name">{getHolidayName(current)}</small>
           )}
 
+          {/* 해당 날짜의 Todo 목록 (최대 2개 + more) */}
           <div className="todo-list">
             {dayTodos.slice(0, 2).map((todo) => (
               <div
@@ -288,8 +259,6 @@ useEffect(() => {
 
     return calendar;
   };
-
-  const selectedDayTodos = getTodosForDay(selectedDate);
 
   // 상단에 표시할 한글 요일 텍스트
   const headerText = `${today.format("YYYY년 MM월 DD일")} ${
@@ -360,6 +329,7 @@ useEffect(() => {
             </div>
           )}
         </div>
+
         {/* 메인 캘린더 */}
         <div className="calendar-grid">{calendarArr()}</div>
       </div>
@@ -408,4 +378,4 @@ useEffect(() => {
   );
 }
 
-export default forwardRef(Calendar);
+export default Calendar;
