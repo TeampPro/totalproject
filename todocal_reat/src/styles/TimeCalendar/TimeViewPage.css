@@ -1,161 +1,280 @@
-.timeview-page {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-}
+/* src/styles/TimeCalendar/TimeViewPage.css */
 
-/* 상단 헤더 */
-.timeview-header {
+/* 전체 페이지 */
+.tv-page {
+  margin-top: 24px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.timeview-header-left button {
-  margin-right: 8px;
-  padding: 4px 8px;
+/* 헤더 (Today / 화살표 / 날짜 범위) */
+.tv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tv-header-left button {
+  margin-right: 6px;
+  padding: 4px 10px;
   border-radius: 6px;
-  border: 1px solid #ddd;
-  background: #fff;
+  border: 1px solid #d4d4d8;
+  background: #ffffff;
+  color: #111827;
   cursor: pointer;
   font-size: 12px;
 }
 
-.timeview-header-left button:hover {
-  background: #f4f4f4;
+.tv-header-left button:hover {
+  background: #f3f4f6;
 }
 
-.timeview-header-center h2 {
-  font-size: 16px;
+.tv-header-center h2 {
+  font-size: 14px;
   font-weight: 600;
 }
 
-/* 전체 그리드 컨테이너 */
-.timeview-grid {
-  border: 1px solid #e0e0e0;
+/* 1. 위쪽 주간 바 */
+
+.tv-week-strip {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.tv-week-day {
+  position: relative;
+  flex: 1;
+  min-width: 110px;
+  padding: 8px 10px 10px;
   border-radius: 12px;
-  overflow: hidden;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  background: #f9fafb;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: background 0.15s, border-color 0.15s;
+  border: 1px solid transparent;
 }
 
-/* 상단 요일 헤더 줄 */
-.timeview-header-row {
-  display: grid;
-  grid-template-columns: 80px repeat(7, 1fr);
-  border-bottom: 1px solid #eee;
-  background: #fafafa;
+.tv-week-day:hover {
+  background: #f3f4f6;
 }
 
-.timeview-time-col-header {
-  border-right: 1px solid #eee;
+.tv-week-day-selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
 }
 
-.timeview-day-header {
-  padding: 8px 12px;
-  text-align: center;
-  border-right: 1px solid #eee;
-}
-
-.timeview-day-header:last-child {
-  border-right: none;
-}
-
-.day-name {
+.tv-week-day-header {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
   font-size: 12px;
-  color: #777;
+  color: #4b5563;
 }
 
-.day-date {
+.tv-week-day-sunday .tv-week-day-date,
+.tv-week-day-sunday .tv-week-day-label {
+  color: #ef4444;
+}
+
+.tv-week-day-date {
+  font-weight: 700;
   font-size: 13px;
-  font-weight: 600;
+}
+
+.tv-week-day-label {
+  font-size: 11px;
+}
+
+.tv-week-day-events {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   margin-top: 2px;
 }
 
-/* 본문 영역 */
-.timeview-body {
-  display: flex;
-}
-
-/* 왼쪽 시간 축 */
-.timeview-time-col {
-  width: 80px;
-  border-right: 1px solid #eee;
-}
-
-.timeview-time-cell {
-  height: 60px; /* JS에서 HOUR_HEIGHT와 맞춰야 함 */
-  box-sizing: border-box;
-  font-size: 11px;
-  color: #999;
-  padding-top: 4px;
-  padding-right: 6px;
-  text-align: right;
-}
-
-/* 요일별 컬럼 */
-.timeview-day-col {
-  flex: 1;
-  border-right: 1px solid #f3f3f3;
-  position: relative;
-}
-
-.timeview-day-col:last-child {
-  border-right: none;
-}
-
-/* 시간 슬롯 라인 */
-.timeview-slot {
-  height: 60px;
-  border-top: 1px solid #f5f5f5;
-}
-
-/* 이벤트 블록 */
-.timeview-event {
-  position: absolute;
-  left: 6px;
-  right: 6px;
+/* 주간 바에 표시되는 일정 칩 */
+.tv-week-event-chip {
   border-radius: 8px;
-  padding: 6px 8px;
-  box-sizing: border-box;
+  padding: 4px 6px;
+  background: #e0edff;
   font-size: 11px;
-  color: #222;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  color: #1f2937;
 }
 
-.event-time {
+.tv-week-event-duration {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #2563eb;
+  color: #ffffff;
   font-size: 10px;
   margin-bottom: 2px;
-  color: #555;
 }
 
-.event-title {
+.tv-week-event-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tv-week-event-time {
+  opacity: 0.85;
+}
+
+.tv-week-event-title {
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.tv-week-event-empty {
   font-size: 11px;
+  color: #9ca3af;
+}
+
+/* 선택된 날짜 아래 말풍선 꼬리 */
+.tv-week-day-pointer {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 8px;
+  background: #eff6ff;
+  border-left: 1px solid #3b82f6;
+  border-right: 1px solid #3b82f6;
+  border-bottom: 1px solid #3b82f6;
+  border-radius: 0 0 999px 999px;
+}
+
+/* 2. 가운데 요약 박스 */
+
+.tv-summary-box {
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  padding: 18px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tv-summary-table {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px 16px;
+  font-size: 12px;
+}
+
+.tv-summary-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tv-summary-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.tv-summary-value {
+  color: #111827;
   font-weight: 600;
 }
 
-/* 반응형 */
-@media (max-width: 900px) {
-  .timeview-page {
-    max-width: 100%;
-  }
+/* 3. 타임라인 박스 */
 
-  .timeview-grid {
-    border-radius: 0;
-  }
+.tv-timeline-box {
+  margin-top: 10px;
+  border-radius: 14px;
+  background: #f9fafb;
+  padding: 14px 24px 12px;
 }
 
-.timeview-event {
+.tv-timeline-hours {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-bottom: 6px;
+}
+
+.tv-timeline-hour {
+  width: 100%;
+  text-align: center;
+}
+
+/* 트랙 높이는 JSX에서 동적으로 지정 */
+.tv-timeline-track {
+  position: relative;
+  min-height: 40px;
+  border-radius: 0px;
+  background: #e5e7eb;
+  overflow: visible;
+}
+
+/* 타임라인 일정 막대 */
+.tv-timeline-event {
   position: absolute;
-  border-radius: 8px;
-  padding: 4px;
+  border-radius: 999px;
+  background: #3b82f6;
+  color: #ffffff;
+  font-size: 11px;
+  padding: 4px 8px;
   box-sizing: border-box;
-  cursor: pointer;  /* ✔ 마우스 포인터 변경 */
-  transition: transform 0.1s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
 }
 
-.timeview-event:hover {
-  transform: scale(1.02);   /* ✔ hover 시 약간 강조 효과 */
+.tv-timeline-event-title {
+  font-weight: 600;
+  white-space: nowrap;        /* 한 줄로만 표시 */
+  overflow: hidden;           /* 넘치면 숨김 */
+  text-overflow: ellipsis;    /* ... 처리 */
+}
+
+.tv-timeline-event-time {
+  opacity: 0.9;
+  font-size: 10px;
+  white-space: nowrap;        /* 시간도 한 줄로 */
+}
+
+/* 범례 */
+
+.tv-legend {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  color: #4b5563;
+}
+
+.tv-legend-item::before {
+  content: "●";
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.tv-legend-my::before {
+  color: #2563eb;
+}
+.tv-legend-etc::before {
+  color: #9ca3af;
+}
+.tv-legend-share::before {
+  color: #fbbf24;
+}
+.tv-legend-emergency::before {
+  color: #ef4444;
+}
+.tv-legend-holiday::before {
+  color: #38bdf8;
 }

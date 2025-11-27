@@ -1,62 +1,22 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Calendar from "../../pages/Todo/Calendar";
 import TimeViewPage from "./TimeViewPage";
 import "../../styles/TimeCalendar/TimeHome.css";
 
-function TimeHome({ onTodosChange, disabled }) {
-  const [activeTab, setActiveTab] = useState("calendar");
-  const navigate = useNavigate();
-
-  const requireLogin = () => {
-    if (disabled) {
-      alert("로그인이 필요합니다!");
-      return false;
-    }
-    return true;
-  };
-
+function TimeHome({ onTodosChange }) {
   return (
-    <div className={`time-home ${activeTab}`}>
+    <div className="time-home">
+      {/* 상단: 캘린더 제목만 표시 */}
       <div className="time-top-row">
-        <div className="tabs-center">
-          <button
-            className={activeTab === "calendar" ? "tab active" : "tab"}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (requireLogin()) setActiveTab("calendar");
-            }}
-          >
-            📅 캘린더
-          </button>
-
-          <button
-            className={activeTab === "schedule" ? "tab active" : "tab"}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (requireLogin()) setActiveTab("schedule");
-            }}
-          >
-            📋 스케줄표
-          </button>
-        </div>
-
-        {/* + 버튼 */}
-        <button
-          className="add-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!requireLogin()) return;
-            navigate("/todo");
-          }}
-        >
-          +
-        </button>
+        <div className="time-title">📅 캘린더</div>
       </div>
 
+      {/* 내용: 위에는 캘린더, 아래에는 스케줄표 (항상 둘 다 보이게) */}
       <div className="time-content">
-        {activeTab === "calendar" && <Calendar onTodosChange={onTodosChange} />}
-        {activeTab === "schedule" && <TimeViewPage />}
+        <Calendar onTodosChange={onTodosChange} />
+
+        <div className="timeview-wrapper">
+          <TimeViewPage />
+        </div>
       </div>
     </div>
   );
