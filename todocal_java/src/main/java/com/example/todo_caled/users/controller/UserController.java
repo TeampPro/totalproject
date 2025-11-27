@@ -334,4 +334,21 @@ public class UserController {
         }
         return sb.toString();
     }
+
+    // 🔹 아이디 중복확인: 기존 findById 사용
+    @GetMapping("/users/check-id")
+    public ResponseEntity<Map<String, Boolean>> checkId(@RequestParam("id") String id) {
+        // 공백 아이디 방어
+        if (id == null || id.isBlank()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("available", false));
+        }
+
+        boolean exists = (userRepository.findById(id) != null);
+        boolean available = !exists;   // true = 사용 가능
+
+        return ResponseEntity.ok(Map.of("available", available));
+    }
+
 }
