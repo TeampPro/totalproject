@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;            // ✅ 추가
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,8 +22,8 @@ public class KakaoController {
     @Autowired
     private UserRepository userRepository;
 
-    // ✅ 프론트에서 인가코드(code) 받으면 여기로 POST
-    @PostMapping("/callback")
+    // ✅ 카카오에서 redirect_uri로 GET 요청이 들어옴
+    @GetMapping("/callback")
     public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code) {
         try {
             // 1️⃣ 인가코드로 Access Token 받기
@@ -51,19 +52,19 @@ public class KakaoController {
                 existingUser = newUser;
             }
 
-            // 4️⃣ 응답
-            Map<String, Object> res = new HashMap<>();
-            res.put("message", "카카오 로그인 성공");
-            res.put("id", existingUser.getId());
-            res.put("name", existingUser.getName());
-            res.put("email", existingUser.getKakaoEmail());
-            res.put("userType", existingUser.getUserType());
+            // 🔹 (참고) 여기서 세션/JWT/쿠키 등을 세팅하면
+            //   프론트에서 별도 로그인 처리 없이도 인증 상태를 유지할 수 있습니다.
 
-            return ResponseEntity.ok(res);
+            // 4️⃣ React 메인 페이지로 리다이렉트
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(URI.create("http://localhost:5173/main"));
+            return new ResponseEntity<>(headers, HttpStatus.FOUND); // 302 Redirect
 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "카카오 로그인 중 오류 발생", "error", e.getMessage()));
+            // 에러 시에는 로그인 페이지로 돌려보내면서 에러 정보 전달 (선택사항)
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(URI.create("http://localhost:5173/login?error=kakao"));
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
         }
     }
 }
