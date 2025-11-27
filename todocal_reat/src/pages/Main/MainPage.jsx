@@ -106,30 +106,29 @@ const MainPage = ({ user, setUser }) => {
 
           {/* 3️⃣ 프로필 (오른쪽) */}
           <div className="right-top-area">
-          <div className="profile-area">
-            {user ? (
-              <UserInfo user={user} onLogout={handleLogout} />
-            ) : (
-              <RightAuthBox />
-            )}
-          </div>
+            <div className="profile-area">
+              {user ? (
+                <UserInfo user={user} onLogout={handleLogout} />
+              ) : (
+                <RightAuthBox />
+              )}
+            </div>
 
             {/* ✅ 메인에서 게시판 영역 제거 */}
             {/* <div className="board-area">
               <BoardHome disabled={!user} />
             </div> */}
             {/* ✅ 여기 Todo 패널이 “캘린더 오른쪽 / 마이페이지 아래” 위치 */}
+            {/* ✅ 여기 Todo 패널이 “캘린더 오른쪽 / 마이페이지 아래” 위치 */}
             <div className="todo-area">
-              {user && (
-                <TodoPanel
-                  user={user}
-                  reloadKey={todoReloadKey}
-                  onAddTodo={() => {
-                    // 👇 Calendar.jsx에서 useImperativeHandle로 노출한 함수
-                    calendarRef.current?.openAddTodo();
-                  }}
-                />
-              )}
+              <TodoPanel
+                user={user} // 로그인 여부는 내부에서 판단
+                reloadKey={todoReloadKey}
+                onAddTodo={() => {
+                  // 👇 Calendar.jsx에서 useImperativeHandle로 노출한 함수
+                  calendarRef.current?.openAddTodo();
+                }}
+              />
             </div>
           </div>
 

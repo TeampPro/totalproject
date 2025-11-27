@@ -1,41 +1,59 @@
-.right-auth-box {
-  /* position: absolute; top/right 제거한 상태 유지 */
-  width: 180px;
-  padding: 18px;
-  border-radius: 14px;
-  background: white;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-  text-align: center;
+/* 🔹 오른쪽 정렬용 래퍼 (캘린더 옆에 붙게) */
+.right-auth-wrapper {
+  display: flex;
+  justify-content: flex-end;  /* 오른쪽으로 */
+  align-items: flex-start;
+  padding: 24px 32px;         /* 전체 페이지 여백 상황에 맞춰 조절 */
 }
 
+/* 🔹 로그인 카드 자체 */
+.right-auth-box {
+  width: 400px;
+  padding: 32px 24px 24px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #f4fbff, #e6f1ff); /* 로그인창 같은 그라데이션 */
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  text-align: center;
+  margin-right: 0%;
+}
 
+/* 로고 */
+.planix-logo {
+  width: 140px;
+  margin-bottom: 24px;
+}
+
+/* 버튼 공통 스타일 */
 .auth-login-btn,
 .auth-signup-btn {
   width: 100%;
+  height: 44px;
   margin-top: 10px;
-  padding: 10px;
-  background: #56A4FF;
+  border-radius: 999px;
   border: none;
-  border-radius: 10px;
-  color: white;
-  font-weight: bold;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: 0.2s ease;
 }
 
-.auth-signup-btn {
-  background: #9ec9ff;
+/* 파란 로그인 버튼 */
+.auth-login-btn {
+  background: #2f80ff;
+  color: #ffffff;
 }
 
 .auth-login-btn:hover {
-  background: #3f8ce6;
+  background: #1e6de0;
+}
+
+/* 흰색 회원가입 버튼 (로그인 페이지처럼) */
+.auth-signup-btn {
+  background: #ffffff;
+  color: #6b7280;
+  box-shadow: inset 0 0 0 1px #d5e3ff;
 }
 
 .auth-signup-btn:hover {
-  background: #84b3f0;
-}
-
-.planix-logo {
-  width: 120px;
-  margin-bottom: 20px;
+  background: #f4f7ff;
 }
