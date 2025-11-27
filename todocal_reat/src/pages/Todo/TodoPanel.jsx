@@ -1,6 +1,6 @@
 // src/components/Todo/TodoPanel.jsx
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ 추가
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/Todo/TodoPanel.css";
 import TodoIcon from "../../assets/TodoIcon.svg";
@@ -8,11 +8,11 @@ import CalIcon from "../../assets/calIcon.svg";
 
 function TodoPanel({ user, onAddTodo, reloadKey }) {
   const [todos, setTodos] = useState([]);
-  const navigate = useNavigate(); // ✅ 추가
+  const navigate = useNavigate();
 
   // 로그인 여부 (props user 또는 localStorage 둘 다 체크)
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-  const isLoggedIn = !!(user?.id || storedUser?.id); // ✅ 추가
+  const isLoggedIn = !!(user?.id || storedUser?.id);
 
   const getDDayText = (promiseDate) => {
     if (!promiseDate) return "";
@@ -78,8 +78,8 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
 
       await axios.put(`http://localhost:8080/api/tasks/${todo.id}`, updated);
 
+      // 로컬 상태 즉시 반영
       setTodos((prev) => prev.map((t) => (t.id === todo.id ? updated : t)));
-      fetchTodos();
     } catch (err) {
       console.error("✅ 상태 변경 실패:", err);
       alert("상태 변경 중 오류가 발생했습니다.");
@@ -88,36 +88,44 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
 
   // ✅ 일정 추가 버튼 클릭 – 로그인 필요
   const handleClickAdd = () => {
-    if (!ensureLogin()) return; // 🔒 비로그인 차단
+    if (!ensureLogin()) return;
     if (onAddTodo) onAddTodo();
   };
 
-    const inProgressTodos = todos.filter((t) => !t.completed);
-    const doneTodos = todos.filter((t) => t.completed);
+  // ------------ 목록/카운트 로직 ------------
 
-    // ✅ 최대 출력 개수
-    const MAX_VISIBLE = 5;
+  const inProgressTodos = todos.filter((t) => !t.completed);
+  const doneTodos = todos.filter((t) => t.completed);
 
-    // 진행중 목록
-    const inProgressVisible = inProgressTodos.slice(0, MAX_VISIBLE);
-    const inProgressHiddenCount =
-      inProgressTodos.length - inProgressVisible.length;
-    const inProgressPlaceholderCount = Math.max(
-      0,
-      MAX_VISIBLE - inProgressVisible.length
-    );
+  // 진행중: 3칸, 완료: 2칸
+  const MAX_IN_PROGRESS_VISIBLE = 3;
+  const MAX_DONE_VISIBLE = 2;
 
-    // 완료 목록
-    const doneVisible = doneTodos.slice(0, MAX_VISIBLE);
-    const doneHiddenCount = doneTodos.length - doneVisible.length;
-    const donePlaceholderCount = Math.max(0, MAX_VISIBLE - doneVisible.length);
+  // 진행중
+  const inProgressVisible = inProgressTodos.slice(0, MAX_IN_PROGRESS_VISIBLE);
+  const inProgressHiddenCount = Math.max(
+    0,
+    inProgressTodos.length - MAX_IN_PROGRESS_VISIBLE
+  );
+  const inProgressPlaceholderCount = Math.max(
+    0,
+    MAX_IN_PROGRESS_VISIBLE - inProgressVisible.length
+  );
+
+  // 완료
+  const doneVisible = doneTodos.slice(0, MAX_DONE_VISIBLE);
+  const doneHiddenCount = Math.max(0, doneTodos.length - MAX_DONE_VISIBLE);
+  const donePlaceholderCount = Math.max(
+    0,
+    MAX_DONE_VISIBLE - doneVisible.length
+  );
 
   return (
     <aside className="todo-panel">
       {/* 헤더 */}
       <div className="todo-panel-header">
         <div className="todo-panel-title-row">
-          <img src={TodoIcon} alt="할일아이콘" className="toto-panel-icon" />
+          <img src={TodoIcon} alt="할일아이콘" className="todo-panel-icon" />
           <span className="todo-panel-title">할 일 목록</span>
         </div>
 
@@ -135,16 +143,10 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
       </button>
 
       {/* 진행중 섹션 */}
-      <section className="todo-section">
-        <div className="todo-section-header">
-          <span className="todo-section-title">
-            진행중 ({inProgressTodos.length})
-          </span>
-        </div>
-
-        <div className="todo-list">
+      <section className="todo-section todo-section-inprogress">
+        <div className="todo-list todo-list-inprogress">
           {inProgressVisible.map((todo) => (
-            <label key={todo.id} className="todo-item">
+            <div key={todo.id} className="todo-item">
               <input
                 type="checkbox"
                 checked={!!todo.completed}
@@ -168,10 +170,10 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
                   </div>
                 )}
               </div>
-            </label>
+            </div>
           ))}
 
-          {/* ✅ 빈 줄(placeholder)로 높이 채우기 */}
+          {/* 3칸 유지용 placeholder */}
           {Array.from({ length: inProgressPlaceholderCount }).map((_, idx) => (
             <div
               key={`in-progress-placeholder-${idx}`}
@@ -179,24 +181,20 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
             />
           ))}
 
-          {/* ✅ 5개 초과일 때 +N개 표시 */}
-          {inProgressHiddenCount > 0 && (
-            <div className="todo-more-text">
-              + {inProgressHiddenCount}개
-            </div>
-          )}
+          {/* 🔥 항상 한 줄 확보하고, 내용만 바꾸기 */}
+          <div className="todo-more-text">
+            {inProgressHiddenCount > 0
+              ? `+ ${inProgressHiddenCount}개 더 있음`
+              : "\u00A0"}
+          </div>
         </div>
       </section>
 
       {/* 완료 섹션 */}
-      <section className="todo-section">
-        <div className="todo-section-header">
-          <span className="todo-section-title">완료 ({doneTodos.length})</span>
-        </div>
-
-        <div className="todo-list">
+      <section className="todo-section todo-section-done">
+        <div className="todo-list todo-list-done">
           {doneVisible.map((todo) => (
-            <label key={todo.id} className="todo-item todo-item-done">
+            <div key={todo.id} className="todo-item todo-item-done">
               <input
                 type="checkbox"
                 checked={!!todo.completed}
@@ -220,10 +218,10 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
                   </div>
                 )}
               </div>
-            </label>
+            </div>
           ))}
 
-          {/* ✅ 빈 줄(placeholder)로 높이 채우기 */}
+          {/* 2칸 유지용 placeholder */}
           {Array.from({ length: donePlaceholderCount }).map((_, idx) => (
             <div
               key={`done-placeholder-${idx}`}
@@ -231,10 +229,9 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
             />
           ))}
 
-          {/* ✅ 5개 초과일 때 +N개 표시 */}
-          {doneHiddenCount > 0 && (
-            <div className="todo-more-text">+ {doneHiddenCount}개</div>
-          )}
+          <div className="todo-more-text">
+            {doneHiddenCount > 0 ? `+ ${doneHiddenCount}개 더 있음` : "\u00A0"}
+          </div>
         </div>
       </section>
     </aside>
