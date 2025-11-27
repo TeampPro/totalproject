@@ -1,49 +1,157 @@
+/* 전체 컨테이너 */
 .map-container {
-  flex: 1;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-left: 2px solid #eee;
-  padding: 20px;
-  background-color: #fafafa;
+  padding: 32px 0;
+  background-color: #f5f7fb;
 }
 
-.map-title {
-  font-size: 1.2rem;
-  margin-bottom: 10px;
-  color: #333;
+/* ── 검색창 영역 ───────────────────────── */
+
+.map-search-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
 }
 
 .map-search-form {
-  margin-bottom: 10px;
+  position: relative;
+  width: 612px; /* Figma: 612 */
+  max-width: 90%;
 }
 
 .map-input {
-  width: 70%;
-  padding: 8px;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  margin-right: 10px;
-  outline: none; 
-}
-
-.map-btn {
-  padding: 8px 16px;
-  background-color: #646cff;
-  color: white;
+  width: 100%;
+  height: 58px; /* Figma: 58 */
+  padding: 0 60px 0 24px;
+  border-radius: 50px;
   border: none;
-  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0px 1px 3px 0px #0000001f;
+  font-size: 13px;
+  outline: none;
+}
+
+.map-input::placeholder {
+  color: #777777;
+}
+
+/* 검색 버튼 (우측 아이콘) */
+.map-search-button {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  transform: translateY(-50%);
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
 }
 
-.map-btn:hover {
-  background-color: #4a53e6;
+/* ── 지도 카드 (맵 영역) ───────────────── */
+
+.map-card {
+  width: 1049px;
+  max-width: 100%;
+  height: 221px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0px 1px 3px 0px #00000033;
+  position: relative; /* 컨트롤 absolute 기준 */
+  overflow: hidden;
 }
 
+/* 실제 Kakao map dom */
 .map-box {
   width: 100%;
-  height: 500px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  position: relative;
+  z-index: 1; /* 맵은 아래, 버튼은 위 */
+}
+
+/* ── 일반지도 / 위성뷰 토글 ───────────── */
+
+.map-control-maptype {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 120px;
+  height: 29px;
+  background: #ffffff;
+  border-radius: 999px;             /* ✅ 양 끝 둥글게 (pill 형태) */
+  box-shadow: 0px 1px 3px 0px #00000033;
+  display: flex;
+  overflow: hidden;
+  z-index: 10; /* 맵 위로 */
+}
+
+.map-type-btn {
+  flex: 1;
+  border: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  font-family: "Paperlogy", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    system-ui, sans-serif;
+  cursor: pointer;
+  background: #ffffff;
+  color: #565656;
+  text-align: center;
+}
+
+/* 가운데 구분선 */
+.map-type-btn + .map-type-btn {
+  border-left: 1px solid #f2f2f2;
+}
+
+/* 선택된 탭: 배경은 유지, 글자만 굵게/진하게 */
+.map-type-btn.active {
+  font-weight: 700;
+  color: #333333;
+}
+
+/* ── 확대/축소 버튼 ───────────────────── */
+
+.map-control-zoom {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 53px;
+  border-radius: 999px;             /* ✅ 세로 박스 위/아래 둥글게 */
+  background: #ffffff;
+  box-shadow: 0px 1px 3px 0px #00000033;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  box-sizing: border-box;
+  z-index: 10; /* 맵 위로 */
+}
+
+.zoom-btn {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  color: #666666;
+}
+
+/* 가운데 회색 라인 */
+.zoom-divider {
+  width: 20px;
+  height: 1px;
+  background: #e6e6e6;
 }
