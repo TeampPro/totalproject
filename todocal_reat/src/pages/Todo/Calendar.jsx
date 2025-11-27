@@ -7,7 +7,7 @@ import {
 } from "react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { api } from "../../api/http";
 import CalendarTodo from "./CalendarTodo";
 import "../../styles/Todo/Calendar.css";
 
@@ -15,20 +15,6 @@ function Calendar({ onTodosChange }, ref) {
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const isLoggedIn = !!storedUser;
-  <button
-    className="todo-add-btn"
-    onClick={() => {
-      if (!isLoggedIn) {
-        alert("로그인이 필요합니다!");
-        return;
-      }
-
-      setEditTodo(null);
-      setShowModal(true);
-    }}
-  >
-    할 일 추가
-  </button>;
 
   // 현재 보고 있는 달
   const [getMoment, setMoment] = useState(moment());
@@ -75,19 +61,28 @@ function Calendar({ onTodosChange }, ref) {
   // ----------------------------
   // 공휴일 불러오기
   // ----------------------------
-  const fetchHolidays = async (year) => {
+  const fetchHolidays = async (year, retry = false) => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/holidays/${year}`);
-      setHolidays(res.data);
+      const data = await api.get(`/api/holidays/${year}`);
+      setHolidays(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("❌ 휴일 불러오기 실패:", err);
+      if (!retry && (err?.status === 401 || err?.status === 403)) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        return fetchHolidays(year, true);
+      }
+      console.error("공휴일 불러오기 실패:", err);
     }
   };
 
   // ----------------------------
   // Todo 불러오기 (Task 기반, userId 필터)
   // ----------------------------
+  // ----------------------------
+  // Todo ???? (Task ??, userId ??)
+  // ----------------------------
   const fetchTodos = async () => {
+    if (!isLoggedIn) return;
     try {
       const storedUser = JSON.parse(localStorage.getItem("user"));
 
@@ -96,11 +91,11 @@ function Calendar({ onTodosChange }, ref) {
         params.userId = storedUser.id;
       }
 
-      const res = await axios.get("http://localhost:8080/api/tasks", {
+      const data = await api.get("/api/tasks", {
         params,
       });
 
-      const mapped = (res.data || []).map((todo) => ({
+      const mapped = (data || []).map((todo) => ({
         ...todo,
         tDate: todo.promiseDate
           ? moment(todo.promiseDate).format("YYYY-MM-DD")
@@ -109,17 +104,18 @@ function Calendar({ onTodosChange }, ref) {
 
       setTodos(mapped);
     } catch (err) {
-      console.error("❌ Todo 불러오기 실패:", err);
+      console.error("Todo ???? ??:", err);
     }
   };
-
-  // ----------------------------
+// ----------------------------
   // 최초 로딩: 공휴일 + Todo
   // ----------------------------
-  useEffect(() => {
-    fetchHolidays(today.year());
+useEffect(() => {
+  fetchHolidays(today.year());
+  if (isLoggedIn) {
     fetchTodos();
-  }, [today]);
+  }
+  }, [today, isLoggedIn]);
 
   // ----------------------------
   // 월 선택창 외부 클릭 닫기
@@ -202,7 +198,7 @@ function Calendar({ onTodosChange }, ref) {
         )}`,
       };
 
-      await axios.put(
+      await api.put(
         `http://localhost:8080/api/tasks/${todo.id}`,
         updatedTodo
       );

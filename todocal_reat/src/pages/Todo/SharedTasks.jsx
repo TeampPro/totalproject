@@ -1,21 +1,24 @@
 import { useState, useEffect } from "react";
 import TaskList from "../../components/TaskList/TaskList";
 
+import { api } from "../../api/http";
+
 const SharedTasks = () => {
   const [tasks, setTasks] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/tasks/shared")
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-        return res.json();
-      })
-      .then(data => setTasks(data))
-      .catch(err => {
-        console.error("❌ Fetch error:", err);
+    const fetchShared = async () => {
+      try {
+        const data = await api.get("/api/tasks/shared");
+        setTasks(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("?? ?? ?? ??:", err);
         setError(err.message);
-      });
+      }
+    };
+
+    fetchShared();
   }, []);
 
   if (error) return <div>오류 발생: {error}</div>;

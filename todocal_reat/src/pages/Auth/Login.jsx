@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/Auth/Login.css";
 import LogoHeader from "../../components/LogoHeader/LogoHeader.jsx";
+import { apiFetch } from "../../api/http"; // 🔥 공통 래퍼 import
 
 function Login({ setUser }) {
   const [id, setId] = useState("");
@@ -30,78 +31,73 @@ function Login({ setUser }) {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/api/login", {
+      const data = await apiFetch("/api/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, password }),
       });
 
-      const data = await response.json();
+      // 여기까지 왔다는 건 response.ok == true
+      alert(data.message || "로그인 성공");
 
-      if (response.ok) {
-        alert(data.message || "로그인 성공");
-
-        const userData = {
-          id: data.id,
-          name: data.name,
-          email: data.email,
-          nickname: data.nickname,
-          userType: data.userType || "member",
-        };
-
-        // ✅ localStorage + React 상태 둘 다 갱신
-        localStorage.setItem("user", JSON.stringify(userData));
-        setUser(userData);
-
-        navigate("/main");
-      } else {
-        alert(data.message || "로그인 실패");
+      // 🔥 JWT 토큰 저장
+      if (data.token) {
+        localStorage.setItem("token", data.token);
       }
+
+      const userData = {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        nickname: data.nickname,
+        userType: data.userType || "member",
+      };
+
+      localStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
+
+      navigate("/main");
     } catch (error) {
-      console.error("Error:", error);
-      alert("서버 연결에 실패했습니다.");
+      console.error("로그인 에러:", error);
+      alert(error.message || "로그인 실패");
     }
   };
 
   // 비회원 회원가입 + 로그인
   const handleGuestSignup = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/belogin", {
+      const data = await apiFetch("/api/belogin", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}), // 바디 필요 없으면 생략해도 됨
       });
 
-      const data = await response.json();
+      alert(
+        `✅ ${data.message}\n\n아이디: ${data.id}\n비밀번호: ${data.password}`
+      );
 
-      if (response.ok) {
-        alert(
-          `✅ ${data.message}\n\n아이디: ${data.id}\n비밀번호: ${data.password}`
-        );
+      localStorage.setItem(
+        "guestInfo",
+        JSON.stringify({ id: data.id, password: data.password })
+      );
 
-        localStorage.setItem(
-          "guestInfo",
-          JSON.stringify({ id: data.id, password: data.password })
-        );
+      const guestUser = {
+        id: data.id,
+        name: data.id,
+        userType: data.userType || "guest",
+      };
 
-        const guestUser = {
-          id: data.id,
-          name: data.id,
-          userType: data.userType || "guest",
-        };
-
-        // ✅ guest도 동일하게 상태 갱신
-        localStorage.setItem("user", JSON.stringify(guestUser));
-        setUser(guestUser);
-
-        localStorage.setItem("memberName", data.id);
-
-        navigate("/main");
-      } else {
-        alert(data.message || "비회원 회원가입에 실패했습니다.");
+      // 🔥 비회원 로그인에서도 토큰 내려주면 저장 가능
+      if (data.token) {
+        localStorage.setItem("token", data.token);
       }
+
+      localStorage.setItem("user", JSON.stringify(guestUser));
+      setUser(guestUser);
+      localStorage.setItem("memberName", data.id);
+
+      navigate("/main");
     } catch (error) {
-      console.error("Error:", error);
-      alert("서버 연결에 실패했습니다.");
+      console.error("비회원 로그인 에러:", error);
+      alert(error.message || "비회원 회원가입에 실패했습니다.");
     }
   };
 
@@ -113,7 +109,6 @@ function Login({ setUser }) {
 
   return (
     <div className="login-fullpage">
-      {/* 🔵 Planix 로고 헤더 */}
       <LogoHeader />
 
       <div className="login-container">

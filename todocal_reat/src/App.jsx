@@ -1,4 +1,4 @@
-// src/App.jsx
+import { api, apiFetch } from "./api/http.js";
 import { useState, useEffect } from "react";
 import {
   BrowserRouter,
@@ -24,12 +24,12 @@ import Upload from "./pages/My/Upload.jsx";
 
 // Todo
 import TodoPage from "./pages/Todo/TodoPage.jsx";
-import SharedTodoPage from "./pages/Todo/SharedTodoPage.jsx"; // ✅ 공유일정 페이지 추가
+import SharedTodoPage from "./pages/Todo/SharedTodoPage.jsx";
 
 // Board
 import PostDetail from "./pages/Board/PostDetail.jsx";
 import PostWrite from "./pages/Board/PostWrite.jsx";
-import BoardHome from "./pages/Board/BoardHome.jsx"; // ✅ 게시판 목록 페이지 추가
+import BoardHome from "./pages/Board/BoardHome.jsx";
 
 // Chat
 import ChatPage from "./pages/Chat/ChatPage.jsx";
@@ -50,18 +50,58 @@ function App() {
 
   const [user, setUser] = useState(null);
 
+  // 앱 시작 시: localStorage에 user 있으면 서버 세션 확인
   useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("user"));
-      setUser(saved || null);
-    } catch {
+    const savedRaw = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+    if (!savedRaw || !token){
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
       setUser(null);
+      return;
     }
+
+    let canceled = false;
+
+    const clearUser = () => {
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      setUser(null);
+    };
+
+    const validateSession = async () => {
+      try {
+        const freshUser = await api.get("/api/auth/me");
+
+        if(!canceled) {
+          setUser(freshUser);
+          localStorage.setItem("user", JSON.stringify(freshUser));
+        }
+      } catch (err) {
+          if(!canceled) {
+            console.error("세션 검증 실패:", err);
+            clearUser();
+          }
+        }
+    }
+
+      validateSession();
+
+      return () => {
+        canceled = true;
+      };
   }, []);
 
   const handleLogout = () => {
+    // 서버 세션도 함께 끊기
+    apiFetch("/api/logout", {
+      method: "POST",
+    }).catch(() => {
+      // 세션 이미 만료된 경우 등은 무시
+    });
+
     localStorage.removeItem("user");
+    localStorage.removeItem("token")
     setUser(null);
     alert("로그아웃 되었습니다.");
     navigate("/main");
@@ -91,10 +131,9 @@ function App() {
           <Route path="/myPage" element={<MyPage onLogout={handleLogout} />} />
           <Route path="/upload" element={<Upload />} />
 
-          {/* Board 목록 페이지 */}
+          {/* Board */}
           <Route path="/board" element={<BoardHome />} />
-
-          {/* Board 상세 / 글쓰기 */}
+          {/* Board */}
           <Route path="/board/:id" element={<PostDetail />} />
           <Route path="/board/write" element={<PostWrite />} />
 
@@ -112,7 +151,7 @@ function App() {
 
           {/* Todo */}
           <Route path="/todo" element={<TodoPage />} />
-          <Route path="/share" element={<SharedTodoPage />} /> {/* ✅ 공유일정 라우트 */}
+          <Route path="/share" element={<SharedTodoPage />} />
 
           {/* Chat */}
           <Route path="/chat" element={<ChatPage />} />

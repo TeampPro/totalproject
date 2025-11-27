@@ -1,15 +1,20 @@
-    package com.example.todo_caled.users.controller;
-
+package com.example.todo_caled.users.controller;
 
 import com.example.todo_caled.board.repository.PostRepository;
 import com.example.todo_caled.comments.repository.CommentRepository;
+import com.example.todo_caled.security.CustomUserDetails;
+import com.example.todo_caled.security.JwtTokenProvider;
 import com.example.todo_caled.users.entity.User;
 import com.example.todo_caled.users.repository.UserRepository;
 import com.example.todo_caled.users.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,27 +23,21 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
 
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(
+        origins = "http://localhost:5173",
+        allowCredentials = "true"
+)
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserRepository userRepository;
-
-    // 🔥 닉네임 변경 시 게시글/댓글 일괄 업데이트에 사용
-    @Autowired
-    private UserService userService;
-
-    // 🔥 SecurityConfig 에서 등록한 PasswordEncoder 빈 사용
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private PostRepository postRepository;
-
-    @Autowired
-    private CommentRepository commentRepository;
+    private final UserRepository userRepository;
+    private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     private final Path uploadRoot = Paths.get("./uploads");
 
@@ -52,7 +51,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
         }
 
-        // 비밀번호 BCrypt 암호화
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         // userType 기본값은 엔티티에서 NORMAL 로 설정됨
         userRepository.save(user);
@@ -61,7 +59,7 @@ public class UserController {
         return ResponseEntity.ok(res);
     }
 
-    // 🔹 로그인 (현재는 JWT 없이 단순 검증 + 정보 반환)
+    // 🔹 로그인: 비밀번호 검증 + JWT 토큰 발급
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> req) {
         String id = req.get("id");
@@ -78,22 +76,59 @@ public class UserController {
                     .body(Map.of("message", "비밀번호가 올바르지 않습니다."));
         }
 
+        // 🔥 JWT 토큰 생성
+        CustomUserDetails principal = new CustomUserDetails(user);
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                principal,
+                null,
+                principal.getAuthorities()
+        );
+        String token = jwtTokenProvider.createToken(auth);
+
         Map<String, Object> res = new HashMap<>();
         res.put("message", "로그인 성공");
+        res.put("token", token);          // 🔴 프론트에서 localStorage에 저장할 토큰
         res.put("id", user.getId());
         res.put("name", user.getName());
         res.put("email", user.getEmail());
         res.put("nickname", user.getNickname());
         res.put("userType", user.getUserType());
 
-        // 나중에 JWT 붙인다면: 여기서 토큰 만들어서 res.put("token", token) 추가
-
         return ResponseEntity.ok(res);
     }
 
-    // 🔹 비회원 로그인
+    // 🔹 현재 로그인한 사용자 정보 (JWT 기반)
+    @GetMapping("/auth/me")
+    public ResponseEntity<?> me(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = userDetails.getUser();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", user.getId());
+        result.put("name", user.getName());
+        result.put("nickname", user.getNickname());
+        result.put("email", user.getEmail());
+        result.put("kakaoId", user.getKakaoId());
+        result.put("kakaoEmail", user.getKakaoEmail());
+        result.put("userType", user.getUserType());
+        result.put("profileImage", user.getProfileImage());
+
+        return ResponseEntity.ok(result);
+    }
+
+    // 🔹 로그아웃 (JWT에서는 실질적으로 클라이언트에서 토큰 삭제가 중요)
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpSession session) {
+        session.invalidate(); // 세션을 안 쓰더라도 있어도 무방
+        return ResponseEntity.ok().build();
+    }
+
+    // 🔹 비회원 로그인 (게스트 계정 + JWT 토큰 발급)
     @PostMapping("/belogin")
-    public ResponseEntity<Map<String, String>> beLogin() {
+    public ResponseEntity<Map<String, Object>> beLogin() {
         String guestId = "guest_" + randomString(6);
         String guestPw = randomString(8);
 
@@ -102,17 +137,26 @@ public class UserController {
         guest.setPassword(passwordEncoder.encode(guestPw));
         guest.setName("비회원");
         guest.setEmail("guest@temp.com");
-
-        // 🔥 userType 은 대문자 GUEST 로 통일
         guest.setUserType("GUEST");
 
         userRepository.save(guest);
 
-        return ResponseEntity.ok(Map.of(
-                "message", "비회원 계정이 생성되었습니다.",
-                "id", guestId,
-                "password", guestPw
-        ));
+        // 게스트용 토큰 발급
+        CustomUserDetails principal = new CustomUserDetails(guest);
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                principal,
+                null,
+                principal.getAuthorities()
+        );
+        String token = jwtTokenProvider.createToken(auth);
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("message", "비회원 계정이 생성되었습니다.");
+        res.put("id", guestId);
+        res.put("password", guestPw);
+        res.put("token", token);   // 🔴 게스트도 보호된 API 접근 가능하도록 토큰 추가
+
+        return ResponseEntity.ok(res);
     }
 
     // 🔹 회원 정보 조회
@@ -156,18 +200,15 @@ public class UserController {
                         .body(Map.of("message", "해당 사용자가 존재하지 않습니다."));
             }
 
-            // 🔐 비회원(GUEST)은 정보 수정 불가
             if ("GUEST".equalsIgnoreCase(user.getUserType())) {
                 return ResponseEntity.status(403)
                         .body(Map.of("message", "비회원은 정보 수정이 불가능합니다."));
             }
 
-            // 기존 값 (게시글/댓글 작성자 업데이트용)
             String oldId = user.getId();
             String oldName = user.getName();
             String oldNickname = user.getNickname();
 
-            // 변경 적용
             if (name != null && !name.isBlank()) user.setName(name);
             if (email != null && !email.isBlank()) user.setEmail(email);
             if (nickname != null && !nickname.isBlank()) user.setNickname(nickname);
@@ -189,7 +230,6 @@ public class UserController {
 
             userRepository.save(user);
 
-            // 🔥 닉네임이 바뀐 경우: 글/댓글 작성자 닉네임도 일괄 변경
             if (nickname != null && !nickname.equals(oldNickname)) {
                 userService.updateNicknameForAll(oldId, oldName, oldNickname, nickname);
             }
@@ -223,7 +263,6 @@ public class UserController {
                     .body(Map.of("message", "존재하지 않는 사용자입니다."));
         }
 
-        // 비회원은 비밀번호 변경 불가
         if ("GUEST".equalsIgnoreCase(user.getUserType())) {
             return ResponseEntity.status(403)
                     .body(Map.of("message", "비회원은 비밀번호 변경이 불가능합니다."));
@@ -250,18 +289,13 @@ public class UserController {
         }
 
         String deletedWriter = "deleteUser";
-        // 게시판(Post) / 댓글(Comment)에 기록되어 있을 수 있는 작성자 값 후보
         String oldId = user.getId();
         String oldName = user.getName();
         String oldNickname = user.getNickname();
 
-        // 🔥 1) 이 유저가 쓴 게시글의 writer 를 전부 '딜리트유저' 로 변경
         postRepository.updateWriterAll(oldId, oldName, oldNickname, deletedWriter);
-
-        // 🔥 2) 이 유저가 쓴 댓글의 writer 도 전부 '딜리트유저' 로 변경
         commentRepository.updateWriterAll(oldId, oldName, oldNickname, deletedWriter);
 
-        // 🔥 3) 마지막으로 회원 삭제 (계정만 제거)
         userRepository.delete(user);
         return ResponseEntity.ok(Map.of("message", "회원탈퇴가 완료되었습니다."));
     }

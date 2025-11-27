@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import moment from "moment";
 import TaskList from "../../components/TaskList/TaskList";
 
+import { api } from "../../api/http";
+
 const normalize = (d) => {
   if (!d) return null;
   const m = moment(d, moment.ISO_8601, true);
@@ -14,22 +16,26 @@ const AllTasks = ({ filter = "all" }) => {
   const [raw, setRaw] = useState([]);
 
   useEffect(() => {
-    // ★ userId 쿼리 추가
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const params = new URLSearchParams();
 
-    if (storedUser && storedUser.id) {
+    if (storedUser?.id) {
       params.append("userId", storedUser.id);
     }
 
     const query = params.toString();
-    const url = query
-      ? `http://localhost:8080/api/tasks?${query}`
-      : "http://localhost:8080/api/tasks";
+    const pathName = query ? `/api/tasks?${query}` : "/api/tasks";
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => setRaw(data));
+    const fetchTasks = async () => {
+      try {
+        const data = await api.get(pathName);
+        setRaw(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("? ? ?? ?? ??:", err);
+      }
+    };
+
+    fetchTasks();
   }, []);
 
   const tasks = useMemo(() => {

@@ -11,14 +11,16 @@ function KakaoMapBox() {
 
   // ✅ Kakao SDK 로드
   useEffect(() => {
+    const loadMap = () => window.kakao.maps.load(initMap);
+
     if (window.kakao && window.kakao.maps) {
-      initMap();
+      loadMap();
       return;
     }
 
     const existing = document.getElementById("kakao-map-sdk");
     if (existing) {
-      existing.addEventListener("load", initMap);
+      existing.addEventListener("load", loadMap, { once: true });
       return;
     }
 
@@ -29,9 +31,7 @@ function KakaoMapBox() {
     script.async = true;
     document.head.appendChild(script);
 
-    script.onload = () => {
-      window.kakao.maps.load(initMap);
-    };
+    script.onload = loadMap;
   }, []);
 
   // ✅ 지도 초기화

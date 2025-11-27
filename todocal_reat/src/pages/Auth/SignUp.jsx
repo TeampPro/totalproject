@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/Auth/SignUp.css";
+import { apiFetch } from "../../api/http";
 
 function SignUp() {
   const [id, setId] = useState("");
@@ -26,9 +27,8 @@ function SignUp() {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/api/signup", {
+      const data = await apiFetch("/api/signup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id,
           password,
@@ -39,13 +39,8 @@ function SignUp() {
         }),
       });
 
-      const data = await response.text();
-      if (response.ok) {
-        alert(data);
-        navigate("/");
-      } else {
-        alert(data);
-      }
+      alert(data?.message || data || "회원가입이 완료되었습니다.");
+      navigate("/");
     } catch (error) {
       console.error("Error:", error);
       alert("서버 연결에 실패했습니다.");
