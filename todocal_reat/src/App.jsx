@@ -16,6 +16,7 @@ import Login from "./pages/Auth/Login.jsx";
 import SignUp from "./pages/Auth/SignUp.jsx";
 import BeLogin from "./pages/Auth/BeLogin.jsx";
 import FriendPage from "./pages/Friend/FriendPage.jsx";
+import KakaoCallback from "./pages/Auth/KakaoCallback.jsx";
 
 // Main / My
 import MainPage from "./pages/Main/MainPage.jsx";
@@ -86,6 +87,11 @@ function App() {
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/beLogin" element={<BeLogin setUser={setUser} />} />
+          {/* ✅ 카카오 로그인 성공 콜백 라우트 추가 */}
+          <Route
+            path="/auth/kakao/success"
+            element={<KakaoCallback setUser={setUser} />}
+          />
 
           {/* My */}
           <Route path="/myPage" element={<MyPage onLogout={handleLogout} />} />
