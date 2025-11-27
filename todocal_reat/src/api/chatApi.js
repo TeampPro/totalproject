@@ -1,12 +1,8 @@
-import axios from 'axios';
-
-const api = axios.create({ 
-  baseURL: "/api/chat", 
-});
+import axios from "../api/setupAxios";
 
 export const fetchChatRooms = async () => {
   try {
-    const res = await api.get('/rooms');
+    const res = await axios.get('/api/chat/rooms');
 
     if (res.status === 204 || Array.isArray(res.data) === false) {
       return [];
@@ -19,11 +15,11 @@ export const fetchChatRooms = async () => {
 };
 
 export const createChatRoom = async (name) => {
-  const res = await api.post('/rooms', {name});
+  const res = await axios.post('/api/chat/rooms', {name});
   return res.data;
 };
 
 export const fetchMessages = async (roomId) => {
-  const res = await api.get(`/rooms/${roomId}/messages`)
+  const res = await axios.get(`/api/chat/rooms/${roomId}/messages`)
   return res.data;
 }

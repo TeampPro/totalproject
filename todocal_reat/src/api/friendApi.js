@@ -1,11 +1,8 @@
-import axios from "axios";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+import axios from "../api/setupAxios";
 
 // 내 친구 목록
 export const fetchFriends = async (userId) => {
-  const res = await axios.get(`${API_BASE_URL}/api/friends`, {
+  const res = await axios.get(`/api/friends`, {
     params: { userId },
   });
   return res.data;
@@ -13,7 +10,7 @@ export const fetchFriends = async (userId) => {
 
 // 받은 친구 요청 목록
 export const fetchFriendRequests = async (userId) => {
-  const res = await axios.get(`${API_BASE_URL}/api/friends/requests`, {
+  const res = await axios.get(`/api/friends/requests`, {
     params: { userId },
   });
   return res.data;
@@ -24,7 +21,7 @@ export const fetchReceivedRequests = fetchFriendRequests;
 
 // 친구 요청 보내기
 export const sendFriendRequest = async (fromUserId, toUserId) => {
-  const res = await axios.post(`${API_BASE_URL}/api/friends/requests`, {
+  const res = await axios.post(`/api/friends/requests`, {
     requesterId: fromUserId,
     receiverId: toUserId,
   });
@@ -34,7 +31,7 @@ export const sendFriendRequest = async (fromUserId, toUserId) => {
 // 친구 요청 수락
 export const acceptFriendRequest = async (requestId, userId) => {
   const res = await axios.post(
-    `${API_BASE_URL}/api/friends/requests/${requestId}/accept`,
+    `/api/friends/requests/${requestId}/accept`,
     null,
     {
       params: { userId },
@@ -46,7 +43,7 @@ export const acceptFriendRequest = async (requestId, userId) => {
 // 친구 요청 거절
 export const rejectFriendRequest = async (requestId, userId) => {
   const res = await axios.post(
-    `${API_BASE_URL}/api/friends/requests/${requestId}/reject`,
+    `/api/friends/requests/${requestId}/reject`,
     null,
     {
       params: { userId },

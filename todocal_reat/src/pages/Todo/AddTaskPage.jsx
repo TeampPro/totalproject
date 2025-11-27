@@ -1,11 +1,12 @@
 import AddForm from "../../components/AddForm/AddForm";
 import { useNavigate } from "react-router-dom";
 
+import { api } from "../../api/http";
+
 const AddTaskPage = () => {
   const navigate = useNavigate();
 
-  const addTaskHandler = (task) => {
-    // ★ ownerId / shared 설정
+  const addTaskHandler = async (task) => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
 
     const enhancedTask = {
@@ -14,13 +15,13 @@ const AddTaskPage = () => {
       shared: task.shared ?? false,
     };
 
-    fetch("http://localhost:8080/api/tasks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(enhancedTask),
-    }).then(() => {
-      navigate("/"); // 추가 후 전체일정 페이지로 이동
-    });
+    try {
+      await api.post("/api/tasks", enhancedTask);
+      navigate("/");
+    } catch (err) {
+      console.error("? ? ?? ??:", err);
+      alert(err.message || "? ?? ???? ?????.");
+    }
   };
 
   return <AddForm onAdd={addTaskHandler} onClose={() => navigate("/")} />;

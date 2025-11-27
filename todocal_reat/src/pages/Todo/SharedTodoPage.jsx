@@ -5,6 +5,8 @@ import CalendarTodo from "../../pages/Todo/CalendarTodo.jsx";
 import pageClasses from "../../styles/Todo/TodoPage.module.css";
 import headerClasses from "../../styles/Header/todoHeader.module.css";
 
+import { api } from "../../api/http";
+
 const normalize = (d) => {
   if (!d) return null;
   const m = moment(d, moment.ISO_8601, true);
@@ -21,7 +23,7 @@ const SharedTodoPage = () => {
 
   const itemsPerPage = 10;
 
-  const fetchTodos = () => {
+  const fetchTodos = async () => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const params = new URLSearchParams();
 
@@ -30,14 +32,14 @@ const SharedTodoPage = () => {
     }
 
     const query = params.toString();
-    const url = query
-      ? `http://localhost:8080/api/tasks?${query}`
-      : "http://localhost:8080/api/tasks";
+    const pathName = query ? `/api/tasks?${query}` : "/api/tasks";
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => setRawTasks(data))
-      .catch((err) => console.error(err));
+    try {
+      const data = await api.get(pathName);
+      setRawTasks(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("? ? ?? ?? ??:", err);
+    }
   };
 
   useEffect(() => {

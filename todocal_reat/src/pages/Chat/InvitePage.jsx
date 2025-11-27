@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/Chat/InvitePage.css"
+import { apiFetch } from "../../api/http";
 
 export default function InvitePage() {
   const navigate = useNavigate();
@@ -16,16 +17,10 @@ export default function InvitePage() {
     }
 
     try {
-      const res = await fetch(
+      const data = await apiFetch(
         `/api/chat/invite/join?code=${code}&memberName=${name}`,
         { method: "POST" }
       );
-
-      if (!res.ok) {
-        throw new Error("초대 링크가 잘못되었거나 만료되었습니다.");
-      }
-
-      const data = await res.json();
 
       // 🔥 초대 참여자 이름 저장
       localStorage.setItem("memberName", name);

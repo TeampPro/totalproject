@@ -6,8 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,38 +24,45 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // 🔥 JWT 필터 (없으면 나중에 클래스 만들어서 주입)
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // CSRF 비활성화
                 .csrf(csrf -> csrf.disable())
-                // 세션 사용 안함 (JWT 대비, 지금은 영향 거의 없음)
                 .sessionManagement(sm ->
                         sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // ✅ 지금은 전부 허용 (개발용)
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
+                        .requestMatchers(
+                                "/api/login",
+                                "/api/signup",
+                                "/api/belogin",
+                                "/api/kakao/**",
+                                "/api/uploads/**",
+                                "/api/weather/**",
+                                "/api/holidays/**"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+                        .requestMatchers("/ws/**").permitAll()
+                        .anyRequest().authenticated()
                 )
-                // 폼 로그인, 기본 인증 끄기
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable());
 
-        // ✅ 토큰이 있으면 SecurityContext에 사용자 세팅, 없어도 그냥 지나감
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // CORS 전체 허용 (개발용)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+        // 개발용: 전부 허용.
         config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(List.of("*"));
         config.setAllowedHeaders(List.of("*"));
@@ -67,13 +74,12 @@ public class SecurityConfig {
         return source;
     }
 
-    // 비밀번호 암호화
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 로그인 시 사용할 AuthenticationManager (UserController.login에서 사용)
+    // 필요 시 AuthenticationManager 주입해서 쓸 수 있음 (현재는 있어도 문제 없음)
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration

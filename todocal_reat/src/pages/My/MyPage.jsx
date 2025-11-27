@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/My/MyPage.css"; // 🔥 CSS 임포트
+import { api, apiFetch } from "../../api/http";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 function MyPage() {
   const [userInfo, setUserInfo] = useState({
@@ -25,18 +28,16 @@ function MyPage() {
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem("user"));
     if (!savedUser) {
-      alert("로그인이 필요합니다.");
+      alert("???? ?????.");
       navigate("/");
       return;
     }
     setUserType(savedUser.userType || "member");
 
-    fetch(`http://localhost:8080/api/user/${savedUser.id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("사용자 정보 조회 실패");
-        return res.json();
-      })
-      .then((data) => {
+    const fetchProfile = async () => {
+      try {
+        const data = await api.get(`/api/user/${savedUser.id}`);
+
         setUserInfo({
           id: data.id || "",
           name: data.name || "",
@@ -49,10 +50,15 @@ function MyPage() {
         setNickname(data.nickname || "");
 
         if (data.profileImage) {
-          setPreview(`http://localhost:8080/api/uploads/${data.profileImage}`);
+          setPreview(`${API_BASE}/api/uploads/${data.profileImage}`);
         }
-      })
-      .catch(() => alert("사용자 정보를 불러오는데 실패했습니다."));
+      } catch (err) {
+        console.error("??? ?? ?? ??:", err);
+        alert("??? ??? ???? ?????.");
+      }
+    };
+
+    fetchProfile();
   }, [navigate]);
 
   const handleChange = (e) => {
@@ -79,93 +85,73 @@ function MyPage() {
         formData.append("profileImage", userInfo.profileImage);
       }
 
-      const response = await fetch(
-        "http://localhost:8080/api/user/update-with-file",
-        { method: "PUT", body: formData }
+      const data = await apiFetch("/api/user/update-with-file", {
+        method: "PUT",
+        body: formData,
+      });
+
+      alert(data?.message || "?? ??? ???????.");
+      setIsEditing(false);
+
+      const savedUser = JSON.parse(localStorage.getItem("user"));
+      localStorage.setItem("user",
+        JSON.stringify({
+          ...savedUser,
+          nickname,
+          name: userInfo.name,
+          email: userInfo.email,
+        })
       );
 
-      const data = await response.json().catch(() => ({}));
-
-      if (response.ok) {
-        alert(data.message || "회원 정보가 수정되었습니다.");
-        setIsEditing(false);
-
-        const savedUser = JSON.parse(localStorage.getItem("user"));
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            ...savedUser,
-            nickname,
-            name: userInfo.name,
-            email: userInfo.email,
-          })
-        );
-
-        setUserInfo((prev) => ({ ...prev, nickname }));
-        if (data.profileImage) {
-          setPreview(`http://localhost:8080/api/uploads/${data.profileImage}`);
-        }
-      } else {
-        alert(data.message || "수정 실패");
+      setUserInfo((prev) => ({ ...prev, nickname }));
+      if (data?.profileImage) {
+        setPreview(`${API_BASE}/api/uploads/${data.profileImage}`);
       }
-    } catch {
-      alert("서버 오류 발생");
+    } catch (err) {
+      console.error("??? ?? ??:", err);
+      alert("?? ??? ??????.");
     }
   };
 
   const handlePasswordChange = async () => {
     if (!currentPassword || !newPassword) {
-      alert("현재 비밀번호와 새 비밀번호를 입력해주세요.");
+      alert("?? ????? ? ????? ?? ??? ???.");
       return;
     }
 
     try {
-      const res = await fetch(
-        "http://localhost:8080/api/user/change-password",
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: userInfo.id,
-            currentPassword,
-            newPassword,
-          }),
-        }
-      );
+      const data = await apiFetch("/api/user/change-password", {
+        method: "PUT",
+        body: JSON.stringify({
+          id: userInfo.id,
+          currentPassword,
+          newPassword,
+        }),
+      });
 
-      const data = await res.json().catch(() => ({}));
-
-      if (res.ok) {
-        alert(data.message || "비밀번호가 변경되었습니다.");
-        setCurrentPassword("");
-        setNewPassword("");
-      } else {
-        alert(data.message || "변경 실패");
-      }
-    } catch {
-      alert("서버 오류 발생");
+      alert(data?.message || "????? ???????.");
+      setCurrentPassword("");
+      setNewPassword("");
+    } catch (err) {
+      console.error("???? ?? ??:", err);
+      alert(err.message || "??? ??????.");
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm("정말로 회원탈퇴 하시겠습니까?")) return;
+    if (!window.confirm("?? ?? ?? ???????")) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:8080/api/user/delete/${userInfo.id}`,
-        { method: "DELETE" }
-      );
-      const data = await res.json().catch(() => ({}));
+      const data = await apiFetch(`/api/user/delete/${userInfo.id}`, {
+        method: "DELETE",
+      });
 
-      if (res.ok) {
-        alert(data.message || "회원탈퇴가 완료되었습니다.");
-        localStorage.removeItem("user");
-        navigate("/");
-      } else {
-        alert(data.message || "회원탈퇴 실패");
-      }
-    } catch {
-      alert("서버 오류");
+      alert(data?.message || "?? ??? ???????.");
+      localStorage.removeItem("user");
+      navigate("/");
+    } catch (err) {
+      console.error("?? ?? ??:", err);
+      alert(err.message || "?? ??? ??????.");
     }
   };
 
