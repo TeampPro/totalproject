@@ -23,6 +23,7 @@ function MyPage() {
   const [userType, setUserType] = useState("MEMBER");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [preview, setPreview] = useState(null);
   const navigate = useNavigate();
 
@@ -118,9 +119,20 @@ function MyPage() {
     }
   };
 
-  const handlePasswordChange = async () => {
-    if (!currentPassword || !newPassword) {
-      alert("현재 비밀번호와 새 비밀번호를 입력해주세요.");
+  const handlePasswordChange = async (e) => {
+    if (e) e.preventDefault(); // Enter / 버튼 submit 시 새로고침 방지
+
+    // 1) 기본 입력 체크
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      alert(
+        "현재 비밀번호, 새 비밀번호, 새 비밀번호 확인을 모두 입력해주세요."
+      );
+      return;
+    }
+
+    // 2) 새 비밀번호 일치 여부
+    if (newPassword !== confirmNewPassword) {
+      alert("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
       return;
     }
 
@@ -138,19 +150,34 @@ function MyPage() {
         }
       );
 
-      const data = await res.json().catch(() => ({}));
-
-      if (res.ok) {
-        alert(data.message || "비밀번호가 변경되었습니다.");
-        setCurrentPassword("");
-        setNewPassword("");
-      } else {
-        alert(data.message || "변경 실패");
+      // 백엔드에서 Map<String,String> 반환하니까 JSON 파싱
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (err) {
+        console.warn("change-password 응답 JSON 파싱 실패:", err);
       }
-    } catch {
-      alert("서버 오류 발생");
+
+      if (!res.ok) {
+        // 🔴 실패 케이스: 항상 alert
+        alert(data.message || "비밀번호 변경에 실패했습니다.");
+        return;
+      }
+
+      // 🟢 성공 케이스: 여기서 무조건 alert
+      alert(data.message || "비밀번호가 성공적으로 변경되었습니다.");
+
+      // 입력값 초기화
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+    } catch (err) {
+      console.error("비밀번호 변경 요청 오류:", err);
+      alert("서버 오류가 발생했습니다.");
     }
   };
+
+
 
   const handleDeleteAccount = async () => {
     if (!window.confirm("정말로 회원탈퇴 하시겠습니까?")) return;
@@ -302,8 +329,12 @@ function MyPage() {
 
         {/* 비밀번호 변경 섹션 */}
         {!isGuest && (
-          <div className="mypage-password-section">
+          <form
+            className="mypage-password-section"
+            onSubmit={handlePasswordChange} // 🔹 Enter / 버튼 클릭 둘 다 여기로
+          >
             <div className="mypage-password-title">비밀번호 변경</div>
+
             <div className="mypage-password-fields">
               <input
                 type="password"
@@ -317,14 +348,21 @@ function MyPage() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
+              <input
+                type="password"
+                placeholder="새 비밀번호 확인"
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+              />
             </div>
+
             <button
               className="mypage-password-btn-new"
-              onClick={handlePasswordChange}
+              type="submit" // 🔹 submit 버튼
             >
               변경하기
             </button>
-          </div>
+          </form>
         )}
 
         {/* 하단 버튼들 */}
