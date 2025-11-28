@@ -1,0 +1,11 @@
+diff a/todocal_reat/src/pages/Board/PostDetail.jsx b/todocal_reat/src/pages/Board/PostDetail.jsx	(rejected hunks)
+@@ -292,7 +292,8 @@
+           <button className="nav-btn" onClick={goNext}>
+             다음글
+           </button>
+-          <button className="nav-btn" onClick={() => navigate("/main")}>
++          {/* ★ 목록 버튼도 게시판으로 이동 */}
++          <button className="nav-btn" onClick={() => navigate("/board")}>
+             목록
+           </button>
+         </div>
