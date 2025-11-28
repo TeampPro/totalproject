@@ -1,10 +1,11 @@
-/* src/styles/Header/todoHeader.module.css */
+/* src/styles/Header/sharedTodoHeader.module.css */
 
-/* 상단 탭 전체 박스 */
+/* 🔹 공유 일정 전용 헤더 박스
+   - TodoHeader보다 폭을 줄였음 (230px 정도) */
 .todoHeader {
   display: flex;
   align-items: center;
-  width: 622px;
+  width: 230px;
   height: 36px;
   padding: 4px;
   border-radius: 8px;
@@ -18,10 +19,10 @@
   width: 100%;
   height: 100%;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
 }
 
-/* 개별 탭 버튼 (비활성 기본) */
+/* 🔹 공유 일정 버튼 (비활성 기본 스타일) */
 .todoBtn {
   display: flex;
   width: 143px;
@@ -52,7 +53,7 @@
   background-color: #e3f2fd;
 }
 
-/* 활성 탭 */
+/* 🔹 활성 상태 (공유 일정 페이지에서는 항상 활성) */
 .active {
   background: #0d99ff;
   color: #ffffff;

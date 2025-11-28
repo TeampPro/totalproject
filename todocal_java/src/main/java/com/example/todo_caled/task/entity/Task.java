@@ -25,14 +25,18 @@ public class Task {
 
     private Boolean shared;              // 공유 여부
 
+    // 🔹 약속 장소 (프론트의 location 필드와 매핑)
+    @Column(length = 255)
+    private String location;
+
     public Task() {
         this.createdDate = LocalDateTime.now();
     }
+
     public Task(String title, String content, LocalDateTime promiseDate) {
         // 초기 데이터는 ownerId = null, shared = true 로 넣음 (공유 일정 취급)
         this(title, content, promiseDate, null, true);
     }
-
 
     // ★ 새 로직용 5개짜리 생성자 (ownerId / shared 포함)
     public Task(String title, String content, LocalDateTime promiseDate, String ownerId, Boolean shared) {
@@ -70,4 +74,8 @@ public class Task {
 
     public Boolean getShared() { return shared; }
     public void setShared(Boolean shared) { this.shared = shared; }
+
+    // 🔹 location getter/setter
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 }
