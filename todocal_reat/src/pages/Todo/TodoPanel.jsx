@@ -45,7 +45,7 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
     return false;
   };
 
-  // ✅ Todo 리스트 불러오기
+  // ✅ Todo 리스트 불러오기 (로그인했을 때만)
   const fetchTodos = async () => {
     try {
       const params = {};
@@ -62,13 +62,15 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
   };
 
   useEffect(() => {
-    fetchTodos();
+    if (isLoggedIn) {
+      fetchTodos();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadKey, isLoggedIn]);
 
   // ✅ 진행/완료 토글 (DB에 반영) – 로그인 필요
   const handleToggleStatus = async (todo) => {
-    if (!ensureLogin()) return; // 🔒 비로그인 차단
+    if (!ensureLogin()) return;
 
     try {
       const updated = {
@@ -92,7 +94,7 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
     if (onAddTodo) onAddTodo();
   };
 
-  // ------------ 목록/카운트 로직 ------------
+  // ------------ 목록/카운트 로직 (로그인 상태일 때만 사용) ------------
 
   const inProgressTodos = todos.filter((t) => !t.completed);
   const doneTodos = todos.filter((t) => t.completed);
@@ -120,6 +122,84 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
     MAX_DONE_VISIBLE - doneVisible.length
   );
 
+  // 🔹 비로그인 전용(게스트) 뷰
+  if (!isLoggedIn) {
+    return (
+      <aside className="todo-panel todo-panel-guest">
+        {/* 헤더 */}
+        <div className="todo-panel-header">
+          <div className="todo-panel-title-row">
+            <img src={TodoIcon} alt="할일아이콘" className="todo-panel-icon" />
+            <span className="todo-panel-title">할 일 목록</span>
+          </div>
+          <p className="todo-panel-notice">
+            로그인 후 일정 등록 및 상태 변경이 가능합니다.
+          </p>
+        </div>
+
+        {/* 제목 바로 아래 버튼 (로그인 유도용) */}
+        <button className="todo-panel-add-btn" onClick={handleClickAdd}>
+          + 일정 등록하기
+        </button>
+
+        {/* 진행 중 섹션 */}
+        <section className="todo-guest-section todo-guest-section-inprogress">
+          <div className="todo-guest-section-header">
+            <span className="todo-guest-section-title">진행 중</span>
+            <span className="todo-guest-section-count">(1)</span>
+          </div>
+
+          <div className="todo-guest-card">
+            <div className="todo-guest-row">
+              <input type="checkbox" disabled className="todo-guest-checkbox" />
+              <div className="todo-guest-main">
+                <p className="todo-guest-text">
+                  로그인 후 다양한 기능들을 사용해보세요!
+                </p>
+                <button
+                  type="button"
+                  className="todo-guest-login-btn"
+                  onClick={ensureLogin}
+                >
+                  Planix 로그인
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 완료 섹션 */}
+        <section className="todo-guest-section todo-guest-section-done">
+          <div className="todo-guest-section-header">
+            <span className="todo-guest-section-title">완료</span>
+            <span className="todo-guest-section-count">(1)</span>
+          </div>
+
+          <div className="todo-guest-card">
+            <div className="todo-guest-row todo-guest-row-done">
+              <input
+                type="checkbox"
+                checked
+                readOnly
+                disabled
+                className="todo-guest-checkbox"
+              />
+              <div className="todo-guest-main">
+                <span className="todo-guest-text todo-guest-text-done">
+                  Planix 접속하기
+                </span>
+                <span className="todo-guest-badge">완료</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </aside>
+    );
+  }
+
+  // ============================================
+  // 🔹 여기부터는 “로그인 상태” UI
+  // ============================================
   return (
     <aside className="todo-panel">
       {/* 헤더 */}
@@ -129,7 +209,6 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
           <span className="todo-panel-title">할 일 목록</span>
         </div>
 
-        {/* 🔔 비로그인 안내 문구 */}
         {!isLoggedIn && (
           <p className="todo-panel-notice">
             로그인 후 일정 등록 및 상태 변경이 가능합니다.
@@ -181,7 +260,6 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
             />
           ))}
 
-          {/* 🔥 항상 한 줄 확보하고, 내용만 바꾸기 */}
           <div className="todo-more-text">
             {inProgressHiddenCount > 0
               ? `+ ${inProgressHiddenCount}개 더 있음`
