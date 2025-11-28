@@ -97,6 +97,23 @@ public class TaskController {
         return ResponseEntity.ok(taskService.updateTask(id, task));
     }
 
+    // 일정 완료 / 해제
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<?> complete(@PathVariable Long id, @RequestParam String userId, @RequestParam(defaultValue = "true") boolean completed){
+        Task existing = taskService.getTask(id);
+
+        if (existing == null) {
+            return ResponseEntity.status(404).body("일정 없음");
+        }
+
+        if (existing.getOwnerId() != null && !existing.getOwnerId().equals(userId)) {
+            return ResponseEntity.status(403).body("완료 처리 권한이 없습니다.");
+        }
+
+        Task updated = taskService.updateCompleted(id, completed);
+        return ResponseEntity.ok(updated);
+    }
+
 
 
     /**

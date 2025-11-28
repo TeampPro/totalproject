@@ -29,6 +29,9 @@ public class Task {
     @Column(length = 255)
     private String location;
 
+    @Column(name = "completed", nullable = false)
+    private Boolean completed = false;
+
     public Task() {
         this.createdDate = LocalDateTime.now();
     }
@@ -78,4 +81,12 @@ public class Task {
     // 🔹 location getter/setter
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
+    }
 }

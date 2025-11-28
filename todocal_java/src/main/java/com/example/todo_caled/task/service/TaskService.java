@@ -87,4 +87,13 @@ public class TaskService {
         LocalDateTime end   = endDate.atTime(LocalTime.MAX);
         return taskRepository.findByPromiseDateBetween(start, end);
     }
+
+    // 할 일 완료 상태 변경
+    public Task updateCompleted(Long id, boolean completed) {
+        Task task  = taskRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 일정입니다. id=" + id));
+
+        task.setCompleted(completed);
+        return taskRepository.save(task);
+    }
 }

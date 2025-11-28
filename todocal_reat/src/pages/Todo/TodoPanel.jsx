@@ -69,16 +69,33 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
   }, [reloadKey, isLoggedIn]);
 
   // ✅ 진행/완료 토글 (DB에 반영) – 로그인 필요
+  //    ★ 여기서 completed만 사용하는 PATCH /complete API를 호출하도록 변경
   const handleToggleStatus = async (todo) => {
     if (!ensureLogin()) return;
 
-    try {
-      const updated = {
-        ...todo,
-        completed: !todo.completed,
-      };
+    // ★ 변경: 현재 로그인한 userId 계산
+    const currentUserId = user?.id || storedUser?.id;
+    if (!currentUserId) {
+      alert("로그인 정보가 없습니다. 다시 로그인 해주세요.");
+      return;
+    }
 
-      await axios.put(`http://localhost:8080/api/tasks/${todo.id}`, updated);
+    try {
+      const nextCompleted = !todo.completed;
+
+      // ★ 변경: PUT 전체 업데이트 → PATCH 완료 상태만 변경
+      const res = await axios.patch(
+        `http://localhost:8080/api/tasks/${todo.id}/complete`,
+        null, // 바디 없음
+        {
+          params: {
+            userId: currentUserId,
+            completed: nextCompleted,
+          },
+        }
+      );
+
+      const updated = res.data; // 서버에서 업데이트된 Task 반환된다고 가정
 
       // 로컬 상태 즉시 반영
       setTodos((prev) => prev.map((t) => (t.id === todo.id ? updated : t)));

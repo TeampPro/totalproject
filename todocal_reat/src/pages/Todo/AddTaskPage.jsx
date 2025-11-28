@@ -19,8 +19,8 @@ const AddTaskPage = () => {
       await api.post("/api/tasks", enhancedTask);
       navigate("/");
     } catch (err) {
-      console.error("? ? ?? ??:", err);
-      alert(err.message || "? ?? ???? ?????.");
+      console.error("작업 추가 중 오류 발생:", err);
+      alert(err.message || "오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
     }
   };
 
