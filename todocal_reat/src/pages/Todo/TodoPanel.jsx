@@ -262,7 +262,7 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
 
           <div className="todo-more-text">
             {inProgressHiddenCount > 0
-              ? `+ ${inProgressHiddenCount}개 더 있음`
+              ? `+ ${inProgressHiddenCount}개`
               : "\u00A0"}
           </div>
         </div>
@@ -308,7 +308,7 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
           ))}
 
           <div className="todo-more-text">
-            {doneHiddenCount > 0 ? `+ ${doneHiddenCount}개 더 있음` : "\u00A0"}
+            {doneHiddenCount > 0 ? `+ ${doneHiddenCount}개` : "\u00A0"}
           </div>
         </div>
       </section>

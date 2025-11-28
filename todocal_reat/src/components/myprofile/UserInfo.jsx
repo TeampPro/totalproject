@@ -1,7 +1,12 @@
+// src/components/myprofile/UserInfo.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/myprofile/UserInfo.css";
+import profileIcon from "../../assets/profileBig.svg";
+import smileIcon from "../../assets/smile.svg";
+import logoutBtn from "../../assets/logout.svg";
+import round from "../../assets/round.svg";
 
 function UserInfo({ user, onLogout, small }) {
   const navigate = useNavigate();
@@ -29,46 +34,64 @@ function UserInfo({ user, onLogout, small }) {
     );
   }
 
+  // ===== small 모드 (기존 스타일 유지) =====
+  if (small) {
+    return (
+      <div className="user-info-container small">
+        <div className="profile-section">
+          <img
+            src={
+              userInfo.profileImage
+                ? `${API_BASE_URL}/api/uploads/${userInfo.profileImage}`
+                : "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+            }
+            alt="프로필"
+            className="profile-image small"
+          />
+          <div className="info-box">
+            <h2 className="name small">{userInfo.name} 님</h2>
+            <p className="info-text">
+              <strong>아이디:</strong> {userInfo.id}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== 기본(메인) 카드 – 로그인 박스랑 규격 맞춘 스타일 =====
   return (
-    <div className={`user-info-container ${small ? "small" : ""}`}>
+    <div className="user-info-container">
+      {/* 상단 인사말 */}
+      <p className="welcome-text">{userInfo.name}님, 환영합니다.</p>
+
+      {/* 가운데 프로필 영역 */}
       <div className="profile-section">
-        <img
-          src={
-            userInfo.profileImage
-              ? `${API_BASE_URL}/api/uploads/${userInfo.profileImage}`
-              : "https://cdn-icons-png.flaticon.com/512/847/847969.png"
-          }
-          alt="프로필"
-          className={`profile-image ${small ? "small" : ""}`}
-        />
+        <div className="avatar-ring">
+          {/* 🔵 파란 원 (배경) */}
+          <img src={round} alt="avatar-round" className="avatar-round" />
+
+          {/* 😀 프로필 아이콘 – 파란 원 안에 들어가게 */}
+          <img src={profileIcon} alt="프로필" className="profile-image" />
+        </div>
 
         <div className="info-box">
-          <h2 className={`name ${small ? "small" : ""}`}>{userInfo.name} 님</h2>
-
-          {!small && (
-            <>
-              <p className="info-text">
-                <strong>아이디:</strong> {userInfo.id}
-              </p>
-              <p className="info-text">
-                <strong>이메일:</strong> {userInfo.email || userInfo.kakaoEmail}
-              </p>
-            </>
-          )}
+          <h2 className="name">{userInfo.nickname}</h2>
+          <p className="info-text id-text">{userInfo.id}</p>
         </div>
       </div>
 
-      {!small && (
-        <div className="button-group">
-          <button className="my-page-btn" onClick={handleMyPage}>
-            마이페이지
-          </button>
-
-          <button className="logout-btn" onClick={onLogout}>
-            로그아웃
-          </button>
-        </div>
-      )}
+      {/* 아래 버튼 두 개 */}
+      <div className="button-group">
+        <button className="my-page-btn" onClick={handleMyPage}>
+          <img src={smileIcon} alt="smile" />
+          마이페이지
+        </button>
+        <button className="logout-btn" onClick={onLogout}>
+          <img src={logoutBtn} alt="logout" />
+          로그아웃
+        </button>
+      </div>
     </div>
   );
 }
