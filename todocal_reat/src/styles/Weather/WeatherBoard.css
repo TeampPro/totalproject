@@ -29,20 +29,20 @@
 .page-container {
   width: 100%;
   display: flex;
-  justify-content: center;
-  align-items: stretch;
-  padding: 8px 0;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 0;
   box-sizing: border-box;
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
+
+  margin-top: 0;
 }
 
 .weather-container {
-  width: 100%;
-  max-width: 383px; /* ⬅ 큰 컨테이너 width */
+  width: 520px; /* ⬅ 큰 컨테이너 width */
   padding: 0 8px;
   box-sizing: border-box;
-  margin: 0 auto;
 }
 
 /* 제목 */
@@ -67,7 +67,7 @@
 .weather-card {
   position: relative;
   width: 100%;
-  max-width: 383px;
+  max-width: 520px;
   min-height: 249px; /* 높이 기준 */
   padding-top: 24px;
   padding-right: 24px;
