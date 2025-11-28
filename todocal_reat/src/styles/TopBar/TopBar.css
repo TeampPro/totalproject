@@ -32,14 +32,64 @@
   gap: 20px;
 }
 
+/* 알림 아이콘은 뱃지 때문에 한번 더 래핑 */
+.topbar-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .topbar-icon {
   width: 40px;
   height: 40px;
   cursor: pointer;
   transition: 0.2s ease;
   padding: 6px;
+  border-radius: 50%;
 }
 
 .topbar-icon:hover {
   transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* 알림 숫자 뱃지 */
+.topbar-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ff4d4f;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 작을 때 아이콘/로고 사이즈 살짝 줄이기 */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 16px;
+  }
+
+  .topbar-logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  .topbar-planix {
+    height: 22px;
+  }
+
+  .topbar-icon {
+    width: 34px;
+    height: 34px;
+    padding: 4px;
+  }
 }

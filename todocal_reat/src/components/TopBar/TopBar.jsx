@@ -8,7 +8,20 @@ import BellIcon from "../../assets/bell.svg";
 import ProfileIcon from "../../assets/profile.svg";
 import ListIcon from "../../assets/list.svg";
 
-const TopBar = ({ onMenuClick, onProfileClick }) => {
+const TopBar = ({
+  onMenuClick,
+  onProfileClick,
+  notificationCount = 0,   // 7일 이내 일정 개수
+  onClickNotification,     // 종 아이콘 클릭 핸들러
+}) => {
+  const hasNotification = notificationCount > 0;
+
+  const handleBellClick = () => {
+    if (onClickNotification) {
+      onClickNotification();
+    }
+  };
+
   return (
     <div className="topbar">
       {/* 왼쪽: 로고 + 텍스트 */}
@@ -17,9 +30,17 @@ const TopBar = ({ onMenuClick, onProfileClick }) => {
         <img src={PlanixLogo} alt="planix" className="topbar-planix" />
       </div>
 
-      {/* 오른쪽: 아이콘 3개 */}
+      {/* 오른쪽: 아이콘 3개 (알림 + 프로필 + 메뉴) */}
       <div className="topbar-right">
-        <img src={BellIcon} alt="알림" className="topbar-icon" />
+        {/* 알림 아이콘 + 뱃지 */}
+        <div className="topbar-icon-wrapper" onClick={handleBellClick}>
+          <img src={BellIcon} alt="알림" className="topbar-icon" />
+          {hasNotification && (
+            <span className="topbar-badge">
+              {notificationCount > 99 ? "99+" : notificationCount}
+            </span>
+          )}
+        </div>
 
         <img
           src={ProfileIcon}
