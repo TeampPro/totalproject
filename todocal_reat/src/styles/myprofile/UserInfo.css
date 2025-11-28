@@ -1,10 +1,12 @@
-/* 기본 큰 카드 (마이페이지에서 사용) */
+/* 메인 화면 오른쪽 상단 프로필 카드 */
 .user-info-container {
-  width: 100%;
+  width: 520px;                /* TodoPanel 과 폭 통일 */
+  max-width: 100%;
   background: #fff;
   padding: 20px;
   border-radius: 16px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  box-sizing: border-box;
 }
 
 .profile-section {
@@ -62,10 +64,7 @@
   color: white;
 }
 
-/* ========================================================= */
-/*                 🔵 SMALL MODE (헤더 프로필용)             */
-/* ========================================================= */
-
+/* 마이페이지 등에서 쓰는 small 모드(필요 시) */
 .user-info-container.small {
   width: 180px;
   padding: 12px;
