@@ -1,14 +1,13 @@
-// src/components/TimeCalendar/TimeViewPage.jsx
 import { useState, useEffect } from "react";
-import axios from "axios";
 import moment from "moment";
 import "moment/locale/ko";
 import CalendarTodo from "../../pages/Todo/CalendarTodo";
+import { api } from "../../api/http";
 import "../../styles/TimeCalendar/TimeViewPage.css";
 
 moment.locale("ko");
 
-function TimeViewPage() {
+function TimeViewPage({ reloadKey = 0 }) {
   const [weekStart, setWeekStart] = useState(moment().startOf("week")); // 일요일 시작
   const [events, setEvents] = useState([]);
   const [selectedDate, setSelectedDate] = useState(moment());
@@ -16,7 +15,6 @@ function TimeViewPage() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  // 요일 한글 표기용
   const weekdayShort = ["일", "월", "화", "수", "목", "금", "토"];
   const weekdayFull = [
     "일요일",
@@ -28,37 +26,40 @@ function TimeViewPage() {
     "토요일",
   ];
 
-  // 주간 일정 로딩
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const storedUser = JSON.parse(localStorage.getItem("user"));
-        const userId = storedUser?.id || "";
-
-        const res = await axios.get(
-          `http://localhost:8080/api/tasks?userId=${userId}`
-        );
-        const all = res.data || [];
-
-        const start = weekStart.clone().startOf("day");
-        const end = weekStart.clone().add(6, "day").endOf("day");
-
-        const filtered = all.filter((e) => {
-          if (!e.promiseDate) return false;
-          const d = moment(e.promiseDate);
-          return d.isSameOrAfter(start) && d.isSameOrBefore(end);
-        });
-
-        setEvents(filtered);
-      } catch (err) {
-        console.error("❌ 일정 불러오기 실패:", err);
+  // 현재 weekStart 기준으로 주간 일정 로딩
+  const loadWeekEvents = async (baseWeekStart = weekStart) => {
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+      if (!storedUser?.id) {
+        setEvents([]);
+        return;
       }
-    };
 
-    fetchEvents();
-  }, [weekStart]);
+      const data = await api.get("/api/tasks", {
+        params: { userId: storedUser.id },
+      });
+      const all = data || [];
 
-  // 주가 바뀔 때 선택일이 범위 밖이면 주 시작일로 보정
+      const start = baseWeekStart.clone().startOf("day");
+      const end = baseWeekStart.clone().add(6, "day").endOf("day");
+
+      const filtered = all.filter((e) => {
+        if (!e.promiseDate) return false;
+        const d = moment(e.promiseDate);
+        return d.isSameOrAfter(start) && d.isSameOrBefore(end);
+      });
+
+      setEvents(filtered);
+    } catch (err) {
+      console.error("❌ 일정 불러오기 실패:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadWeekEvents(weekStart);
+  }, [weekStart, reloadKey]);
+
+  // 주가 바뀔 때 선택일이 범위 밖이면 보정
   useEffect(() => {
     const end = weekStart.clone().add(6, "day");
     if (!selectedDate.isBetween(weekStart, end, "day", "[]")) {
@@ -139,8 +140,6 @@ function TimeViewPage() {
   const dayStats = calcDayStats();
 
   // 타임라인 데이터 구성
-  // - 자정 넘어가는 일정도 해당 날짜 기준 0~24시 구간에 맞춰 잘라서 표시
-  // - 겹치는 일정은 lane(줄)을 여러 개 사용해서 아래로 쌓기
   const buildTimelineData = () => {
     if (selectedDayEvents.length === 0) {
       return { blocks: [], trackHeight: 40 };
@@ -152,7 +151,7 @@ function TimeViewPage() {
 
     const dayStart = selectedDate.clone().startOf("day");
 
-    const lanesEnd = []; // 각 lane의 마지막 종료 시간(시간 단위)
+    const lanesEnd = [];
     const blocks = [];
 
     sorted.forEach((event) => {
@@ -177,7 +176,6 @@ function TimeViewPage() {
       if (endHourNum <= 0 || startHourNum >= 24 || endHourNum <= startHourNum)
         return;
 
-      // 겹치지 않는 lane 찾기
       let lane = 0;
       while (lane < lanesEnd.length && lanesEnd[lane] > startHourNum) {
         lane++;
@@ -199,7 +197,6 @@ function TimeViewPage() {
   };
 
   const { blocks: timelineBlocks, trackHeight } = buildTimelineData();
-
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
   return (
@@ -408,25 +405,13 @@ function TimeViewPage() {
       {showModal && selectedEvent && (
         <CalendarTodo
           editTodo={selectedEvent}
+          defaultDate={selectedDate.format("YYYY-MM-DD")}
           onClose={() => {
             setShowModal(false);
             setSelectedEvent(null);
           }}
-          onSave={(savedTodo) => {
-            if (savedTodo?.deleted) {
-              setEvents((prev) => prev.filter((e) => e.id !== savedTodo.id));
-            } else if (savedTodo) {
-              setEvents((prev) => {
-                const exists = prev.some((e) => e.id === savedTodo.id);
-                if (exists) {
-                  return prev.map((e) =>
-                    e.id === savedTodo.id ? { ...e, ...savedTodo } : e
-                  );
-                }
-                return [...prev, savedTodo];
-              });
-            }
-
+          onSave={async () => {
+            await loadWeekEvents(weekStart); // 서버 기준 재조회
             setShowModal(false);
             setSelectedEvent(null);
           }}
@@ -437,3 +422,4 @@ function TimeViewPage() {
 }
 
 export default TimeViewPage;
+    ``
