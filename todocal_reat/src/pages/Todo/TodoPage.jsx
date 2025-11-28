@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import moment from "moment";
+import TopBar from "../../components/TopBar/TopBar.jsx";
 import TodoHeader from "../../components/Header/TodoHeader";
 import CalendarTodo from "../../pages/Todo/CalendarTodo.jsx";
 import classes from "../../styles/Todo/TodoPage.module.css";
@@ -47,6 +48,9 @@ const TodoPage = () => {
   const formatDate = (dateString) =>
     moment(dateString).format("YYYY. MM. DD.");
 
+  const formatDateTime = (dateString) =>
+    moment(dateString).format("YYYY. MM. DD. HH:mm");
+
   const getDDay = (date) => {
     const today = moment().startOf("day");
     const target = moment(date).startOf("day");
@@ -67,7 +71,7 @@ const TodoPage = () => {
     let tasks = rawTasks
       .map((t) => ({ ...t, _m: normalize(t.promiseDate) }))
       .filter((t) => t._m && t._m.isSameOrAfter(today))
-      .filter((t) => t.shared !== true); // 공유 일정은 TodoPage에서 제외
+      .filter((t) => t.shared !== true); // 공유 일정은 별도 페이지
 
     if (filter === "week") {
       tasks = tasks.filter((t) =>
@@ -77,8 +81,6 @@ const TodoPage = () => {
       tasks = tasks.filter((t) =>
         t._m.isBetween(startOfMonth, endOfMonth, null, "[]")
       );
-    } else if (filter === "shared") {
-      tasks = tasks.filter((t) => t.shared === true);
     }
 
     tasks.sort((a, b) => a._m.valueOf() - b._m.valueOf());
@@ -99,77 +101,105 @@ const TodoPage = () => {
   };
 
   return (
-    <div className={classes.todoPageContainer}>
-      <div className={classes.topBar}>
-        <TodoHeader
-          onChangeFilter={setFilter}
-          active={filter}
-          showAddButton={false}
-        />
-        <button
-          className={classes.writeButton}
-          onClick={() => {
-            setEditTodo(null);
-            setShowModal(true);
-          }}
-        >
-          글작성하기
-        </button>
-      </div>
+    <div className={classes.todoPageOuter}>
+      {/* 상단 헤더 */}
+      <TopBar showBackButton /> {/* 🔹 뒤로가기 버튼 표시 */}
 
-      <div className={classes.taskList}>
-        {pagedTasks.length === 0 && (
-          <div className={classes.empty}>데이터가 없습니다.</div>
-        )}
+      <div className={classes.todoPageContainer}>
+        <div className={classes.topBar}>
+          <TodoHeader onChangeFilter={setFilter} active={filter} />
 
-        {pagedTasks.map((task) => (
-          <div
-            key={task.id}
-            className={classes.taskItem}
+          {/* 우측 "+ 일정추가" 버튼 */}
+          <button
+            className={classes.writeButton}
             onClick={() => {
-              setEditTodo(task);
+              setEditTodo(null);
               setShowModal(true);
             }}
           >
-            <h4>{task.title}</h4>
-            <p>{task.content}</p>
+            + 일정추가
+          </button>
+        </div>
 
-            <div className={classes.taskDates}>
-              <span>작성일: {formatDate(task.createdAt)}</span>
-              <span className={classes.dday}>{getDDay(task.promiseDate)}</span>
-              <span>약속일: {formatDate(task.promiseDate)}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+        <div className={classes.taskList}>
+          {pagedTasks.length === 0 && (
+            <div className={classes.empty}>데이터가 없습니다.</div>
+          )}
 
-      {totalPages > 1 && (
-        <div className={classes.pagination}>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i + 1}
-              className={`${classes.pageBtn} ${
-                currentPage === i + 1 ? classes.activePage : ""
-              }`}
-              onClick={() => setCurrentPage(i + 1)}
+          {pagedTasks.map((task) => (
+            <div
+              key={task.id}
+              className={classes.taskItem}
+              onClick={() => {
+                setEditTodo(task);
+                setShowModal(true);
+              }}
             >
-              {i + 1}
-            </button>
+              {/* 상단: 제목 + D-day/약속일 */}
+              <div className={classes.taskDates}>
+                <div className={classes.taskTitleBox}>
+                  <h4 className={classes.taskTitle}>{task.title}</h4>
+                  {task.content && (
+                    <p className={classes.taskContent}>{task.content}</p>
+                  )}
+                  {task.location && (
+                    <p className={classes.taskLocation}>
+                      약속 장소 : {task.location}
+                    </p>
+                  )}
+                </div>
+
+                <div className={classes.taskMeta}>
+                  <span className={classes.dday}>
+                    {getDDay(task.promiseDate)}
+                  </span>
+                  <span className={classes.promiseDate}>
+                    D-day : {formatDateTime(task.promiseDate)}
+                  </span>
+                </div>
+              </div>
+
+              {/* 제목/내용과 하단 사이 구분선 */}
+              <div className={classes.taskDivider} />
+
+              {/* 하단: 작성일 */}
+              <div className={classes.taskFooter}>
+                <span className={classes.createdAt}>
+                  작성일 : {formatDate(task.createdAt)}
+                </span>
+              </div>
+            </div>
           ))}
         </div>
-      )}
 
-      {showModal && (
-        <CalendarTodo
-          onClose={() => {
-            setShowModal(false);
-            setEditTodo(null);
-          }}
-          onSave={handleSaveFromModal}
-          editTodo={editTodo}
-          defaultDate={moment().format("YYYY-MM-DD")}
-        />
-      )}
+        {totalPages > 1 && (
+          <div className={classes.pagination}>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i + 1}
+                className={`${classes.pageBtn} ${
+                  currentPage === i + 1 ? classes.activePage : ""
+                }`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {showModal && (
+          <CalendarTodo
+            onClose={() => {
+              setShowModal(false);
+              setEditTodo(null);
+            }}
+            onSave={handleSaveFromModal}
+            editTodo={editTodo}
+            defaultDate={moment().format("YYYY-MM-DD")}
+          />
+        )}
+      </div>
     </div>
   );
 };

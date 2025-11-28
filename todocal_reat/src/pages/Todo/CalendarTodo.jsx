@@ -3,11 +3,15 @@ import moment from "moment";
 import { api } from "../../api/http";
 import "../../styles/Todo/CalendarTodo.css";
 
+import toggleOff from "../../assets/toggle_off.svg";
+import toggleOn from "../../assets/toggle_on.svg";
+import profileBig from "../../assets/profileBig.svg";
+
 /**
  * props:
  * - onClose(): 모달 닫기
- * - onSave(savedTodo): 저장/수정/삭제 후 부모로 전달
- * - editTodo: 수정할 todo 객체 (id, title, content, promiseDate, endDateTime, location, shared ...)
+ * - onSave(savedTodo): 저장/수정/삭제 후 부모(Todo/SharedTodo)로 전달
+ * - editTodo: 수정할 todo 객체 (id, title, content, promiseDate, endDateTime, location, shared, ownerId ...)
  * - defaultDate: 새 일정 추가 시 선택된 날짜 (YYYY-MM-DD)
  */
 function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
@@ -46,9 +50,10 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
     };
   });
 
-  // 로그인 유저 정보
-  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-  const isGuest = storedUser?.id?.startsWith("guest_");
+  // 로그인 유저에서 ownerId 꺼내기
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const isLoggedIn = !!storedUser?.id;
+  const isGuest = storedUser?.id?.startsWith("guest_"); // guest_로 시작하면 비회원
   const canShare = !!storedUser?.id && !isGuest;
   const isOwner = storedUser?.id === editTodo?.ownerId;
 
@@ -105,7 +110,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
       promiseDate: start,
       endDateTime: end,
       location: todo.location ?? "",
-      shared: canShare ? todo.shared ?? false : false,
+      shared: canShare ? todo.shared ?? false : false, // 게스트면 무조건 false
       ownerId: storedUser?.id || null,
     };
 
@@ -123,6 +128,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
 
       const saved = res?.data ?? res ?? {};
 
+      // 부모에서 쓰기 편하도록 서버 데이터 + 보조 필드 같이 넘김
       const finalTodo = {
         ...saved,
         id: saved.id ?? todo.id,
@@ -132,6 +138,10 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
         shared: saved.shared ?? todo.shared,
         promiseDate: saved.promiseDate ?? start,
         endDateTime: saved.endDateTime ?? end,
+        ownerId:
+          saved.ownerId ??
+          (editTodo && editTodo.ownerId) ??
+          (storedUser?.id || null),
         tDate: moment(saved.promiseDate ?? start).format("YYYY-MM-DD"),
         time: moment(saved.promiseDate ?? start).format("HH:mm"),
         endTime: moment(saved.endDateTime ?? end).format("HH:mm"),
@@ -141,7 +151,11 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
       onClose();
     } catch (err) {
       console.error("❌ 저장 실패:", err);
-      alert("저장에 실패했습니다. 콘솔을 확인해주세요.");
+      if (err?.response?.status === 403) {
+        alert("수정 권한이 없습니다.");
+      } else {
+        alert("저장에 실패했습니다. 콘솔을 확인해주세요.");
+      }
     }
   };
 
@@ -158,7 +172,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
 
       alert("삭제되었습니다.");
 
-      await onSave({
+      onSave({
         id: todo.id,
         deleted: true,
       });
@@ -166,102 +180,186 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
       onClose();
     } catch (err) {
       console.error("❌ 삭제 실패:", err);
-      alert("삭제에 실패했습니다. 콘솔을 확인해주세요.");
+      if (err?.response?.status === 403) {
+        alert("삭제 권한이 없습니다.");
+      } else {
+        alert("삭제에 실패했습니다. 콘솔을 확인해주세요.");
+      }
     }
+  };
+
+  // 공유 토글 클릭
+  const handleToggleShared = () => {
+    if (!canShare) {
+      alert("비회원은 공유할 수 없습니다.");
+      return;
+    }
+    setTodo((prev) => ({ ...prev, shared: !prev.shared }));
   };
 
   return (
     <div className="todo-modal-overlay" onClick={onClose}>
       <div className="todo-modal" onClick={(e) => e.stopPropagation()}>
-        <h3>{isEdit ? "할 일 수정 / 삭제" : "새로운 할 일 추가"}</h3>
+        {/* 상단 헤더 */}
+        <div className="todo-modal-header">
+          <div className="todo-modal-titleBox">
+            <img
+              src={profileBig}
+              alt="프로필 아이콘"
+              className="todo-modal-profileIcon"
+            />
+            <span className="todo-modal-title">
+              {isEdit ? "할 일 수정 / 삭제" : "새로운 할 일을 기록하세요 !"}
+            </span>
+          </div>
+          <button
+            type="button"
+            className="todo-modal-closeX"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
 
-        <label>
-          날짜
-          <input
-            type="date"
-            value={todo.date}
-            onChange={handleChange("date")}
-          />
-        </label>
+        {/* 폼 영역 */}
+        <div className="todo-modal-body">
+          {/* 날짜 */}
+          <div className="todo-field">
+            <label className="todo-field-label">D-day (날짜)</label>
+            <span className="todo-field-sub">
+              날짜를 선택해주세요.
+            </span>
+            <input
+              type="date"
+              value={todo.date}
+              onChange={handleChange("date")}
+              className="todo-input"
+            />
+          </div>
 
-        <label>
-          시작 시간
-          <input
-            type="time"
-            value={todo.time}
-            onChange={handleChange("time")}
-          />
-        </label>
+          {/* 시작 시간 */}
+          <div className="todo-field">
+            <label className="todo-field-label">D-day (시작 시간)</label>
+            <span className="todo-field-sub">
+              일정이 시작되는 시간을 입력해주세요.
+            </span>
+            <input
+              type="time"
+              value={todo.time}
+              onChange={handleChange("time")}
+              className="todo-input"
+            />
+          </div>
 
-        <label>
-          종료 시간
-          <input
-            type="time"
-            value={todo.endTime}
-            onChange={handleChange("endTime")}
-          />
-        </label>
+          {/* 종료 시간 */}
+          <div className="todo-field">
+            <label className="todo-field-label">D-day (종료 시간)</label>
+            <span className="todo-field-sub">
+              일정이 종료되는 시간을 입력해주세요.
+            </span>
+            <input
+              type="time"
+              value={todo.endTime}
+              onChange={handleChange("endTime")}
+              className="todo-input"
+            />
+          </div>
 
-        <label>
-          제목
-          <input
-            type="text"
-            value={todo.title}
-            onChange={handleChange("title")}
-            placeholder="제목을 입력하세요"
-          />
-        </label>
+          {/* 제목 */}
+          <div className="todo-field">
+            <label className="todo-field-label">일정 제목</label>
+            <input
+              type="text"
+              value={todo.title}
+              onChange={handleChange("title")}
+              className="todo-input"
+              placeholder="일정의 제목을 입력해주세요."
+            />
+          </div>
 
-        <label>
-          내용
-          <textarea
-            value={todo.content}
-            onChange={handleChange("content")}
-            placeholder="내용을 입력하세요"
-          />
-        </label>
+          {/* 설명 */}
+          <div className="todo-field">
+            <label className="todo-field-label">일정 설명</label>
+            <textarea
+              value={todo.content}
+              onChange={handleChange("content")}
+              className="todo-textarea"
+              placeholder="일정에 대한 설명을 입력해주세요."
+            />
+          </div>
 
-        <label>
-          약속 장소
-          <input
-            type="text"
-            value={todo.location}
-            onChange={handleChange("location")}
-            placeholder="약속 장소를 입력하세요"
-          />
-        </label>
+          {/* 장소 */}
+          <div className="todo-field">
+            <label className="todo-field-label">장소</label>
+            <input
+              type="text"
+              value={todo.location}
+              onChange={handleChange("location")}
+              className="todo-input"
+              placeholder="선택 항목, 약속 장소를 입력해주세요."
+            />
+          </div>
 
-        <label className="shared-check">
-          <input
-            type="checkbox"
-            checked={canShare ? todo.shared : false}
-            onChange={(e) => {
-              if (!canShare) {
-                alert("비회원은 공유할 수 없습니다.");
-                return;
-              }
-              handleChange("shared")(e);
-            }}
-          />
-          {canShare ? "공유 일정으로 표시" : "비회원은 공유 불가"}
-        </label>
+          {/* 공유 토글 */}
+          <div className="todo-field todo-shared-row">
+            <span className="todo-field-label shared-label">
+              공유 일정으로 표시
+            </span>
+            <button
+              type="button"
+              className="toggle-btn"
+              onClick={handleToggleShared}
+            >
+              <img
+                src={todo.shared ? toggleOn : toggleOff}
+                alt={todo.shared ? "공유 일정 ON" : "공유 일정 OFF"}
+              />
+            </button>
+          </div>
+        </div>
 
+        {/* 하단 버튼 */}
         <div className="modal-buttons">
           {isEdit ? (
             <>
-              <button onClick={handleSave} disabled={!isOwner}>
-                수정
+              <button
+                type="button"
+                className="primary-btn"
+                onClick={handleSave}
+              >
+                수정하기
               </button>
-              <button onClick={handleDelete} disabled={!isOwner}>
+              <button
+                type="button"
+                className="danger-btn"
+                onClick={handleDelete}
+              >
                 삭제
               </button>
-              {!isOwner && <p>※ 공유 일정은 본인만 수정/삭제할 수 있습니다.</p>}
-              <button onClick={onClose}>닫기</button>
+              <button
+                type="button"
+                className="secondary-btn"
+                onClick={onClose}
+              >
+                닫기
+              </button>
             </>
           ) : (
             <>
-              <button onClick={handleSave}>저장</button>
-              <button onClick={onClose}>취소</button>
+              <button
+                type="button"
+                className="primary-btn"
+                onClick={handleSave}
+              >
+                추가하기
+              </button>
+              <button
+                type="button"
+                className="secondary-btn"
+                onClick={onClose}
+              >
+                취소
+              </button>
             </>
           )}
         </div>

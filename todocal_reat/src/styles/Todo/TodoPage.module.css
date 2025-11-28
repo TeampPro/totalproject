@@ -1,64 +1,180 @@
-.todoPageContainer {
-  padding: 20px;
-  max-width: 900px;
-  margin: 0 auto;
+/* src/styles/Todo/TodoPage.module.css */
+
+/* 1. 페이지 전체 배경 – TopBar 배경(#f6fbff)와 동일 */
+.todoPageOuter {
+  width: 100%;
+  min-height: 100vh;
+  background: #f6fbff;
 }
 
-.todoHeaderContainer {
+/* 2. 가운데 컨텐츠 박스 */
+.todoPageContainer {
+  max-width: 1210px;
+  margin: 0 auto;
+  padding: 32px 0 40px;
+}
+
+/* 상단: 탭 + "+ 일정추가" 버튼 */
+.topBar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
+/* 3. 우측 "+ 일정추가" 버튼 */
 .writeButton {
-  background-color: #1976d2;
-  color: white;
+  display: flex;
+  width: 333px;
+  height: 36px;
+  padding: 8px 0;
+  justify-content: center;
+  align-items: center;
+
+  background-color: #0d99ff;
+  color: #ffffff;
   border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .writeButton:hover {
-  background-color: #0d47a1;
+  background-color: #0b80d4;
 }
 
+/* 리스트 영역 */
 .taskList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
+/* 개별 일정 카드 */
 .taskItem {
-  padding: 12px;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  width: 1210px;
+  padding: var(--Space-XLarge, 24px) var(--Space-2XLarge, 32px);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--Space-Large, 16px);
+  border-radius: var(--Radius-L, 16px);
+  border: 1px solid var(--border-basic-level1, #eaecef);
+  background: var(--bg-basic-level1, #ffffff);
   cursor: pointer;
 }
 
-.taskItem h4 {
-  margin: 0 0 4px 0;
-  font-size: 1rem;
-  color: #333;
+/* 상단: 제목 + D-day/약속일 */
+.taskDates {
+  display: flex;
+  align-items: center;
+  gap: var(--Space-4XLarge, 48px);
+  align-self: stretch;
+  justify-content: space-between;
 }
 
-.taskItem p {
+/* 제목/내용 컨테이너 */
+.taskTitleBox {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* 제목 텍스트 */
+.taskTitle {
   margin: 0;
-  font-size: 0.85rem;
-  color: #666;
+  color: #232323;
+  font-family: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
 }
 
+/* 내용(설명) 텍스트 */
+.taskContent {
+  margin: 0;
+  color: var(--text-basic-level2, #4a4b4c);
+  font-feature-settings: "liga" off, "clig" off;
+  font-family: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 136%; /* 20.4px */
+  letter-spacing: 0.078px;
+}
+
+/* 약속 장소 */
+.taskLocation {
+  margin: 0;
+  color: var(--text-basic-level2, #4a4b4c);
+  font-feature-settings: "liga" off, "clig" off;
+  font-family: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 136%;
+}
+
+/* 우측 메타 (D-day, 약속일) */
+.taskMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  font-family: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 14px;
+}
+
+/* D-day 텍스트 */
+.dday {
+  font-weight: 600;
+  color: #0d99ff;
+}
+
+/* 약속일 텍스트 */
+.promiseDate {
+  color: #4a4b4c;
+}
+
+/* 제목/내용 구분선 */
+.taskDivider {
+  width: 100%;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.06); /* border/basic/base-trans10 느낌 */
+}
+
+/* 카드 하단: 작성일 */
+.taskFooter {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.createdAt {
+  color: #9a9b9c;
+  font-family: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* 데이터 없을 때 */
 .empty {
   text-align: center;
   padding: 40px 0;
-  color: #999;
+  color: #999999;
 }
 
+/* 페이지네이션 */
 .pagination {
-  margin-top: 16px;
+  margin-top: 24px;
   display: flex;
   gap: 8px;
   justify-content: center;
@@ -66,10 +182,11 @@
 
 .pageBtn {
   padding: 6px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #cccccc;
   border-radius: 6px;
-  background-color: #fff;
+  background-color: #ffffff;
   cursor: pointer;
+  font-size: 13px;
   transition: all 0.2s;
 }
 
@@ -78,43 +195,7 @@
 }
 
 .activePage {
-  background-color: #1976d2;
-  color: white;
-  border-color: #1976d2;
-}
-
-.topBar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.taskDates {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 6px;
-  font-size: 0.85rem;
-  color: #555;
-}
-
-/* 작성일 왼쪽 */
-.createdAt {
-  flex: 1;
-}
-
-/* D-Day 가운데 */
-.dday {
-  flex: 1;
-  text-align: center;
-  font-weight: 600;
-  color: #1976d2;
-}
-
-/* 약속일 오른쪽 */
-.promiseDate {
-  flex: 1;
-  text-align: right;
-  font-weight: 500;
+  background-color: #0d99ff;
+  color: #ffffff;
+  border-color: #0d99ff;
 }

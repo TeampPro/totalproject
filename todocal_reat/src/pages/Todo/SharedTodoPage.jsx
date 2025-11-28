@@ -1,9 +1,10 @@
-// src/pages/Todo/SharedTodoPage.jsx
 import { useState, useEffect, useMemo } from "react";
 import moment from "moment";
+import TopBar from "../../components/TopBar/TopBar.jsx";
 import CalendarTodo from "../../pages/Todo/CalendarTodo.jsx";
+
 import pageClasses from "../../styles/Todo/TodoPage.module.css";
-import headerClasses from "../../styles/Header/todoHeader.module.css";
+import headerClasses from "../../styles/Todo/SharedTodoHeader.module.css";
 
 import { api } from "../../api/http";
 
@@ -38,7 +39,7 @@ const SharedTodoPage = () => {
       const data = await api.get(pathName);
       setRawTasks(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("? ? ?? ?? ??:", err);
+      console.error("공유 일정 불러오기 실패:", err);
     }
   };
 
@@ -48,6 +49,9 @@ const SharedTodoPage = () => {
 
   const formatDate = (dateString) =>
     moment(dateString).format("YYYY. MM. DD.");
+
+  const formatDateTime = (dateString) =>
+    moment(dateString).format("YYYY. MM. DD. HH:mm");
 
   const getDDay = (date) => {
     const today = moment().startOf("day");
@@ -59,11 +63,12 @@ const SharedTodoPage = () => {
     return `D+${Math.abs(diff)}`;
   };
 
+  // ✅ 공유 일정만 + 오늘 이후만 + 날짜순 정렬
   const sharedTasks = useMemo(() => {
     const today = moment().startOf("day");
 
     let tasks = rawTasks
-      .filter((t) => t.shared === true) // ✅ 공유 일정만
+      .filter((t) => t.shared === true)
       .map((t) => ({ ...t, _m: normalize(t.promiseDate) }))
       .filter((t) => t._m && t._m.isSameOrAfter(today));
 
@@ -98,84 +103,118 @@ const SharedTodoPage = () => {
   };
 
   return (
-    <div className={pageClasses.todoPageContainer}>
-      <div className={pageClasses.topBar}>
-        {/* 🔹 공유 일정 전용 헤더 (기존 CSS 재사용) */}
-        <div className={headerClasses.todoHeader}>
-          <nav className={headerClasses.todoNav}>
-            <button
-              className={`${headerClasses.todoBtn} ${headerClasses.active}`}
-            >
-              공유일정
-            </button>
-          </nav>
-        </div>
+    <div className={pageClasses.todoPageOuter}>
+      {/* 상단 공통 바 */}
+      <TopBar showBackButton /> {/* 🔹 뒤로가기 버튼 표시 */}
 
-        {/* 🔹 TodoPage와 동일한 글작성하기 버튼 추가 */}
-        <button
-          className={pageClasses.writeButton}
-          onClick={() => {
-            setEditTodo(null);
-            setShowModal(true);
-          }}
-        >
-          글작성하기
-        </button>
-      </div>
+      <div className={pageClasses.todoPageContainer}>
+        <div className={pageClasses.topBar}>
+          {/* 공유 일정 전용 헤더 */}
+          <div className={headerClasses.todoHeader}>
+            <nav className={headerClasses.todoNav}>
+              <button
+                className={`${headerClasses.todoBtn} ${headerClasses.active}`}
+                type="button"
+              >
+                공유 일정
+              </button>
+            </nav>
+          </div>
 
-      <div className={pageClasses.taskList}>
-        {pagedTasks.length === 0 && (
-          <div className={pageClasses.empty}>공유된 일정이 없습니다.</div>
-        )}
-
-        {pagedTasks.map((task) => (
-          <div
-            key={task.id}
-            className={pageClasses.taskItem}
+          {/* 우측 "+ 일정추가" 버튼 */}
+          <button
+            className={pageClasses.writeButton}
             onClick={() => {
-              setEditTodo(task);
+              setEditTodo(null);
               setShowModal(true);
             }}
           >
-            <h4>{task.title}</h4>
-            <p>{task.content}</p>
+            + 일정추가
+          </button>
+        </div>
 
-            <div className={pageClasses.taskDates}>
-              <span>작성일: {formatDate(task.createdAt)}</span>
-              <span className={pageClasses.dday}>{getDDay(task.promiseDate)}</span>
-              <span>약속일: {formatDate(task.promiseDate)}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+        {/* 일정 카드 리스트 */}
+        <div className={pageClasses.taskList}>
+          {pagedTasks.length === 0 && (
+            <div className={pageClasses.empty}>공유된 일정이 없습니다.</div>
+          )}
 
-      {totalPages > 1 && (
-        <div className={pageClasses.pagination}>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i + 1}
-              className={`${pageClasses.pageBtn} ${
-                currentPage === i + 1 ? pageClasses.activePage : ""
-              }`}
-              onClick={() => setCurrentPage(i + 1)}
+          {pagedTasks.map((task) => (
+            <div
+              key={task.id}
+              className={pageClasses.taskItem}
+              onClick={() => {
+                setEditTodo(task);
+                setShowModal(true);
+              }}
             >
-              {i + 1}
-            </button>
+              {/* 상단: 제목 + 내용/장소 + D-day/약속일 */}
+              <div className={pageClasses.taskDates}>
+                <div className={pageClasses.taskTitleBox}>
+                  <h4 className={pageClasses.taskTitle}>{task.title}</h4>
+                  {task.content && (
+                    <p className={pageClasses.taskContent}>{task.content}</p>
+                  )}
+                  {task.location && (
+                    <p className={pageClasses.taskLocation}>
+                      약속 장소 : {task.location}
+                    </p>
+                  )}
+                </div>
+
+                <div className={pageClasses.taskMeta}>
+                  <span className={pageClasses.dday}>
+                    {getDDay(task.promiseDate)}
+                  </span>
+                  <span className={pageClasses.promiseDate}>
+                    D-day : {formatDateTime(task.promiseDate)}
+                  </span>
+                </div>
+              </div>
+
+              {/* 제목/내용과 하단 사이 구분선 */}
+              <div className={pageClasses.taskDivider} />
+
+              {/* 하단: 작성일 */}
+              <div className={pageClasses.taskFooter}>
+                <span className={pageClasses.createdAt}>
+                  작성일 : {formatDate(task.createdDate ?? task.createdAt)}
+                </span>
+              </div>
+            </div>
           ))}
         </div>
-      )}
 
-      {showModal && (
-        <CalendarTodo
-          onClose={() => {
-            setShowModal(false);
-            setEditTodo(null);
-          }}
-          onSave={handleSaveFromModal}
-          editTodo={editTodo}
-          defaultDate={moment().format("YYYY-MM-DD")}
-        />
-      )}
+        {/* 페이지네이션 */}
+        {totalPages > 1 && (
+          <div className={pageClasses.pagination}>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i + 1}
+                className={`${pageClasses.pageBtn} ${
+                  currentPage === i + 1 ? pageClasses.activePage : ""
+                }`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* 모달 (추가/수정) */}
+        {showModal && (
+          <CalendarTodo
+            onClose={() => {
+              setShowModal(false);
+              setEditTodo(null);
+            }}
+            onSave={handleSaveFromModal}
+            editTodo={editTodo}
+            defaultDate={moment().format("YYYY-MM-DD")}
+          />
+        )}
+      </div>
     </div>
   );
 };

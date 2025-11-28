@@ -33,7 +33,7 @@
   height: 26px;
 }
 
-/* Right side: 아이콘 3개 */
+/* Right side: 뒤로가기(옵션) + 아이콘 3개 */
 .topbar-right {
   display: flex;
   align-items: center;
@@ -49,7 +49,35 @@
   justify-content: center;
 }
 
+/* 🔹 뒤로가기 버튼 (알림 아이콘 왼쪽) */
+.topbar-back-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 52px;   /* ✅ 다른 아이콘과 동일 크기 */
+  height: 52px;  /* ✅ 다른 아이콘과 동일 크기 */
+
+  padding: 0;    /* 아이콘 자체가 꽉 차도록 */
+}
+
+.topbar-back-btn img {
+  width: 100%;
+  height: 100%;
+  transition: 0.2s ease;
+}
+
+.topbar-back-btn:hover img {
+  transform: scale(1.05);
+}
+
+/* 공통 아이콘 스타일 (벨 / 프로필 / 메뉴) */
 .topbar-icon {
+<<<<<<< HEAD
   width: 54px;
   height: 54px;
   cursor: pointer;
@@ -101,4 +129,16 @@
     height: 34px;
     padding: 4px;
   }
+=======
+  width: 52px;   /* ✅ 52x52로 통일 */
+  height: 52px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  padding: 0;    /* 실제 SVG가 52x52라면 패딩 제거 */
+  box-sizing: border-box;
+}
+
+.topbar-icon:hover {
+  transform: scale(1.05);
+>>>>>>> origin/feature/develop
 }

@@ -22,7 +22,7 @@ const TodoHeader = ({ onChangeFilter, active, showAddButton = true }) => {
           }`}
           onClick={() => onChangeFilter("all")}
         >
-          일정
+          전체 일정
         </button>
         <button
           className={`${classes.todoBtn} ${
@@ -30,7 +30,7 @@ const TodoHeader = ({ onChangeFilter, active, showAddButton = true }) => {
           }`}
           onClick={() => onChangeFilter("week")}
         >
-          이번주
+          이번 주 일정
         </button>
         <button
           className={`${classes.todoBtn} ${
@@ -38,11 +38,11 @@ const TodoHeader = ({ onChangeFilter, active, showAddButton = true }) => {
           }`}
           onClick={() => onChangeFilter("month")}
         >
-          이번달
+          이번 달 일정
         </button>
 
-        {/* 공유일정은 별도 페이지로 분리됨 */}
-        {/* 
+        {/* 공유일정은 별도 페이지에서 처리 */}
+        {/*
         <button
           className={`${classes.todoBtn} ${
             active === "shared" ? classes.active : ""
@@ -54,16 +54,6 @@ const TodoHeader = ({ onChangeFilter, active, showAddButton = true }) => {
         */}
       </nav>
 
-      {showAddButton && (
-        <button
-          className={`${classes.todoAddButton} ${
-            addActive ? classes.active : ""
-          }`}
-          onClick={handleAddClick}
-        >
-          +
-        </button>
-      )}
     </div>
   );
 };
