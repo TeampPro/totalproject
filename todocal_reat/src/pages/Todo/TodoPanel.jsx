@@ -240,6 +240,10 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
 
       {/* 진행중 섹션 */}
       <section className="todo-section todo-section-inprogress">
+        <div className="todo-guest-section-header">
+            <span className="todo-guest-section-title">진행 중</span>
+            <span className="todo-guest-section-count">({inProgressTodos.length})</span>
+        </div>
         <div className="todo-list todo-list-inprogress">
           {inProgressVisible.map((todo) => (
             <div key={todo.id} className="todo-item">
@@ -287,6 +291,10 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
 
       {/* 완료 섹션 */}
       <section className="todo-section todo-section-done">
+        <div className="todo-guest-section-header">
+            <span className="todo-guest-section-title">완료</span>
+            <span className="todo-guest-section-count">({doneTodos.length})</span>
+          </div>
         <div className="todo-list todo-list-done">
           {doneVisible.map((todo) => (
             <div key={todo.id} className="todo-item todo-item-done">
