@@ -1,11 +1,8 @@
-// src/pages/Todo/TodoPage.jsx
 import { useState, useEffect, useMemo } from "react";
 import moment from "moment";
 import TodoHeader from "../../components/Header/TodoHeader";
-import TaskList from "../../components/TaskList/TaskList";
 import CalendarTodo from "../../pages/Todo/CalendarTodo.jsx";
 import classes from "../../styles/Todo/TodoPage.module.css";
-
 import { api } from "../../api/http";
 
 const normalize = (d) => {
@@ -26,21 +23,20 @@ const TodoPage = () => {
   const itemsPerPage = 10;
 
   const fetchTodos = async () => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    const params = new URLSearchParams();
+    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
 
-    if (storedUser?.id) {
-      params.append("userId", storedUser.id);
+    if (!storedUser?.id) {
+      setRawTasks([]);
+      return;
     }
 
-    const query = params.toString();
-    const pathName = query ? `/api/tasks?${query}` : "/api/tasks";
-
     try {
-      const data = await api.get(pathName);
+      const data = await api.get("/api/tasks", {
+        params: { userId: storedUser.id },
+      });
       setRawTasks(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("? ? ?? ?? ??:", err);
+      console.error("❌ 일정 목록 불러오기 실패:", err);
     }
   };
 
@@ -71,7 +67,7 @@ const TodoPage = () => {
     let tasks = rawTasks
       .map((t) => ({ ...t, _m: normalize(t.promiseDate) }))
       .filter((t) => t._m && t._m.isSameOrAfter(today))
-      .filter((t) => t.shared !== true); // ✅ 공유 일정은 TodoPage에서 제외
+      .filter((t) => t.shared !== true); // 공유 일정은 TodoPage에서 제외
 
     if (filter === "week") {
       tasks = tasks.filter((t) =>
@@ -82,7 +78,6 @@ const TodoPage = () => {
         t._m.isBetween(startOfMonth, endOfMonth, null, "[]")
       );
     } else if (filter === "shared") {
-      // 현재는 UI에서 사용하지 않지만, 혹시 모를 호환성을 위해 남겨둔 분기
       tasks = tasks.filter((t) => t.shared === true);
     }
 
@@ -95,23 +90,10 @@ const TodoPage = () => {
   const pagedTasks = filteredTasks.slice(startIdx, startIdx + itemsPerPage);
   const totalPages = Math.ceil(filteredTasks.length / itemsPerPage);
 
-  const handleSaveFromModal = (savedTodo) => {
+  // 🔥 CalendarTodo -> TodoPage 저장/삭제 결과 처리
+  const handleSaveFromModal = async (savedTodo) => {
     if (!savedTodo) return;
-
-    if (savedTodo.deleted) {
-      setRawTasks((prev) => prev.filter((t) => t.id !== savedTodo.id));
-      fetchTodos();
-      return;
-    }
-
-    setRawTasks((prev) => {
-      const exists = prev.some((t) => t.id === savedTodo.id);
-      return exists
-        ? prev.map((t) => (t.id === savedTodo.id ? savedTodo : t))
-        : [...prev, savedTodo];
-    });
-
-    fetchTodos();
+    await fetchTodos(); // 서버 기준 최신 상태 재조회
     setShowModal(false);
     setEditTodo(null);
   };
@@ -134,6 +116,7 @@ const TodoPage = () => {
           글작성하기
         </button>
       </div>
+
       <div className={classes.taskList}>
         {pagedTasks.length === 0 && (
           <div className={classes.empty}>데이터가 없습니다.</div>

@@ -62,7 +62,7 @@ body {
 
 /* 메인 2열 레이아웃 */
 .main-grid {
-  display: grid;
+  display: grid;  
   grid-template-columns: 1.5fr 0.9fr;
   gap: 40px;
   align-items: flex-start;

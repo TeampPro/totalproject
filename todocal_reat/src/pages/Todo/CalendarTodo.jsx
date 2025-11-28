@@ -1,20 +1,19 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { api } from "../../api/http";
 import moment from "moment";
+import { api } from "../../api/http";
 import "../../styles/Todo/CalendarTodo.css";
 
 /**
  * props:
  * - onClose(): 모달 닫기
- * - onSave(savedTodo): 저장/수정/삭제 후 Calendar로 전달
+ * - onSave(savedTodo): 저장/수정/삭제 후 부모로 전달
  * - editTodo: 수정할 todo 객체 (id, title, content, promiseDate, endDateTime, location, shared ...)
  * - defaultDate: 새 일정 추가 시 선택된 날짜 (YYYY-MM-DD)
  */
 function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
   const isEdit = !!editTodo;
 
-  // ⚙ 초기 상태 (수정/추가 공통으로 사용)
+  // ⚙ 초기 상태 (수정/추가 공통)
   const [todo, setTodo] = useState(() => {
     if (editTodo) {
       return {
@@ -47,11 +46,10 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
     };
   });
 
-  // 로그인 유저에서 ownerId 꺼내기
-  const storedUser = JSON.parse(localStorage.getItem("user"));
-  const isLoggedIn = !!storedUser?.id;
-  const isGuest = storedUser?.id?.startsWith("guest_"); // guest_로 시작하면 비회원
-  const canShare = !!storedUser?.id && !isGuest;  
+  // 로그인 유저 정보
+  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+  const isGuest = storedUser?.id?.startsWith("guest_");
+  const canShare = !!storedUser?.id && !isGuest;
   const isOwner = storedUser?.id === editTodo?.ownerId;
 
   // editTodo / defaultDate 변경 시 동기화
@@ -107,29 +105,24 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
       promiseDate: start,
       endDateTime: end,
       location: todo.location ?? "",
-      shared: canShare ? todo.shared ?? false : false, // 🔥 게스트면 무조건 false
+      shared: canShare ? todo.shared ?? false : false,
       ownerId: storedUser?.id || null,
     };
-
 
     try {
       let res;
       if (isEdit && todo.id != null) {
         // 수정
-        res = await axios.put(
-          `http://localhost:8080/api/tasks/${todo.id}`,
-          payload
-        );
+        res = await api.put(`/api/tasks/${todo.id}`, payload);
         alert("할 일이 수정되었습니다.");
       } else {
         // 추가
-        res = await axios.post("http://localhost:8080/api/tasks", payload);
+        res = await api.post("/api/tasks", payload);
         alert("할 일이 저장되었습니다.");
       }
 
-      const saved = res?.data ?? {};
+      const saved = res?.data ?? res ?? {};
 
-      // 🔁 캘린더에서 편하게 쓰도록 서버 데이터 + 보조 필드 같이 넘겨줌
       const finalTodo = {
         ...saved,
         id: saved.id ?? todo.id,
@@ -139,14 +132,12 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
         shared: saved.shared ?? todo.shared,
         promiseDate: saved.promiseDate ?? start,
         endDateTime: saved.endDateTime ?? end,
-
-        // 👇 기존 코드에서 tDate / time / endTime 쓰더라도 깨지지 않게 보조 필드 제공
         tDate: moment(saved.promiseDate ?? start).format("YYYY-MM-DD"),
         time: moment(saved.promiseDate ?? start).format("HH:mm"),
         endTime: moment(saved.endDateTime ?? end).format("HH:mm"),
       };
 
-      onSave(finalTodo);
+      await onSave(finalTodo);
       onClose();
     } catch (err) {
       console.error("❌ 저장 실패:", err);
@@ -159,14 +150,15 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
 
     try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      await axios.delete(
-        `http://localhost:8080/api/tasks/${todo.id}?userId=${user?.id || ""}`
-      );
+      const user = JSON.parse(localStorage.getItem("user") || "null");
+
+      await api.delete(`/api/tasks/${todo.id}`, {
+        params: { userId: user?.id || "" },
+      });
+
       alert("삭제되었습니다.");
 
-      // 상위 컴포넌트에서 목록에서 제거할 수 있도록 정보 전달
-      onSave({
+      await onSave({
         id: todo.id,
         deleted: true,
       });
@@ -246,9 +238,9 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
             onChange={(e) => {
               if (!canShare) {
                 alert("비회원은 공유할 수 없습니다.");
-                return; // 체크 무효
+                return;
               }
-              handleChange("shared")(e); // 진짜 회원만 상태 변경
+              handleChange("shared")(e);
             }}
           />
           {canShare ? "공유 일정으로 표시" : "비회원은 공유 불가"}
