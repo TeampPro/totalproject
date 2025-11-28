@@ -77,7 +77,6 @@
 
 /* 공통 아이콘 스타일 (벨 / 프로필 / 메뉴) */
 .topbar-icon {
-<<<<<<< HEAD
   width: 54px;
   height: 54px;
   cursor: pointer;
@@ -129,16 +128,4 @@
     height: 34px;
     padding: 4px;
   }
-=======
-  width: 52px;   /* ✅ 52x52로 통일 */
-  height: 52px;
-  cursor: pointer;
-  transition: 0.2s ease;
-  padding: 0;    /* 실제 SVG가 52x52라면 패딩 제거 */
-  box-sizing: border-box;
-}
-
-.topbar-icon:hover {
-  transform: scale(1.05);
->>>>>>> origin/feature/develop
 }
