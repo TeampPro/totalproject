@@ -1,5 +1,8 @@
+// src/pages/Map/KakaoMapBox.jsx
 import { useEffect, useState, useRef } from "react";
 import "../../styles/Map/KakaoMapBox.css";
+import searchIcon from "../../assets/search.svg";
+import locationIcon from "../../assets/location.svg";
 
 function KakaoMapBox() {
   const [map, setMap] = useState(null);
@@ -47,10 +50,7 @@ function KakaoMapBox() {
     const createdMap = new window.kakao.maps.Map(container, options);
     setMap(createdMap);
 
-    const markerPosition = new window.kakao.maps.LatLng(
-      33.450701,
-      126.570667
-    );
+    const markerPosition = new window.kakao.maps.LatLng(33.450701, 126.570667);
     const marker = new window.kakao.maps.Marker({ position: markerPosition });
     marker.setMap(createdMap);
     markerRef.current = marker;
@@ -79,9 +79,7 @@ function KakaoMapBox() {
 
         const placeName = first.place_name || "이름 정보 없음";
         const address =
-          first.road_address_name ||
-          first.address_name ||
-          "주소 정보 없음";
+          first.road_address_name || first.address_name || "주소 정보 없음";
         const phone = first.phone || "전화번호 없음";
 
         const iwContent = `
@@ -107,7 +105,7 @@ function KakaoMapBox() {
     });
   };
 
-  // 지도 타입 전환 (일반지도 / 위성뷰)
+  // 지도 타입 전환
   const handleMapTypeChange = (type) => {
     if (!map) return;
     if (type === "roadmap") {
@@ -135,16 +133,27 @@ function KakaoMapBox() {
       {/* 검색창 */}
       <div className="map-search-wrapper">
         <form onSubmit={handleSearch} className="map-search-form">
-          <input
-            type="text"
-            placeholder="위치를 찾아서 Planix 일정에 추가해보세요 !"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="map-input"
-          />
-          <button type="submit" className="map-search-button">
-            🔍
-          </button>
+          <div className="map-search-inner">
+            {/* 왼쪽 위치 아이콘 */}
+            <img
+              src={locationIcon}
+              alt="location"
+              className="map-location-icon"
+            />
+
+            <input
+              type="text"
+              placeholder="위치를 찾아서 Planix 일정에 추가해보세요 !"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="map-input"
+            />
+
+            {/* 오른쪽 검색 버튼 */}
+            <button type="submit" className="map-search-button">
+              <img src={searchIcon} alt="search" />
+            </button>
+          </div>
         </form>
       </div>
 
@@ -155,9 +164,7 @@ function KakaoMapBox() {
           <button
             type="button"
             className={
-              mapType === "roadmap"
-                ? "map-type-btn active"
-                : "map-type-btn"
+              mapType === "roadmap" ? "map-type-btn active" : "map-type-btn"
             }
             onClick={() => handleMapTypeChange("roadmap")}
           >
@@ -166,9 +173,7 @@ function KakaoMapBox() {
           <button
             type="button"
             className={
-              mapType === "skyview"
-                ? "map-type-btn active"
-                : "map-type-btn"
+              mapType === "skyview" ? "map-type-btn active" : "map-type-btn"
             }
             onClick={() => handleMapTypeChange("skyview")}
           >
