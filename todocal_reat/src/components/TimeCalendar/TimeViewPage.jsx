@@ -238,7 +238,7 @@ function TimeViewPage({ reloadKey = 0 }) {
       {/* 1. 위쪽 주간 바 */}
       <section className="tv-week-strip">
         {days.map((day, idx) => {
-          const dayEvents = getEventsForDay(day);
+          const dayEvents = getEventsForDay(day);   
           const isSelected = day.isSame(selectedDate, "day");
 
           return (
