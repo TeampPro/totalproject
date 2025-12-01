@@ -1,34 +1,38 @@
-import { useState } from "react";
 import Calendar from "../../pages/Todo/Calendar";
-import TimeViewPage from "./TimeViewPage";
 import "../../styles/TimeCalendar/TimeHome.css";
+import calIcon from "../../assets/cal.svg";
 
-function TimeHome({ onTodosChange, calendarRef }) {
-  const [reloadKey, setReloadKey] = useState(0);
-
+function TimeHome({
+  onTodosChange,
+  calendarRef,
+  onDateSelected,
+  disabled,
+  user,
+}) {
   const handleTodosChange = (...args) => {
-    // 상위에서 쓰는 onTodosChange도 그대로 유지
-    if (onTodosChange) {
-      onTodosChange(...args);
-    }
-    // ✅ 일정이 바뀔 때마다 키를 하나씩 증가
-    setReloadKey((k) => k + 1);
+    onTodosChange && onTodosChange(...args);
   };
+
+  if (!user || disabled) {
+    // 로그인 안됐을 때 처리 (있다면)
+  }
 
   return (
     <div className="time-home">
       <div className="time-top-row">
-        <div className="time-title">📅 캘린더</div>
+        <img src={calIcon} alt="cal" />
+        <div className="time-title">캘린더</div>
       </div>
 
       <div className="time-content">
-        {/* 위쪽 캘린더: 변경 콜백 교체 */}
-        <Calendar ref={calendarRef} onTodosChange={handleTodosChange} />
-
-        {/* 아래 타임라인: reloadKey 전달 */}
-        <div className="timeview-wrapper">
-          <TimeViewPage reloadKey={reloadKey} />
-        </div>
+        <Calendar
+          ref={calendarRef}
+          onTodosChange={handleTodosChange}
+          // ✅ 캘린더에서 날짜 선택 → 부모(MainPage)에게 전달
+          onDateSelected={(dateMoment) => {
+            onDateSelected && onDateSelected(dateMoment);
+          }}
+        />
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../api/http";
 import CalendarTodo from "./CalendarTodo";
 import "../../styles/Todo/Calendar.css";
+import watchIcon from "../../assets/watch.svg";
 
 // moment 한국어 설정
 moment.locale("ko");
@@ -26,7 +27,7 @@ const WEEKDAYS_LONG = [
   "토요일",
 ];
 
-function Calendar({ onTodosChange }, ref) {
+function Calendar({ onTodosChange, onDateSelected }, ref) {
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const isLoggedIn = !!storedUser;
@@ -157,6 +158,8 @@ function Calendar({ onTodosChange }, ref) {
   const getTodosForDay = (date) =>
     todos.filter((t) => t.tDate === date.format("YYYY-MM-DD"));
 
+  const selectedDayTodos = getTodosForDay(selectedDate);
+
   const handleSave = (savedTodo) => {
     if (!savedTodo) return;
 
@@ -227,7 +230,10 @@ function Calendar({ onTodosChange }, ref) {
           className={`day-cell ${isDiffMonth ? "dimmed-date" : ""} ${
             isHoliday(current) ? "holiday" : ""
           } ${isSelected ? "selected-day" : ""}`}
-          onClick={() => setSelectedDate(current)}
+          onClick={() => {
+            setSelectedDate(current);
+            onDateSelected && onDateSelected(current.clone());
+          }}
           onDragOver={(e) => e.preventDefault()}
           onDrop={async () => {
             if (draggedTodoRef.current) {
@@ -357,6 +363,34 @@ function Calendar({ onTodosChange }, ref) {
 
         {/* 메인 캘린더 */}
         <div className="calendar-grid">{calendarArr()}</div>
+              {/* ✅ 선택 날짜 일정 카드 */}
+    <div className="calendar-day-panel">
+      <div className="calendar-day-panel-header">
+        <span className="calendar-day-icon">
+          <img src={watchIcon} alt="watch" />
+        </span>
+        <span className="calendar-day-title">
+          {selectedDate.format("MM월 DD일")} 일정
+        </span>
+      </div>
+
+      <div className="calendar-day-panel-body">
+        {selectedDayTodos.length === 0 ? (
+          <div className="calendar-day-empty">
+            선택한 날짜에 일정이 없습니다.
+          </div>
+        ) : (
+          <ul className="calendar-day-list">
+            {selectedDayTodos.map((todo) => (
+              <li key={todo.id} className="calendar-day-item">
+                <div className="calendar-day-item-title">{todo.title}</div>
+                 {/* 필요하면 시간 / 메모 등 추가 가능 */}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
       </div>
 
       {/* 일정 작성 / 수정 모달 */}

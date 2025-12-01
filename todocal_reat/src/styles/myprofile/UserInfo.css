@@ -101,7 +101,7 @@
   font-size: 14px;
   color: #9ca3af;
   line-height: 1.2;    /* 줄 간격 조금 줄이기 */
-  margin-top: -10px;    /* 🔹 살짝 더 위로 끌어올리기 */
+  margin-top: 10px;    /* 🔹 살짝 더 위로 끌어올리기 */
   margin-left: 15px;
 }
 
