@@ -1,7 +1,11 @@
+// src/main/java/com/example/todo_caled/task/entity/Task.java
 package com.example.todo_caled.task.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tasks")
@@ -31,6 +35,17 @@ public class Task {
 
     @Column(name = "completed", nullable = false)
     private Boolean completed = false;
+
+    // -----------------------------
+    // ★ 특정 친구 공유용 관계 / 요청용 필드
+    // -----------------------------
+    @JsonIgnore
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TaskShare> shares = new ArrayList<>();
+
+    // 요청 바디에서만 사용 (DB에는 저장 X)
+    @Transient
+    private List<String> sharedUserIds;
 
     public Task() {
         this.createdDate = LocalDateTime.now();
@@ -88,5 +103,21 @@ public class Task {
 
     public void setCompleted(Boolean completed) {
         this.completed = completed;
+    }
+
+    public List<TaskShare> getShares() {
+        return shares;
+    }
+
+    public void setShares(List<TaskShare> shares) {
+        this.shares = shares;
+    }
+
+    public List<String> getSharedUserIds() {
+        return sharedUserIds;
+    }
+
+    public void setSharedUserIds(List<String> sharedUserIds) {
+        this.sharedUserIds = sharedUserIds;
     }
 }

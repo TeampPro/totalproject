@@ -218,3 +218,73 @@
     width: 90vw;
   }
 }
+
+/* ==========================
+   🔥 공유 친구 리스트 (추가)
+   - 기존 CSS에는 영향 X
+========================== */
+.todo-share-list-wrap {
+  margin-top: 4px;
+}
+
+.todo-share-list-helper {
+  font-size: 7px;
+  color: #a6a6a6;
+  margin-bottom: 4px;
+}
+
+.todo-share-list {
+  width: 100%;
+  max-width: 210px;
+  max-height: 80px;
+  margin-top: 2px;
+  padding-right: 2px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  overflow-y: auto;
+}
+
+/* 스크롤바 살짝 */
+.todo-share-list::-webkit-scrollbar {
+  width: 4px;
+}
+.todo-share-list::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+.todo-share-list::-webkit-scrollbar-thumb {
+  background: #c4c4c4;
+  border-radius: 2px;
+}
+
+.todo-share-friend {
+  width: 100%;
+  border-radius: 3px;
+  border: 0.5px solid #d2d2d2;
+  background: #f7f7f7;
+  padding: 4px 6px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  font-size: 8px;
+  color: #232323;
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.todo-share-friend.selected {
+  border-color: #48a9f8;
+  background: #e7f3ff;
+}
+
+.todo-share-friend-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

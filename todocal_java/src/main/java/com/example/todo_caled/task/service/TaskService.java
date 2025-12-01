@@ -1,7 +1,10 @@
+// src/main/java/com/example/todo_caled/task/service/TaskService.java
 package com.example.todo_caled.task.service;
 
 import com.example.todo_caled.task.entity.Task;
+import com.example.todo_caled.task.entity.TaskShare;
 import com.example.todo_caled.task.repository.TaskRepository;
+import com.example.todo_caled.task.repository.TaskShareRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,12 +15,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final TaskShareRepository taskShareRepository;
 
     // 전체 조회
     public List<Task> getAllTasks() {
@@ -26,52 +31,64 @@ public class TaskService {
 
     // 생성
     public Task createTask(Task task) {
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        applyShares(saved, task.getSharedUserIds());
+        return saved;
     }
 
-    public List<Task> getVisibleTasks(String userId) {
-        List<Task> all = taskRepository.findAll();
-
-        // 로그인 안 한 경우 → 공유 일정만 노출
-        if (userId == null || userId.isBlank()) {
-            return all.stream()
-                    .filter(t -> Boolean.TRUE.equals(t.getShared()))
-                    .collect(Collectors.toList());
+    // 공유 대상 저장 로직
+    private void applyShares(Task task, List<String> sharedUserIds) {
+        // 공유가 아니면 무시
+        if (!Boolean.TRUE.equals(task.getShared())) {
+            return;
         }
 
-        // 로그인(회원/비회원 공통) → 내 일정 + 공유 일정
-        return all.stream()
-                .filter(t ->
-                        (t.getOwnerId() != null && t.getOwnerId().equals(userId)) ||
-                                Boolean.TRUE.equals(t.getShared())
-                )
-                .collect(Collectors.toList());
+        if (sharedUserIds == null || sharedUserIds.isEmpty()) {
+            // 친구 선택이 하나도 없으면 "전체 공유"로 취급 → 별도 TaskShare 기록 없음
+            return;
+        }
+
+        for (String uid : sharedUserIds) {
+            if (uid == null || uid.isBlank()) continue;
+            TaskShare share = new TaskShare(task, uid);
+            taskShareRepository.save(share);
+        }
     }
 
     public Optional<Task> getTaskById(Long id) {
         return taskRepository.findById(id);
     }
 
-    public Task saveTask(Task task) {
-        return taskRepository.save(task);
+    public Task getTask(Long id) {
+        return taskRepository.findById(id).orElse(null);
     }
 
     // 수정 (id 기준)
     public Task updateTask(Long id, Task task) {
-        // 필요한 경우 기존 엔티티 조회 후 필드만 갱신해도 되고,
-        // 여기서는 단순히 id만 세팅해서 upsert 처리
-        task.setId(id);
-        return taskRepository.save(task);
+        Task existing = taskRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 일정입니다. id=" + id));
+
+        existing.setTitle(task.getTitle());
+        existing.setContent(task.getContent());
+        existing.setPromiseDate(task.getPromiseDate());
+        existing.setEndDateTime(task.getEndDateTime());
+        existing.setOwnerId(task.getOwnerId());
+        existing.setShared(task.getShared());
+        existing.setLocation(task.getLocation());
+        existing.setCompleted(task.getCompleted());
+
+        Task saved = taskRepository.save(existing);
+
+        // 기존 공유 대상 삭제 후 다시 설정
+        taskShareRepository.deleteByTaskId(saved.getId());
+        applyShares(saved, task.getSharedUserIds());
+        return saved;
     }
 
     // 삭제
     public void deleteTask(Long id) {
+        taskShareRepository.deleteByTaskId(id);
         taskRepository.deleteById(id);
-    }
-
-    // 단일 조회 (필요하면 사용)
-    public Task getTask(Long id) {
-        return taskRepository.findById(id).orElse(null);
     }
 
     // 특정 날짜의 일정
@@ -95,5 +112,57 @@ public class TaskService {
 
         task.setCompleted(completed);
         return taskRepository.save(task);
+    }
+
+    // ==========================
+    // 🔥 "보여야 하는 일정" 필터 로직
+    // ==========================
+    public List<Task> filterVisible(List<Task> all, String userId) {
+        // 관리자(admin)는 전체
+        if ("admin".equals(userId)) {
+            return all;
+        }
+
+        if (all == null || all.isEmpty()) return all;
+
+        List<Long> taskIds = all.stream()
+                .map(Task::getId)
+                .collect(Collectors.toList());
+
+        List<TaskShare> shareList = taskShareRepository.findByTaskIdIn(taskIds);
+        Map<Long, List<TaskShare>> shareMap = shareList.stream()
+                .collect(Collectors.groupingBy(ts -> ts.getTask().getId()));
+
+        return all.stream()
+                .filter(t -> isVisibleForUser(t, userId, shareMap))
+                .collect(Collectors.toList());
+    }
+
+    private boolean isVisibleForUser(Task t, String userId, Map<Long, List<TaskShare>> shareMap) {
+        List<TaskShare> shares = shareMap.getOrDefault(t.getId(), List.of());
+        boolean hasSpecificShares = !shares.isEmpty();
+
+        // 비로그인: 전체 공개(shared=true & 특정 친구 공유가 없는 일정)만
+        if (userId == null || userId.isBlank()) {
+            return Boolean.TRUE.equals(t.getShared()) && !hasSpecificShares;
+        }
+
+        // 내 일정
+        if (t.getOwnerId() != null && t.getOwnerId().equals(userId)) {
+            return true;
+        }
+
+        // 공유가 아니면 볼 수 없음
+        if (!Boolean.TRUE.equals(t.getShared())) {
+            return false;
+        }
+
+        // 공유인데 특정 공유 대상이 없는 경우 → 전체 공개
+        if (!hasSpecificShares) {
+            return true;
+        }
+
+        // 특정 공유 대상이 있는 경우 → 내가 그 목록에 포함될 때만
+        return shares.stream().anyMatch(s -> userId.equals(s.getSharedUserId()));
     }
 }

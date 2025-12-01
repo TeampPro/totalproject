@@ -42,7 +42,8 @@ public class SecurityConfig {
                                 "/api/kakao/**",
                                 "/api/uploads/**",
                                 "/api/weather/**",
-                                "/api/holidays/**"
+                                "/api/holidays/**",
+                                "/api/users/check-id"   // 🔥 아이디 중복확인 허용
                         ).permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
