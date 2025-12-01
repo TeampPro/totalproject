@@ -1,3 +1,4 @@
+// src/pages/Board/PostDetail.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -24,11 +25,11 @@ const CommentNode = React.memo(function CommentNode({
   onSaveReply,
   onCancelReply,
   loginNickname,
-  loginUserType, // ★ 추가: 관리자 여부 확인용
+  loginUserType,
 }) {
   const isEditing = editingId === node.id;
   const isReplying = replyToId === node.id;
-  const isAdmin = loginUserType === "ADMIN"; // ★
+  const isAdmin = loginUserType === "ADMIN";
 
   return (
     <div className="comment-item" style={{ marginLeft: depth * 20 }}>
@@ -53,12 +54,10 @@ const CommentNode = React.memo(function CommentNode({
           </div>
 
           <div className="comment-actions">
-            {/* 댓글 수정은 기존처럼 본인만 가능 (백엔드도 writer 체크일 가능성 높아서 유지) */}
             {node.writer === loginNickname && (
               <button onClick={() => onStartEdit(node)}>수정</button>
             )}
 
-            {/* 삭제는 관리자 + 작성자 모두 가능 */}
             {(node.writer === loginNickname || isAdmin) && (
               <button onClick={() => onDelete(node.id)}>삭제</button>
             )}
@@ -99,7 +98,7 @@ const CommentNode = React.memo(function CommentNode({
           onSaveReply={onSaveReply}
           onCancelReply={onCancelReply}
           loginNickname={loginNickname}
-          loginUserType={loginUserType} // ★ 자식에게도 전달
+          loginUserType={loginUserType}
         />
       ))}
     </div>
@@ -113,13 +112,11 @@ const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  /** 로그인 사용자 닉네임 */
   const savedUser = JSON.parse(localStorage.getItem("user"));
   const loginNickname =
     savedUser?.nickname || savedUser?.name || savedUser?.id || "익명";
-
-  const loginUserType = savedUser?.userType || "NORMAL"; // ★ ADMIN/NORMAL 등
-  const isAdmin = loginUserType === "ADMIN"; // ★
+  const loginUserType = savedUser?.userType || "NORMAL";
+  const isAdmin = loginUserType === "ADMIN";
 
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
@@ -148,18 +145,18 @@ const PostDetail = () => {
       const res = await axios.get(`http://localhost:8080/api/comments/${id}`);
       setComments(res.data);
     } catch (err) {
-      // 필요 시 에러 처리 추가
+      // 필요 시 에러 처리
     }
   };
 
-  // 🔥 이전글 이동
+  /** 이전글 이동 */
   const goPrev = async () => {
     const res = await axios.get(`http://localhost:8080/api/board/${id}/prev`);
     if (res.data?.id) navigate(`/board/${res.data.id}`);
     else alert("이전 글이 없습니다.");
   };
 
-  // 🔥 다음글 이동
+  /** 다음글 이동 */
   const goNext = async () => {
     const res = await axios.get(`http://localhost:8080/api/board/${id}/next`);
     if (res.data?.id) navigate(`/board/${res.data.id}`);
@@ -171,7 +168,7 @@ const PostDetail = () => {
     loadComments();
   }, [id]);
 
-  /** 댓글 */
+  /** 댓글 등록 */
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
 
@@ -185,7 +182,7 @@ const PostDetail = () => {
     loadComments();
   };
 
-  /** 대댓글 */
+  /** 대댓글 등록 */
   const handleAddReply = async (parentId) => {
     if (!replyContent.trim()) return;
 
@@ -200,16 +197,18 @@ const PostDetail = () => {
     loadComments();
   };
 
+  /** 댓글 삭제 */
   const handleDeleteComment = async (cid) => {
     await axios.delete(`http://localhost:8080/api/comments/${cid}`, {
       data: {
         writer: loginNickname,
-        userType: loginUserType, // ★ 관리자 여부 백엔드로 전달
+        userType: loginUserType,
       },
     });
     loadComments();
   };
 
+  /** 댓글 수정 */
   const handleEdit = async (cid) => {
     await axios.put(`http://localhost:8080/api/comments/${cid}`, {
       content: editContent,
@@ -221,32 +220,29 @@ const PostDetail = () => {
   };
 
   /** 게시글 삭제 */
-const handleDeletePost = async () => {
-  // 🔥 1단계: 확인창 먼저 띄우기
-  const ok = window.confirm("정말 이 게시글을 삭제하시겠습니까?");
-  if (!ok) {
-    return; // 사용자가 취소 누르면 아무 것도 안 함
-  }
+  const handleDeletePost = async () => {
+    const ok = window.confirm("정말 이 게시글을 삭제하시겠습니까?");
+    if (!ok) return;
 
-  try {
-    await axios.delete(`http://localhost:8080/api/board/${id}`, {
-      data: {
-        writer: loginNickname,
-        userType: loginUserType, // 관리자 / 일반 여부 전달
-      },
-    });
+    try {
+      await axios.delete(`http://localhost:8080/api/board/${id}`, {
+        data: {
+          writer: loginNickname,
+          userType: loginUserType,
+        },
+      });
 
-    alert("게시글이 삭제되었습니다.");
-    navigate("/main");
-  } catch (err) {
-    console.error(err);
-    alert("게시글 삭제 중 오류가 발생했습니다.");
-  }
-};
+      alert("게시글이 삭제되었습니다.");
+      navigate("/main");
+    } catch (err) {
+      console.error(err);
+      alert("게시글 삭제 중 오류가 발생했습니다.");
+    }
+  };
 
   if (!post) return <div>로딩중...</div>;
 
-  /** 댓글 트리 */
+  /** 댓글 트리 구성 */
   const buildTree = (items) => {
     const map = {};
     items.forEach((c) => {
@@ -254,7 +250,6 @@ const handleDeletePost = async () => {
     });
 
     const roots = [];
-
     items.forEach((c) => {
       if (c.parentId) map[c.parentId]?.children.push(map[c.id]);
       else roots.push(map[c.id]);
@@ -267,60 +262,39 @@ const handleDeletePost = async () => {
 
   return (
     <div className="post-detail-container">
-      {/* 🔥 상단 네비게이션 */}
-      <div className="post-nav">
-        <div className="left-buttons">
-          {/* 글 수정은 기존처럼 작성자만, 삭제는 관리자도 가능 */}
-          {post.writer === loginNickname && (
-            <button
-              className="edit-btn"
-              onClick={() => navigate(`/board/write?id=${post.id}`)}
-            >
-              수정
-            </button>
-          )}
+      {/* 상단 우측 X 버튼 */}
+      <button
+        type="button"
+        className="close-btn"
+        onClick={() => navigate(-1)}
+        aria-label="목록으로 이동"
+      />
 
-          {(post.writer === loginNickname || isAdmin) && (
-            <button className="delete-btn" onClick={handleDeletePost}>
-              삭제
-            </button>
-          )}
-        </div>
+      {/* 제목 + 링크 아이콘 */}
+      <h1 className="post-detail-title">{post.title}</h1>
 
-        <div className="right-buttons">
-          <button className="nav-btn" onClick={goPrev}>
-            이전글
-          </button>
-          <button className="nav-btn" onClick={goNext}>
-            다음글
-          </button>
-          <button className="nav-btn" onClick={() => navigate("/main")}>
-            목록
-          </button>
-        </div>
-      </div>
-
-      {/* 제목 */}
-      <h1 className="post-title">{post.title}</h1>
-
-      {/* 작성자 */}
+      {/* 닉네임 / 작성자 / 날짜 */}
       <div className="post-meta">
-        <span>작성자: {post.writer}</span>
-        <span>{moment(post.createdAt).format("YYYY.MM.DD HH:mm")}</span>
+        <span className="meta-label">닉네임</span>
+        <span className="meta-writer">{post.writer}</span>
+        <span className="meta-date">
+          {moment(post.createdAt).format("YYYY.MM.DD HH:mm")}
+        </span>
       </div>
 
       {/* 본문 */}
       <div className="post-content">{post.content}</div>
 
-      <h3 className="comment-title">댓글</h3>
+      {/* 댓글 타이틀 */}
+      <h3 className="comment-title">Comment</h3>
 
       {/* 댓글 입력 */}
       <div className="comment-form">
         <textarea
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-          placeholder="댓글을 입력하세요"
-        ></textarea>
+          placeholder="댓글 내용을 입력해 주세요. Enter를 입력하여 등록."
+        />
         <button onClick={handleAddComment}>등록</button>
       </div>
 
@@ -351,9 +325,58 @@ const handleDeletePost = async () => {
             onSaveReply={handleAddReply}
             onCancelReply={() => setReplyToId(null)}
             loginNickname={loginNickname}
-            loginUserType={loginUserType} // 관리자 여부 전달
+            loginUserType={loginUserType}
           />
         ))}
+      </div>
+
+      {/* 하단 네비게이션 */}
+      <div className="post-nav">
+        <div className="left-buttons">
+          {post.writer === loginNickname && (
+            <button
+              className="edit-btn"
+              type="button"
+              onClick={() => navigate(`/board/write?id=${post.id}`)}
+            >
+              수정
+            </button>
+          )}
+
+          {(post.writer === loginNickname || isAdmin) && (
+            <button
+              className="delete-btn"
+              type="button"
+              onClick={handleDeletePost}
+            >
+              삭제
+            </button>
+          )}
+        </div>
+
+        <div className="right-buttons">
+          <button
+            className="nav-btn prev-btn"
+            type="button"
+            onClick={goPrev}
+          >
+            이전글
+          </button>
+          <button
+            className="nav-btn list-btn"
+            type="button"
+            onClick={() => navigate("/main")}
+          >
+            목록
+          </button>
+          <button
+            className="nav-btn next-btn"
+            type="button"
+            onClick={goNext}
+          >
+            다음글
+          </button>
+        </div>
       </div>
     </div>
   );
