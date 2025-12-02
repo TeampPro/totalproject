@@ -8,13 +8,16 @@ import "../../styles/TimeCalendar/TimeViewPage.css";
 
 moment.locale("ko");
 
-function TimeViewPage({ reloadKey = 0, selectedDateFromCalendar }) {
+function TimeViewPage({ user, reloadKey = 0, selectedDateFromCalendar }) {
+  const isLoggedIn = !!user?.id;
+
   const initialDate = selectedDateFromCalendar
     ? moment(selectedDateFromCalendar)
     : moment();
+
   const [weekStart, setWeekStart] = useState(
-    initialDate.clone().startOf("week")
-  ); // 일요일 시작
+    initialDate.clone().startOf("week") // 일요일 시작
+  );
   const [events, setEvents] = useState([]);
   const [selectedDate, setSelectedDate] = useState(initialDate);
 
@@ -34,15 +37,15 @@ function TimeViewPage({ reloadKey = 0, selectedDateFromCalendar }) {
 
   // 현재 weekStart 기준으로 주간 일정 로딩
   const loadWeekEvents = async (baseWeekStart = weekStart) => {
-    try {
-      const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-      if (!storedUser?.id) {
-        setEvents([]);
-        return;
-      }
+    // 🔹 로그아웃 상태면 API 호출 안 하고, 일정 비우기
+    if (!isLoggedIn) {
+      setEvents([]);
+      return;
+    }
 
+    try {
       const data = await api.get("/api/tasks", {
-        params: { userId: storedUser.id },
+        params: { userId: user.id },
       });
       const all = data || [];
 
@@ -58,13 +61,17 @@ function TimeViewPage({ reloadKey = 0, selectedDateFromCalendar }) {
       setEvents(filtered);
     } catch (err) {
       console.error("❌ 일정 불러오기 실패:", err);
+      setEvents([]);
     }
   };
 
+  // weekStart / reloadKey / 로그인 상태 바뀔 때마다 주간 일정 다시 로딩
   useEffect(() => {
     loadWeekEvents(weekStart);
-  }, [weekStart, reloadKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weekStart, reloadKey, isLoggedIn]);
 
+  // 캘린더에서 날짜를 클릭해서 넘어온 경우
   useEffect(() => {
     if (!selectedDateFromCalendar) return;
     const m = moment(selectedDateFromCalendar);
@@ -214,9 +221,17 @@ function TimeViewPage({ reloadKey = 0, selectedDateFromCalendar }) {
 
   return (
     <div className="tv-page">
-      {/* 🔵 큰 카드 1장 */}
+      {/* 🔹 로그아웃 상태 안내 – 레이아웃은 그대로 */}
+      {!isLoggedIn && (
+        <div className="tv-login-notice">
+          로그인하지 않은 상태입니다. 일정 데이터는 로그인 후 확인할 수
+          있습니다.
+        </div>
+      )}
+
+      {/* 🔵 메인 카드 */}
       <section className="tv-main-card">
-        {/* ── 헤더: Today / 화살표 / 주 범위 ── */}
+        {/* 헤더 */}
         <header className="tv-header">
           <div className="tv-header-left">
             <button
@@ -253,7 +268,7 @@ function TimeViewPage({ reloadKey = 0, selectedDateFromCalendar }) {
           </div>
         </header>
 
-        {/* ── 위 영역 : 주간 셀 ── */}
+        {/* 위쪽 주간 스트립 */}
         <section className="tv-main-top">
           <div className="tv-week-strip">
             {days.map((day, idx) => {
@@ -304,6 +319,7 @@ function TimeViewPage({ reloadKey = 0, selectedDateFromCalendar }) {
                           className="tv-week-event-chip"
                           onClick={(clickEvt) => {
                             clickEvt.stopPropagation();
+                            if (!isLoggedIn) return; // 로그아웃이면 모달 X
                             setSelectedEvent(ev);
                             setShowModal(true);
                           }}
@@ -337,14 +353,14 @@ function TimeViewPage({ reloadKey = 0, selectedDateFromCalendar }) {
           </div>
         </section>
 
-        {/* 가운데 얇은 구분선 */}
+        {/* 가운데 구분선 */}
         <div className="tv-main-divider" />
 
-        {/* ── 아래 영역 : 요약 + 타임라인 ── */}
+        {/* 아래 요약 + 타임라인 */}
         <section className="tv-main-bottom">
           <div className="tv-bottom-card">
             <div className="tv-bottom-card-header">
-              {/* 요약 5칸 한 줄 */}
+              {/* 요약 5칸 */}
               <div className="tv-summary-table">
                 <div className="tv-summary-col">
                   <div className="tv-summary-label">일정 시작</div>
@@ -393,8 +409,7 @@ function TimeViewPage({ reloadKey = 0, selectedDateFromCalendar }) {
                 >
                   {timelineBlocks.map((b) => {
                     const left = (b.startHourNum / 24) * 100;
-                    const width =
-                      ((b.endHourNum - b.startHourNum) / 24) * 100;
+                    const width = ((b.endHourNum - b.startHourNum) / 24) * 100;
                     const top = 4 + b.lane * 36;
 
                     return (
@@ -403,6 +418,7 @@ function TimeViewPage({ reloadKey = 0, selectedDateFromCalendar }) {
                         className="tv-timeline-event"
                         style={{ left: `${left}%`, width: `${width}%`, top }}
                         onClick={() => {
+                          if (!isLoggedIn) return;
                           setSelectedEvent(b.event);
                           setShowModal(true);
                         }}
@@ -437,8 +453,8 @@ function TimeViewPage({ reloadKey = 0, selectedDateFromCalendar }) {
         </section>
       </section>
 
-      {/* 일정 수정 / 삭제 모달 */}
-      {showModal && selectedEvent && (
+      {/* 일정 수정 / 삭제 모달 (로그인 상태에서만) */}
+      {showModal && selectedEvent && isLoggedIn && (
         <CalendarTodo
           editTodo={selectedEvent}
           defaultDate={selectedDate.format("YYYY-MM-DD")}
@@ -455,7 +471,6 @@ function TimeViewPage({ reloadKey = 0, selectedDateFromCalendar }) {
       )}
     </div>
   );
-
 }
 
 export default TimeViewPage;

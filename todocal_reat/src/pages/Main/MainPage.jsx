@@ -140,56 +140,6 @@ const MainPage = ({ user, setUser }) => {
           </div>
         )}
 
-        {/* 우측 하단 메뉴 버튼 */}
-        {user && (
-          <div className="menu-wrapper">
-            <button
-              className="menu-button"
-              onClick={() => setMenuOpen((prev) => !prev)}
-            >
-              <div className="menu-bar" />
-              <div className="menu-bar" />
-              <div className="menu-bar" />
-            </button>
-
-            {menuOpen && (
-              <div className="dropdown">
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate("/myPage");
-                  }}
-                >
-                  마이페이지
-                </button>
-
-                {user?.userType === "ADMIN" && (
-                  <button
-                    className="dropdown-item"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      navigate("/admin/users");
-                    }}
-                  >
-                    회원관리
-                  </button>
-                )}
-
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    handleLogout();
-                  }}
-                >
-                  로그아웃
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* 메인 대시보드 */}
         <div className={`dashboard-new ${!user ? "locked" : ""}`}>
           <div className="main-grid">
@@ -238,12 +188,12 @@ const MainPage = ({ user, setUser }) => {
 
             {/* ✅ 타임뷰는 right-top-area 밖, 별도 행으로 */}
             <div className="timeview-area">
-              {user && (
-                <TimeViewPage
-                  reloadKey={todoReloadKey}
-                  selectedDateFromCalendar={selectedDate}
-                />
-              )}
+              {/* 🔹 user 여부와 상관없이 항상 렌더링 */}
+              <TimeViewPage
+                user={user}
+                reloadKey={todoReloadKey}
+                selectedDateFromCalendar={selectedDate}
+              />
             </div>
 
             {/* 4️⃣ 아래 행: 지도 */}

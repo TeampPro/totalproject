@@ -9,11 +9,11 @@
 
 /* 바깥 큰 카드 (피그마 큰 흰 박스) */
 .tv-main-card {
-  width: 98%;
+  width: 100%;
   border-radius: 18px;
   background: #ffffff;
   padding: 16px 20px 0;
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.20);
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -38,6 +38,7 @@
   flex-direction: column;
   gap: 12px;
   box-sizing: border-box;
+  margin-bottom: 15px;
 }
 
 /* =========================
@@ -209,17 +210,38 @@
   gap: 4px;
 }
 
+/* 라벨 아래에 선 추가 */
 .tv-summary-label {
-  color: #6b7280;
-  font-weight: 500;
-  padding: 10px;
+  color: var(--text-basic-level1, #1c1c1c);
+  font-family: var(--font-Family, "Pretendard", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: var(--font-size-Small, 14px); /* 100% */
+  letter-spacing: var(--font-letter-spacing-Small, -0.28px);
+
+  padding-bottom: 12px;               /* 선과 텍스트 사이 여백 */
+  border-bottom: 1px solid #e5e7eb;  /* 🔹 여기서 선 생김 */
+  margin-bottom: 4px;                /* 아래 value와 간격 */
 }
 
+/* 값 영역 */
 .tv-summary-value {
-  color: #111827;
-  font-weight: 600;
-  padding: 10px;
+  overflow: hidden;
+  color: var(--text-basic-level1, #1c1c1c);
+  text-overflow: ellipsis;
+
+  font-family: var(--font-Family, "Pretendard", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: var(--font-size-Small, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--font-multi-line-height-Small, 21px); /* 150% */
+  letter-spacing: var(--font-letter-spacing-Small, -0.28px);
 }
+
+
 
 /* =========================
    3. 타임라인 (시간 그래프)
@@ -289,7 +311,7 @@
   flex-direction: column;
   justify-content: center;
   cursor: pointer;
-  margin-left: 22px;
+  margin-left: 26px;
 }
 
 .tv-timeline-event-title {

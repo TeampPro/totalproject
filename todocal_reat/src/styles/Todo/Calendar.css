@@ -13,19 +13,20 @@
   background: #f5fbff;
 }
 
-/* 가운데 큰 카드 (피그마 컨테이너) */
+/* 캘린더 전체 카드 */
 .calendar-card {
+  max-width: 100%;
   width: 100%;
-  max-width: 720px; /* 필요하면 760~800 으로 조절 가능 */
-  background: #ffffff;
+  margin: 0;
+
+  /* 카드 자체 세로 길이 */
+  min-height: 640px;
+
+  padding: 24px 32px 32px;
   border-radius: 24px;
-  padding: 22px 26px 26px;
+  background: #ffffff;
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
   box-sizing: border-box;
-
-  display: flex;
-  flex-direction: column;
-  gap: 14px; /* 헤더 / 캘린더 / 패널 간격 */
 }
 
 /* =========================
@@ -37,13 +38,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.current-year-month {
-  font-size: 15px;
-  font-weight: 600;
-  color: #111827;
-  cursor: pointer;
 }
 
 /* 좌/우 이동 버튼 */
@@ -118,10 +112,11 @@
 .calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  font-size: 11px;
+  font-size: 16px;
   color: #6b7280;
   text-align: center;
-  margin-bottom: -4px; /* 날짜 카드와 간격 살짝 겹치게 */
+  margin-bottom: -6px;
+  margin-top: 30px;
 }
 
 .calendar-weekday {
@@ -140,32 +135,30 @@
    달력 그리드 / 셀
 ========================= */
 
-/* 7 x 6 그리드 */
+/* 날짜 칸들이 들어가는 그리드 */
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: 84px; /* 셀 높이 (필요하면 90~100 으로 조정) */
-  gap: 8px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-auto-rows: 118px;   /* 기존 100px → 105px 정도로 살짝 여유 */
+  column-gap: 14px;
+  row-gap: 14px;
+  padding: 18px 8px 24px;
 }
 
-/* 날짜 셀 전체 카드 */
+/* 날짜 칸 하나 */
 .day-cell {
-  background: #ffffff;
-  border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
-
-  padding: 6px 7px;
+  width: 100%;
+  height: 118px;          /* grid-auto-rows와 맞추기 */
   box-sizing: border-box;
-
+  border-radius: 18px;
+  background: #fbfdff;
+  border: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-
+  padding: 8px 12px 8px;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease,
-    box-shadow 0.15s ease, transform 0.05s ease;
+
+  overflow: hidden;
 }
 
 .day-cell:hover {
@@ -193,51 +186,74 @@
 .date-number {
   font-size: 13px;
   font-weight: 600;
-  color: #111827;
+  color: #364153;
 }
 
 .holiday-name {
   font-size: 10px;
   color: #f97316;
   margin-top: 2px;
+  margin-bottom: 2px;
 }
 
 /* 셀 안의 todo 리스트 */
+/* 셀 안의 todo 리스트 */
 .todo-list {
   width: 100%;
-  margin-top: 2px;
+  margin-top: 3px;
+
+  /* ✅ 위에서 아래로 쌓이게 */
+  display: flex;
+  flex-direction: column;
+
+  /* 이제는 자르지 말고 그대로 보이게 */
   overflow: hidden;
 }
 
+
 .todo-item {
   font-size: 11px;
-  padding: 2px 4px;
+  padding: 1px 4px;
   border-radius: 6px;
   background: #eef2ff;
   color: #1d4ed8;
-  margin-bottom: 2px;
-
+  margin-bottom: 1px;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* 숨겨진 일정 개수 표시 */
 .todo-more {
   font-size: 10px;
   color: #9ca3af;
+
+  /* ✅ 위의 todo-item 들 아래에 오되,
+     셀 바닥에 딱 붙지 않도록 살짝 띄우기 */
+  margin-top: 1px;
+  line-height: 1.2;
+  padding-bottom: 1px;
 }
+
 
 /* =========================
    선택 날짜 패널 (아래 카드)
 ========================= */
 
 .calendar-day-panel {
-  margin-top: 10px;
+  margin-top: 16px;
   border-radius: 18px;
   border: 1px solid #e5e7eb;
   background: #f9fafb;
-  padding: 10px 14px 12px;
+  padding: 14px 18px 18px;
   box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+
+  /* ✅ 내용이 없어도 일정 카드 전체 높이 고정 */
+  min-height: 260px;   /* 필요하면 240~280 사이로 조절해서 보기 좋은 값 찾기 */
 }
 
 /* 패널 헤더 (아이콘 + 제목) */
@@ -263,15 +279,13 @@
   height: 14px;
 }
 
-.calendar-day-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #111827;
-}
-
 /* 패널 본문 */
 .calendar-day-panel-body {
-  max-height: 160px;
+  flex: 1;
+  margin-top: 6px;
+
+  /* ✅ 일정이 많아지면 안에서만 스크롤 */
+  max-height: 220px;   /* 5개 정도 보이는 높이 */
   overflow-y: auto;
   padding-right: 4px;
 }
@@ -299,6 +313,7 @@
   font-size: 12px;
   color: #111827;
 }
+
 
 .calendar-day-item-title {
   font-weight: 500;
@@ -370,7 +385,8 @@
 
   .calendar-grid {
     grid-auto-rows: 72px;
-    gap: 6px;
+    column-gap: 6px;
+    row-gap: 6px;
   }
 
   .day-cell {
@@ -400,7 +416,46 @@
   /* 이미 time-home이 큰 카드라 안쪽은 내용만 */
   width: 100%;
   max-width: none;
-  box-shadow: none;      /* 겉 카드랑 그림자 겹치지 않게 */
+  box-shadow: none;
   padding: 0;
   border-radius: 0;
+}
+
+.current-year-month{
+  color: #101828;
+  text-align: center;
+
+  font-family: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400; /* normal */
+  line-height: 24px; /* 150% */
+  letter-spacing: -0.312px;
+
+  cursor: pointer;
+}
+
+.time-title {
+  color: #101828;
+
+  font-family: "Paperlogy-Medium", "Paperlogy-Regular", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px; /* 150% */
+  letter-spacing: -0.312px;
+}
+
+.calendar-day-title {
+  color: #101828;
+
+  font-family: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: -0.312px;
 }

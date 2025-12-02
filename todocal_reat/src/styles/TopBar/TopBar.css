@@ -11,11 +11,12 @@
 /* ✅ page-inner 안에서 또 한 번 폭 제한 + 가운데 정렬 */
 .topbar-inner {
   width: 100%;
-  max-width: 1160px;      /* 🔥 캘린더/메인 그리드랑 비슷한 폭 (원하면 1120/1100으로 줄여도 됨) */
-  margin: 0 auto;         /* 가운데 정렬 */
+  max-width: 1360px;      /* 🔥 캘린더/메인 그리드랑 비슷한 폭 (원하면 1120/1100으로 줄여도 됨) */
+  margin: 24px auto 16px;         /* 가운데 정렬 */
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-sizing: border-box;
 }
 
 
