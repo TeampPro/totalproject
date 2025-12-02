@@ -2,6 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/Main/MainPage.css";
 import axios from "axios";
+import moment from "moment";
+import "moment/locale/ko";
+moment.locale("ko");
 
 import WebSearch from "../../components/Search/WebSearch";
 import TimeHome from "../../components/TimeCalendar/TimeHome";
@@ -13,12 +16,15 @@ import RightAuthBox from "../../components/RightAuthBox/RightAuthBox.jsx";
 import UserInfo from "../../components/myprofile/UserInfo.jsx";
 import TopBar from "../../components/TopBar/TopBar.jsx";
 import TodoPanel from "../Todo/TodoPanel.jsx";
+import TimeViewPage from "../../components/TimeCalendar/TimeViewPage.jsx";
+
 
 const MainPage = ({ user, setUser }) => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const calendarRef = useRef(null);
   const [todoReloadKey, setTodoReloadKey] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(moment());
 
   // 7일 이내 마감 일정 리스트
   const [urgentTodos, setUrgentTodos] = useState([]);
@@ -134,56 +140,6 @@ const MainPage = ({ user, setUser }) => {
           </div>
         )}
 
-        {/* 우측 하단 메뉴 버튼 */}
-        {user && (
-          <div className="menu-wrapper">
-            <button
-              className="menu-button"
-              onClick={() => setMenuOpen((prev) => !prev)}
-            >
-              <div className="menu-bar" />
-              <div className="menu-bar" />
-              <div className="menu-bar" />
-            </button>
-
-            {menuOpen && (
-              <div className="dropdown">
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate("/myPage");
-                  }}
-                >
-                  마이페이지
-                </button>
-
-                {user?.userType === "ADMIN" && (
-                  <button
-                    className="dropdown-item"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      navigate("/admin/users");
-                    }}
-                  >
-                    회원관리
-                  </button>
-                )}
-
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    handleLogout();
-                  }}
-                >
-                  로그아웃
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* 메인 대시보드 */}
         <div className={`dashboard-new ${!user ? "locked" : ""}`}>
           <div className="main-grid">
@@ -198,7 +154,10 @@ const MainPage = ({ user, setUser }) => {
                 disabled={!user}
                 user={user}
                 calendarRef={calendarRef}
+                // 일정 변경 → reloadKey 증가
                 onTodosChange={() => setTodoReloadKey((prev) => prev + 1)}
+                // ✅ 캘린더에서 날짜 선택되면 MainPage 의 selectedDate 갱신
+                onDateSelected={(dateMoment) => setSelectedDate(dateMoment)}
               />
             </div>
 
@@ -225,6 +184,16 @@ const MainPage = ({ user, setUser }) => {
               <div className="weather-area">
                 <WeatherBoard disabled={!user} />
               </div>
+            </div>
+
+            {/* ✅ 타임뷰는 right-top-area 밖, 별도 행으로 */}
+            <div className="timeview-area">
+              {/* 🔹 user 여부와 상관없이 항상 렌더링 */}
+              <TimeViewPage
+                user={user}
+                reloadKey={todoReloadKey}
+                selectedDateFromCalendar={selectedDate}
+              />
             </div>
 
             {/* 4️⃣ 아래 행: 지도 */}

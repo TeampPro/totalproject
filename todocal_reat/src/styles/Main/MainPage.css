@@ -1,5 +1,8 @@
-/* 화면 전체 배경 */
-/* 페이지 전체 배경 덮는 루트 */
+/* =========================
+   메인 페이지 전체 래퍼
+========================= */
+
+/* 페이지 전체 배경 */
 .page-root {
   width: 100%;
   display: flex;
@@ -7,127 +10,73 @@
   background: #f6fbff;
 }
 
-/* 가운데 정렬 + 최대 폭만 담당 */
+/* 가운데 1280 박스 */
 .page-inner {
   width: 100%;
-  max-width: 1280px;
+  max-width: 1440px;
   margin: 0 auto;
-  /* ✅ 여기서는 padding 주지 말고, 안쪽 애들에게만 주자 */
-  padding: 0;
+  padding: 0 32px 40px;
   box-sizing: border-box;
 }
 
-/* === 우측 하단 floating 메뉴 버튼 === */
-.menu-wrapper {
-  position: fixed;
-  bottom: 80px;
-  right: 20px;
-  z-index: 600;
-}
-
-.menu-button {
-  background-color: #007bff;
-  border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-.menu-bar {
-  width: 30px;
-  height: 4px;
-  background-color: #fff;
-  margin: 3px 0;
-  border-radius: 2px;
-}
-
-/* 드롭다운 메뉴 */
-.dropdown {
-  position: absolute;
-  bottom: 75px;
-  right: 0;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  padding: 5px 0;
-  min-width: 120px;
-}
-
-.dropdown-item {
-  background: none;
-  border: none;
-  padding: 8px 16px;
-  text-align: left;
-  cursor: pointer;
-  font-size: 14px;
-  white-space: nowrap;
-}
-
-.dropdown-item:hover {
-  background: #f0f0f0;
-}
-
-/* === 대시보드 전체 컨테이너 === */
+/* 대시보드 컨테이너 */
 .dashboard-new {
   margin-top: 5px;
-  display: flex;
-  justify-content: center;
   background: #f5fbff;
 }
 
-/* === 메인 그리드 레이아웃 === */
+/* 메인 2열 그리드 (캘린더 / 오른쪽 패널) */
 .main-grid {
-  /* 전체 레이아웃 자체를 가운데 정렬 */
-  width: 100%;
-  max-width: 1280px;              /* 전체 컨텐츠 폭 (원하는 값으로) */
-  margin: 20px auto 40px;
-
+  width:100%;              
+  max-width: 1360px;
+  margin: 24px auto 48px;   
   display: grid;
-  /* 🔥 캘린더 / 오른쪽 컬럼을 고정 폭으로 두고 가운데 배치 */
-  grid-template-columns: 736px 520px;   /* 피그마 기준에 맞게 숫자 조절해도 됨 */
-  column-gap: 24px;
+  grid-template-columns: 1.6fr 1fr;
+  column-gap: 32px;
   row-gap: 24px;
 }
 
-/* 1) 검색창 – 전체 폭 */
+/* 1. 검색창 – 상단 전체 폭 */
 .search-wide {
-  grid-column: 1 / 3;
+  grid-column: 1 / -1;
+  width: 100%;
+  margin-top: 12px;
 }
 
-/* 2) 캘린더 – 왼쪽 컬럼 */
+/* 2. 캘린더 – 왼쪽 컬럼 */
 .calendar-area {
   grid-column: 1 / 2;
 }
 
-/* 3) 오른쪽 상단(프로필 + Todo + 날씨) – 오른쪽 컬럼 */
+/* 3. 오른쪽 상단(프로필 + Todo + 날씨) – 오른쪽 컬럼 */
 .right-top-area {
   grid-column: 2 / 3;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;   /* 컬럼 폭 전체 사용 */
   gap: 16px;
 }
 
-/* 프로필 / Todo / 날씨 래퍼 – 카드들을 컬럼 가운데로 */
+/* 오른쪽 카드 래퍼: 카드들을 컬럼 중앙으로 배치 */
 .profile-area,
 .todo-area,
 .weather-area {
   width: 100%;
-  max-width: 520px;          /* 오른쪽 카드 기준 폭 */
   display: flex;
   justify-content: center;
 }
 
-/* 4) 오른쪽 아래(날씨 + 지도) – 전체 폭 */
+/* 오른쪽 컬럼 안의 실제 카드 (UserInfo / RightAuthBox / TodoPanel / WeatherBoard) */
+.profile-area > *,
+.todo-area > *,
+.weather-area > * {
+  width: 100%;
+  max-width: 520px;   /* 오른쪽 카드 공통 폭 */
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* 4. 아래쪽 지도 영역 – 필요 시 전체 폭 사용 */
 .right-bottom-area {
   grid-column: 1 / 3;
   display: flex;
@@ -140,22 +89,15 @@
   width: 100%;
 }
 
-.calendar-area > *:last-child {
-  margin-bottom: 0 !important;
-}
-
-/* 왼쪽 캘린더 카드 폭을 왼쪽 컬럼(736px)에 맞추기 */
+/* 캘린더 카드 – 왼쪽 컬럼을 꽉 채움 */
 .calendar-area > * {
   width: 100%;
-  max-width: 736px;
+  max-width: none;
   box-sizing: border-box;
 }
 
-/* 오른쪽 컬럼 안의 카드들 폭을 520px 컬럼에 맞추기 */
-.profile-area > *,
-.todo-area > *,
-.weather-area > * {
+/* 타임라인 카드: 그리드 두 칼럼 전체 사용 */
+.timeview-area {
+  grid-column: 1 / 3;   /* 1번 컬럼부터 3(=끝)까지 → 2칸 전체 */
   width: 100%;
-  max-width: 520px;
-  box-sizing: border-box;
 }

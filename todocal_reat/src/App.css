@@ -1,41 +1,6 @@
-/* Paperlogy Medium (기본) */
-@font-face {
-  font-family: "Paperlogy-Medium";
-  src: url("/fonts/Paperlogy-1.000/Paperlogy-5Medium.ttf") format("truetype");
-  font-weight: 500;
-  font-style: normal;
-}
+/* ========== 앱 공통 레이아웃 (기존 main-layout / dashboard 사용 중이면 유지) ========== */
 
-/* Paperlogy Regular */
-@font-face {
-  font-family: "Paperlogy-Regular";
-  src: url("/fonts/Paperlogy-1.000/Paperlogy-4Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-}
-
-/* Paperlogy SemiBold */
-@font-face {
-  font-family: "Paperlogy-SemiBold";
-  src: url("/fonts/Paperlogy-1.000/Paperlogy-6SemiBold.ttf") format("truetype");
-  font-weight: 600;
-  font-style: normal;
-}
-
-/* 전체 기본 폰트 Medium으로 */
-body {
-  font-family: "Paperlogy-Medium", system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-}
-
-/* 기본 스타일 */
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #F5FBFF;
-}
-
-/* 메인 레이아웃 */
+/* 예전 레이아웃에서 쓰던 전체 래퍼 */
 .main-layout {
   display: flex;
   flex-direction: column;
@@ -46,91 +11,50 @@ body {
   max-width: 1400px;
   margin: 0 auto;
 
-  position: relative;  /* 🔥 플로팅 버튼 보이게 */
-  z-index: 1;          /* 🔥 MainPage 오버레이가 위로 */
+  position: relative;  /* 플로팅 버튼 보이게 */
+  z-index: 1;
 }
 
-/* ========================= */
-/*       대시보드 구조        */
-/* ========================= */
-
-.dashboard-new {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-/* 메인 2열 레이아웃 */
-.main-grid {
-  display: grid;  
-  grid-template-columns: 1.5fr 0.9fr;
-  gap: 40px;
-  align-items: flex-start;
-}
-
-/* 좌측 */
-.left-area {
+/* 기존 .dashboard 페이지용 레이아웃 */
+.dashboard {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px;
+  padding-bottom: 80px; /* 메뉴바 공간 확보 */
 }
 
-.calendar-area {
-  background-color: #fff;
-  padding: 15px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  min-height: 430px;
+.weather-widget {
+  min-height: 80px;
 }
 
-.board-area {
-  background-color: #fff;
-  padding: 15px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  min-height: 260px;
+.calendar-widget {
+  min-height: 400px;
 }
 
-/* 우측 */
-.right-area {
+.bottom-widgets {
   display: flex;
-  flex-direction: column;
   gap: 20px;
-
-  width: 100%;
-  max-width: none;
-  margin-left: 10px;
 }
 
-/* Weather container 제거 */
-.right-area > .weather-container,
-.right-area > .weather-side {
-  background: none !important;
-  border: none !important;
-  padding: 0 !important;
+.todo-widget {
+  flex: 2;
+  min-height: 250px;
 }
 
-/* WeatherBoard 크기 */
-.right-area > div:nth-child(2) {
-  min-height: 150px;
-  width: 100%;
+.map-widget {
+  flex: 1;
+  min-height: 250px;
 }
 
-/* KakaoMap 크기 */
-.map-area {
-  background-color: #fff;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  width: 100%;
-  min-height: 330px;
-}
-
-/* content 영역 */
 .content {
   margin-top: 20px;
+  padding: 20px;
 }
 
+/* 공통 버튼 폰트만 유지 */
 button {
   font-family: inherit;
   font-size: 14px;

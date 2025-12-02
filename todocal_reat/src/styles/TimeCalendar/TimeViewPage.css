@@ -1,13 +1,50 @@
-/* src/styles/TimeCalendar/TimeViewPage.css */
+/* =========================
+   TimeViewPage 전체 레이아웃
+========================= */
 
-/* 전체 페이지 */
+/* 전체 래퍼 (위에 살짝 간격만) */
 .tv-page {
   margin-top: 16px;
-  margin-bottom: 0;
-  gap: 12px;
 }
 
-/* 헤더 (Today / 화살표 / 날짜 범위) */
+/* 바깥 큰 카드 (피그마 큰 흰 박스) */
+.tv-main-card {
+  width: 100%;
+  border-radius: 18px;
+  background: #ffffff;
+  padding: 16px 20px 0;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.20);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* 위쪽 영역(헤더 + 주간바) – 아래에 선 하나 */
+.tv-main-top {
+  padding-bottom: 14px;
+}
+
+/* 아래쪽 영역(요약 + 그래프) */
+.tv-main-bottom {
+  margin-top: 16px;
+}
+
+/* 아래쪽 전체를 둘러싸는 작은 카드 */
+.tv-bottom-card {
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 16px 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  margin-bottom: 15px;
+}
+
+/* =========================
+   헤더 (Today / 화살표 / 날짜 범위)
+========================= */
+
 .tv-header {
   display: flex;
   justify-content: space-between;
@@ -32,17 +69,20 @@
 .tv-header-center h2 {
   font-size: 14px;
   font-weight: 600;
+  margin: 0;
 }
 
-/* 1. 위쪽 주간 바 */
+/* =========================
+   1. 위쪽 주간 바
+========================= */
 
 .tv-week-strip {
+  border: #EAECEF 1px solid;
+  border-radius: 10px;
   display: flex;
   gap: 8px;
-  padding: 12px 16px;
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  padding: 12px 0;
+  margin-top: 8px;
 }
 
 .tv-week-day {
@@ -51,13 +91,13 @@
   min-width: 110px;
   padding: 8px 10px 10px;
   border-radius: 12px;
-  background: #f9fafb;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 6px;
   transition: background 0.15s, border-color 0.15s;
   border: 1px solid transparent;
+  box-sizing: border-box;
 }
 
 .tv-week-day:hover {
@@ -75,6 +115,7 @@
   gap: 4px;
   font-size: 12px;
   color: #4b5563;
+  border-bottom: #EAECEF 1px solid;
 }
 
 .tv-week-day-sunday .tv-week-day-date,
@@ -88,7 +129,7 @@
 }
 
 .tv-week-day-label {
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .tv-week-day-events {
@@ -98,7 +139,7 @@
   margin-top: 2px;
 }
 
-/* 주간 바에 표시되는 일정 칩 */
+/* 주간 바 일정 칩 */
 .tv-week-event-chip {
   border-radius: 8px;
   padding: 4px 6px;
@@ -111,7 +152,7 @@
   display: inline-block;
   padding: 1px 6px;
   border-radius: 999px;
-  background: #2563eb;
+  background: #48A9F8;
   color: #ffffff;
   font-size: 10px;
   margin-bottom: 2px;
@@ -152,17 +193,9 @@
   border-radius: 0 0 999px 999px;
 }
 
-/* 2. 가운데 요약 박스 */
-
-.tv-summary-box {
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
-  padding: 18px 20px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+/* =========================
+   2. 요약 정보 테이블
+========================= */
 
 .tv-summary-table {
   display: grid;
@@ -177,52 +210,99 @@
   gap: 4px;
 }
 
+/* 라벨 아래에 선 추가 */
 .tv-summary-label {
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.tv-summary-value {
-  color: #111827;
+  color: var(--text-basic-level1, #1c1c1c);
+  font-family: var(--font-Family, "Pretendard", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: 14px;
+  font-style: normal;
   font-weight: 600;
+  line-height: var(--font-size-Small, 14px); /* 100% */
+  letter-spacing: var(--font-letter-spacing-Small, -0.28px);
+
+  padding-bottom: 12px;               /* 선과 텍스트 사이 여백 */
+  border-bottom: 1px solid #e5e7eb;  /* 🔹 여기서 선 생김 */
+  margin-bottom: 4px;                /* 아래 value와 간격 */
 }
 
-/* 3. 타임라인 박스 */
+/* 값 영역 */
+.tv-summary-value {
+  overflow: hidden;
+  color: var(--text-basic-level1, #1c1c1c);
+  text-overflow: ellipsis;
 
+  font-family: var(--font-Family, "Pretendard", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: var(--font-size-Small, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--font-multi-line-height-Small, 21px); /* 150% */
+  letter-spacing: var(--font-letter-spacing-Small, -0.28px);
+}
+
+
+
+/* =========================
+   3. 타임라인 (시간 그래프)
+========================= */
+
+/* 타임라인 전체 박스 */
 .tv-timeline-box {
-  margin-top: 6px;
-  border-radius: 14px;
+  height: 200px;
+  border-radius: 0 0 18 18px;
   background: #f9fafb;
-  padding: 14px 24px 12px;
+  padding: 10px 20px 20px;
+  position: relative;
+  margin-left: -18px;           /* 🔥 세로선 기준 */
+  margin-right: -18px;           /* 🔥 세로선 기준 */
+  margin-bottom: -13px;
+  border-radius: 10px;
 }
 
+/* 위쪽 시간 숫자 줄 */
 .tv-timeline-hours {
   display: flex;
-  justify-content: space-between;
   font-size: 11px;
   color: #9ca3af;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
+/* 각 시간 셀 */
 .tv-timeline-hour {
-  width: 100%;
+  flex: 1;                      /* 24등분 */
   text-align: center;
+  position: relative;           /* 🔥 이 칸 기준으로 선을 그림 */
 }
 
-/* 트랙 높이는 JSX에서 동적으로 지정 */
+/* 숫자 아래로 내려오는 세로 점선 */
+.tv-timeline-hour::after {
+  content: "";
+  position: absolute;
+  left: 50%;                    /* 숫자 중앙 */
+  transform: translateX(-0.5px);
+  top: 18px;                    /* 숫자 바로 밑에서 시작 */
+  bottom: -180px;              /* 충분히 크게 내려서 트랙 끝까지 내려가게 (필요시 값 조절) */
+
+  border-left: 1px dashed rgba(148, 163, 184, 0.7);
+  pointer-events: none;
+}
+
+/* 실제 타임라인 (막대가 올라가는 부분) */
 .tv-timeline-track {
   position: relative;
   min-height: 40px;
-  border-radius: 0px;
-  background: #e5e7eb;
+  border-radius: 0;
+  background: transparent;      /* 🔥 세로선은 hour::after 에서 그리므로 여기선 배경 제거 */
   overflow: visible;
+  margin-top: 8px;              /* 숫자와 트랙 사이 간격 */
 }
 
 /* 타임라인 일정 막대 */
 .tv-timeline-event {
   position: absolute;
   border-radius: 999px;
-  background: #3b82f6;
+  background: #48A9F8;
   color: #ffffff;
   font-size: 11px;
   padding: 4px 8px;
@@ -231,26 +311,29 @@
   flex-direction: column;
   justify-content: center;
   cursor: pointer;
+  margin-left: 26px;
 }
 
 .tv-timeline-event-title {
   font-weight: 600;
-  white-space: nowrap;        /* 한 줄로만 표시 */
-  overflow: hidden;           /* 넘치면 숨김 */
-  text-overflow: ellipsis;    /* ... 처리 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tv-timeline-event-time {
   opacity: 0.9;
   font-size: 10px;
-  white-space: nowrap;        /* 시간도 한 줄로 */
+  white-space: nowrap;
 }
 
-/* 범례 */
+
+/* =========================
+   4. 범례
+========================= */
 
 .tv-legend {
-  margin-top: 6px;
-  margin-bottom: 0;
+  margin-top: 4px;
   display: flex;
   gap: 10px;
   font-size: 11px;
@@ -266,15 +349,44 @@
 .tv-legend-my::before {
   color: #2563eb;
 }
+
 .tv-legend-etc::before {
   color: #9ca3af;
 }
+
 .tv-legend-share::before {
   color: #fbbf24;
 }
+
 .tv-legend-emergency::before {
   color: #ef4444;
 }
+
 .tv-legend-holiday::before {
   color: #38bdf8;
+}
+
+/* =========================
+   5. 반응형(필요하면 나중에 조정)
+========================= */
+
+@media (max-width: 1024px) {
+  .tv-main-card {
+    padding: 14px 16px 18px;
+  }
+
+  .tv-bottom-card {
+    padding: 12px 14px 14px;
+  }
+
+  .tv-summary-table {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 10px;
+  }
+}
+
+.tv-bottom-card-header {
+  border: 1px solid #e5e7eb;        /* 테두리 */
+  border-radius: 12px;              /* 살짝 둥글게 */
+  padding: 10px 18px 14px; 
 }

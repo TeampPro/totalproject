@@ -1,57 +1,30 @@
+/* 타임 홈 전체 래퍼 – 바깥 카드 역할 */
 .time-home {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 20px 0;
-  width: 100%;
+  align-items: stretch;
+
+  padding: 20px 20px 24px;
+  box-sizing: border-box;
+
+  /* 🔹 겉 카드 느낌 (피그마 기준) */
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 3px 8px 0 rgba(0, 0, 0, 0.20);
+  border: none;         /* 예전의 얇은 회색 라인 제거 */
 }
 
-/* 🔹 상단 탭 바 */
-.time-tabs {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-/* 🔹 탭 버튼 기본 스타일 */
-.tab {
-  background: #f4f4f4;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tab:hover {
-  background: #eaeaea;
-}
-
-/* 🔹 활성 탭 */
-.tab.active {
-  background: #111;
-  color: #fff;
-  border-color: #111;
-}
-
-/* 🔹 내용 영역 */
-.time-content {
-  width: 100%;
-  display: block;    /* flex를 끄면 캘린더가 full width 사용 */
-}
-
+/* 상단 탭 / 타이틀 영역 */
 .time-top-row {
   display: flex;
   align-items: center;
   width: 100%;
   position: relative;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-/* 가운데 정렬 */
+/* 가운데 탭들 */
 .tabs-center {
   position: absolute;
   left: 50%;
@@ -63,7 +36,7 @@
 /* + 버튼 오른쪽 끝 */
 .add-btn {
   margin-left: auto;
-  margin-right: 10px;  /* ← 🔥 오른쪽 끝에서 10px 왼쪽으로 이동 */
+  margin-right: 4px;
   width: 32px;
   height: 32px;
   border: none;
@@ -74,5 +47,53 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
+}
+
+.time-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.time-top-row img {
+  width: 24px;
+  height: 24px;
+  margin-left: 8px;
+}
+
+/* 탭 버튼 */
+.time-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tab {
+  background: #f4f4f4;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background: #eaeaea;
+}
+
+.tab.active {
+  background: #111827;
+  color: #fff;
+  border-color: #111827;
+}
+
+/* ✅ 내용 영역 – 안쪽 Calendar를 가운데에, 폭 100%로 */
+.time-content {
+  width: 100%;
+  display: flex;
   justify-content: center;
 }
