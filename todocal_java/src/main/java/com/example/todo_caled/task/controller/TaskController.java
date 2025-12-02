@@ -70,10 +70,21 @@ public class TaskController {
             return ResponseEntity.status(404).body("일정 없음");
         }
 
-        // 🔥 ownerId 불일치 → 수정 불가
-        if (task.getOwnerId() == null || !existing.getOwnerId().equals(task.getOwnerId())) {
-            return ResponseEntity.status(403).body("수정 권한이 없습니다.");
+        // 요청 보낸 사용자
+        String requestUserId = task.getOwnerId();
+
+        // 기존 ownerId 가 없는(예전 데이터) 경우 → 처음 수정하는 사람이 주인으로 고정
+        if (existing.getOwnerId() == null) {
+            existing.setOwnerId(requestUserId);
+        } else {
+            // 기존 ownerId 가 있는데, 요청 보낸 사람과 다르면 403
+            if (requestUserId == null || !existing.getOwnerId().equals(requestUserId)) {
+                return ResponseEntity.status(403).body("수정 권한이 없습니다.");
+            }
         }
+
+        // service 쪽에서 ownerId 를 바꾸지 않도록, 요청 객체도 기존 값으로 맞춰 줌
+        task.setOwnerId(existing.getOwnerId());
 
         // 종료 시간이 없으면 자동 +1시간
         if (task.getPromiseDate() != null && task.getEndDateTime() == null) {
@@ -82,6 +93,7 @@ public class TaskController {
 
         return ResponseEntity.ok(taskService.updateTask(id, task));
     }
+
 
     // 일정 완료 / 해제
     @PatchMapping("/{id}/complete")
@@ -118,8 +130,9 @@ public class TaskController {
             return ResponseEntity.status(404).body("일정 없음");
         }
 
+        // ownerId 가 있을 때만 권한 체크, 없으면 그냥 삭제 허용
         if (existing.getOwnerId() != null && !existing.getOwnerId().equals(userId)) {
-            throw new RuntimeException("삭제 권한이 없습니다.");
+            return ResponseEntity.status(403).body("삭제 권한이 없습니다.");
         }
 
         taskService.deleteTask(id);

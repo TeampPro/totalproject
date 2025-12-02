@@ -93,12 +93,18 @@ const TodoPage = () => {
   const totalPages = Math.ceil(filteredTasks.length / itemsPerPage);
 
   // 🔥 CalendarTodo -> TodoPage 저장/삭제 결과 처리
-  const handleSaveFromModal = async (savedTodo) => {
-    if (!savedTodo) return;
-    await fetchTodos(); // 서버 기준 최신 상태 재조회
-    setShowModal(false);
-    setEditTodo(null);
-  };
+  const handleSaveFromModal = async (result) => {
+  // 1) 삭제인 경우: 로컬 state에서 바로 제거
+  if (result && result.deleted && result.id) {
+    setRawTasks((prev) => prev.filter((t) => t.id !== result.id));
+  } else {
+    // 2) 생성/수정인 경우: 서버 기준으로 새로 조회
+    await fetchTodos();
+  }
+
+  setShowModal(false);
+  setEditTodo(null);
+};
 
   return (
     <div className={classes.todoPageOuter}>

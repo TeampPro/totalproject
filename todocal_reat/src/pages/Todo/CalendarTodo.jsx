@@ -16,12 +16,15 @@ import { fetchFriends } from "../../api/friendApi";
  * - editTodo: 수정할 일정 객체 (없으면 새로 생성)
  * - defaultDate: 새 일정 생성 시 기본 날짜 (YYYY-MM-DD)
  */
-function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
-  const isEdit = !!editTodo;
+  function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
+    const isEdit = !!editTodo;
 
-  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-  const ownerId = storedUser?.id || storedUser?.userId || storedUser?.loginId || null;
+    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+    const loginId =
+      storedUser?.id || storedUser?.userId || storedUser?.loginId || null;
 
+    // ✅ 수정 모드에서는 기존 ownerId 를 우선 사용, 없으면 로그인 아이디 사용
+    const ownerId = editTodo?.ownerId || loginId;
   // -----------------------------
   // 초기값 세팅
   // -----------------------------
@@ -157,22 +160,25 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
   // -----------------------------
   // 삭제 (수정 모드만)
   // -----------------------------
-  const handleDelete = async () => {
-    if (!isEdit || !editTodo?.id) return;
-    if (!window.confirm("해당 일정을 삭제하시겠습니까?")) return;
+  // src/pages/Todo/CalendarTodo.jsx
 
-    try {
-      await api.delete(`/api/tasks/${editTodo.id}`, {
-        params: { userId: ownerId },
-      });
-      alert("일정이 삭제되었습니다.");
-      if (onSave) onSave(null);
-      onClose();
-    } catch (err) {
-      console.error("❌ 일정 삭제 실패:", err);
-      alert("일정 삭제 중 오류가 발생했습니다.");
-    }
-  };
+  const handleDelete = async () => {
+  if (!isEdit || !editTodo?.id) return;
+  if (!window.confirm("해당 일정을 삭제하시겠습니까?")) return;
+
+  try {
+    await api.del(`/api/tasks/${editTodo.id}`, {
+      params: { userId: ownerId },   // ✅ editTodo.ownerId 대신 ownerId 사용
+    });
+    alert("일정이 삭제되었습니다.");
+    if (onSave) onSave({ deleted: true, id: editTodo.id });
+    onClose();
+  } catch (err) {
+    console.error("❌ 일정 삭제 실패:", err);
+    alert("일정 삭제 중 오류가 발생했습니다.");
+  }
+};
+
 
   return (
     <div className="todo-modal-overlay">

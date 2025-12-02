@@ -49,6 +49,7 @@ export async function apiFetch(path, options = {}) {
   return data;
 }
 
+// src/api/http.js
 export const api = {
   get: (path, options = {}) => {
     const { params, ...rest } = options;
@@ -66,6 +67,9 @@ export const api = {
       body: body instanceof FormData ? body : JSON.stringify(body),
       ...options,
     }),
-  del: (path, options = {}) =>
-    apiFetch(path, { method: "DELETE", ...options }),
+  // ✅ 여기 수정
+  del: (path, options = {}) => {
+    const { params, ...rest } = options;
+    return apiFetch(buildUrl(path, params), { method: "DELETE", ...rest });
+  },
 };

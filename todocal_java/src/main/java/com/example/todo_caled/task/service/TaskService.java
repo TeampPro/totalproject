@@ -1,4 +1,3 @@
-// src/main/java/com/example/todo_caled/task/service/TaskService.java
 package com.example.todo_caled.task.service;
 
 import com.example.todo_caled.task.entity.Task;
@@ -8,14 +7,13 @@ import com.example.todo_caled.task.repository.TaskShareRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -72,7 +70,7 @@ public class TaskService {
         existing.setContent(task.getContent());
         existing.setPromiseDate(task.getPromiseDate());
         existing.setEndDateTime(task.getEndDateTime());
-        existing.setOwnerId(task.getOwnerId());
+        // existing.setOwnerId(task.getOwnerId());  // ownerId는 컨트롤러에서만 설정
         existing.setShared(task.getShared());
         existing.setLocation(task.getLocation());
         existing.setCompleted(task.getCompleted());
@@ -82,6 +80,7 @@ public class TaskService {
         // 기존 공유 대상 삭제 후 다시 설정
         taskShareRepository.deleteByTaskId(saved.getId());
         applyShares(saved, task.getSharedUserIds());
+
         return saved;
     }
 
@@ -115,7 +114,7 @@ public class TaskService {
     }
 
     // ==========================
-    // 🔥 "보여야 하는 일정" 필터 로직
+    // "보여야 하는 일정" 필터 로직
     // ==========================
     public List<Task> filterVisible(List<Task> all, String userId) {
         // 관리자(admin)는 전체
