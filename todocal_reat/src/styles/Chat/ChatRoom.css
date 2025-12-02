@@ -322,7 +322,7 @@
   gap: 8px;
 }
 
-/* 참여자 아이콘 – 기본 smallprofil.svg, 커스텀 이미지도 원형으로 자름 */
+/* 참여자 아이콘 */
 .chat-member-avatar {
   width: 21px;
   height: 21px;
@@ -330,7 +330,7 @@
   border: 1px solid #008dff;
   background: #e5f3ff;
 
-  overflow: hidden;            
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -339,8 +339,9 @@
 .chat-member-avatar-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;               /* 어떤 비율이 와도 꽉 채우기 */
+  object-fit: cover;
 }
+
 /* 참여자 이름 */
 .chat-member-name {
   display: flex;
@@ -517,7 +518,7 @@
   background-color: #3b8fdb;
 }
 
-/* 초대 모달 */
+/* 초대 모달 배경 */
 .invite-modal-bg {
   position: fixed;
   top: 0;
@@ -531,12 +532,235 @@
   z-index: 9999;
 }
 
+/* 초대 모달 크기 확장 */
 .invite-modal {
-  background: white;
-  padding: 20px;
+  background: #ffffff;
+  padding: 20px 22px;
+  border-radius: 12px;
+  min-width: 360px;
+  max-width: 480px;
+  width: 90vw;
+  max-height: 80vh;
+  box-sizing: border-box;
+  text-align: left;
+  overflow-y: auto;
+}
+
+/* 모달 제목 */
+.invite-modal-title {
+  margin: 0 0 10px;
+  color: #232323;
+  font-family: "Paperlogy", Pretendard, system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* 친구 리스트 섹션 */
+.invite-modal-friends {
+  background: #f4f9ff;
   border-radius: 10px;
-  min-width: 300px;
-  text-align: center;
+  padding: 8px 10px 10px;
+  margin-bottom: 12px;
+}
+
+.invite-modal-friends-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563eb;
+  margin-bottom: 6px;
+  font-family: "Pretendard", system-ui, sans-serif;
+}
+
+.invite-modal-friends-empty {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 4px 2px;
+}
+
+.invite-modal-friend-list {
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 친구 한 줄 */
+.invite-modal-friend-item {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #dbeafe;
+  background: #ffffff;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+}
+
+.invite-modal-friend-item:hover {
+  background: #e3f2ff;
+}
+
+/* 왼쪽 영역: 아바타 + 텍스트 */
+.invite-modal-friend-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.invite-modal-friend-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.invite-modal-friend-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.invite-modal-friend-texts {
+  display: flex;
+  flex-direction: column;
+}
+
+.invite-modal-friend-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.invite-modal-friend-sub {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* 오른쪽 영역: 버튼들 */
+.invite-modal-friend-right {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.invite-modal-friend-btn {
+  min-width: 78px;
+  height: 24px;
+  border-radius: 999px;
+  border: none;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* 1:1 대화 버튼 */
+.invite-modal-friend-btn:not(.invite-modal-friend-btn--group) {
+  background: #48a9f8;
+  color: #ffffff;
+}
+
+/* 그룹 대화 버튼 기본 */
+.invite-modal-friend-btn--group {
+  background: #e0edff;
+  color: #2563eb;
+}
+
+/* 그룹 대화 버튼 선택됨 */
+.invite-modal-friend-btn--group-selected {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* 선택 정보 + 그룹 시작 버튼 */
+.invite-modal-group-info {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #374151;
+}
+
+.invite-modal-group-start-btn {
+  min-width: 140px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: none;
+  background: #3b82f6;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* 초대 링크 영역 */
+.invite-modal-link {
+  margin-top: 4px;
+}
+
+.invite-modal-link-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.invite-modal-link-box {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #f3f4ff;
+  font-size: 11px;
+  color: #111827;
+  word-break: break-all;
+}
+
+/* 모달 버튼 영역 */
+.invite-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.invite-modal-copy-btn,
+.invite-modal-close-btn {
+  min-width: 80px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.invite-modal-copy-btn {
+  background: #48a9f8;
+  color: #ffffff;
+}
+
+.invite-modal-copy-btn:hover {
+  background: #3b8fdb;
+}
+
+.invite-modal-close-btn {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.invite-modal-close-btn:hover {
+  background: #d1d5db;
 }
 
 /* 반응형 */
@@ -558,5 +782,17 @@
   .chat-menu-panel,
   .chat-members-panel {
     right: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .invite-modal {
+    min-width: 0;
+    width: 92vw;
+    padding: 16px 14px;
+  }
+
+  .invite-modal-friend-list {
+    max-height: 160px;
   }
 }

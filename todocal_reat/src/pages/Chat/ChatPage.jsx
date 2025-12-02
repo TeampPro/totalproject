@@ -36,6 +36,10 @@ export default function ChatPage() {
   const [roomKeyword, setRoomKeyword] = useState("");
   const [friendKeyword, setFriendKeyword] = useState("");
 
+   // 🔹 그룹 대화 모드 & 선택된 친구들
+  const [groupMode, setGroupMode] = useState(false);
+  const [selectedGroupFriendIds, setSelectedGroupFriendIds] = useState([]);
+
   const navigate = useNavigate();
 
   // 로그인 사용자
@@ -164,6 +168,66 @@ export default function ChatPage() {
     }
   };
 
+  // ✅ 특정 친구와 1:1 채팅방 생성
+const handleCreateRoomWithFriend = async (friend) => {
+  try {
+    const memberName = getMemberName();
+    localStorage.setItem("memberName", memberName);
+
+    // 1) 방 생성 (본인은 서비스에서 자동 참여자로 넣는 구조)
+    const res = await axios.post("/api/chat/rooms", null, {
+      params: { memberName },
+    });
+
+    if (!res.data || !res.data.id) {
+      alert("1:1 채팅방 생성에 실패했습니다.");
+      return;
+    }
+
+    const createdRoom = { ...res.data };
+
+    // 친구 쪽에서 사용하는 이름 (ChatPage의 memberName 기준과 같아야 함)
+    const friendName = friend.nickname || friend.name || friend.id;
+    const roomName = `${memberName} & ${friendName}`;
+
+    // 2) 친구를 해당 방에 참여자로 추가
+    try {
+      await axios.post(
+        `/api/chat/rooms/${createdRoom.id}/join`,
+        null,
+        { params: { memberName: friendName } }
+      );
+    } catch (e) {
+      console.error("❌ 친구 방 참여 처리 오류:", e);
+      // 참여 실패해도 방은 생성되므로 alert만 띄우고 계속 진행
+      alert("친구를 방에 참여시키는 데 실패했습니다.");
+    }
+
+    // 3) 방 이름을 1:1 형태로 변경
+    try {
+      const renameRes = await axios.patch(
+        `/api/chat/rooms/${createdRoom.id}/name`,
+        { name: roomName }
+      );
+      createdRoom.name = renameRes.data?.name || roomName;
+    } catch (e) {
+      console.error("❌ 1:1 방 이름 변경 오류:", e);
+      createdRoom.name = roomName;
+    }
+
+    // 4) 목록에 추가
+    setRooms((prev) => [...prev, createdRoom]);
+
+    // 5) 생성한 방으로 이동
+    navigate(`/chat/${createdRoom.id}`, {
+      state: { memberName, roomName: createdRoom.name },
+    });
+  } catch (err) {
+    console.error("❌ 1:1 채팅방 생성 오류:", err);
+    alert("1:1 채팅방을 생성하지 못했습니다.");
+  }
+};
+
   // 방 이름 변경
   const handleRenameRoom = async (e, room) => {
     e.stopPropagation();
@@ -240,6 +304,130 @@ export default function ChatPage() {
     return <p className="chat-loading">채팅방 목록 불러오는 중...</p>;
   }
 
+    // 🔹 그룹 모드 토글 + 실행
+  const handleGroupChatButtonClick = async () => {
+    // 아직 그룹 모드가 아니면 -> 모드 켜고 선택 안내만
+    if (!groupMode) {
+      setGroupMode(true);
+      setSelectedGroupFriendIds([]);
+      alert("그룹 대화에 초대할 친구를 오른쪽 '친구 목록'에서 선택해주세요.");
+      return;
+    }
+
+    // 그룹 모드인 상태에서 다시 버튼 클릭 -> 실제 그룹 방 생성 시도
+    if (selectedGroupFriendIds.length === 0) {
+      alert("그룹 대화에 추가할 친구를 한 명 이상 선택해주세요.");
+      return;
+    }
+
+    try {
+      const memberName = getMemberName();
+      localStorage.setItem("memberName", memberName);
+
+      const selectedFriends = friends.filter((f) =>
+        selectedGroupFriendIds.includes(f.friendId || f.id)
+      );
+
+      if (selectedFriends.length === 0) {
+        alert("선택된 친구 정보를 찾을 수 없습니다.");
+        return;
+      }
+      
+      // 1) 새 그룹 방 생성
+      const resRoom = await axios.post("/api/chat/rooms", null, {
+        params: { memberName },
+      });
+
+      if (!resRoom.data || !resRoom.data.id) {
+        alert("그룹 채팅방 생성에 실패했습니다.");
+        return;
+      }
+
+      const createdRoom = { ...resRoom.data };
+
+      // 2) 친구들 참여자로 추가
+      for (const f of selectedFriends) {
+        const friendName = f.nickname || f.name || f.id;
+        if (!friendName) continue;
+
+        try {
+          await axios.post(`/api/chat/rooms/${createdRoom.id}/join`, null, {
+            params: { memberName: friendName },
+          });
+        } catch (e) {
+          console.error("❌ 그룹 방 친구 참여 처리 오류:", e);
+        }
+      }
+
+      // 3) 방 이름 설정 (나 + 몇 명)
+      const title = `${memberName} 외 ${selectedFriends.length}명`;
+      try {
+        const renameRes = await axios.patch(
+          `/api/chat/rooms/${createdRoom.id}/name`,
+          { name: title }
+        );
+        createdRoom.name = renameRes.data?.name || title;
+      } catch (e) {
+        console.error("❌ 그룹 방 이름 변경 오류:", e);
+        createdRoom.name = title;
+      }
+
+      // 4) 새 그룹 방 초대 링크 생성 + 복사
+      try {
+        const inviteRes = await axios.post(
+          `/api/chat/rooms/${createdRoom.id}/invite`
+        );
+        const fullLink = window.location.origin + inviteRes.data;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          try {
+            await navigator.clipboard.writeText(fullLink);
+            alert(
+              "그룹 채팅방이 생성되었습니다.\n그룹 대화방 초대 링크가 클립보드에 복사되었습니다."
+            );
+          } catch (copyErr) {
+            console.error("그룹 초대 링크 복사 실패:", copyErr);
+            alert(
+              "그룹 채팅방이 생성되었습니다.\n(초대 링크 복사에 실패했습니다.)"
+            );
+          }
+        } else {
+          alert(
+            "그룹 채팅방이 생성되었습니다.\n(브라우저에서 클립보드 복사를 지원하지 않습니다.)"
+          );
+        }
+      } catch (inviteErr) {
+        console.error("그룹 초대 링크 생성 실패:", inviteErr);
+        alert(
+          "그룹 채팅방이 생성되었습니다.\n(초대 링크 생성에 실패했습니다.)"
+        );
+      }
+
+      // 5) 방 목록에 추가 + 그룹 모드 해제
+      setRooms((prev) => [...prev, createdRoom]);
+      setGroupMode(false);
+      setSelectedGroupFriendIds([]);
+
+      // 6) 새 그룹 방으로 이동
+      navigate(`/chat/${createdRoom.id}`, {
+        state: { memberName, roomName: createdRoom.name },
+      });
+    } catch (err) {
+      console.error("❌ 그룹 채팅방 생성 오류:", err);
+      alert("그룹 채팅방을 생성하지 못했습니다.");
+    }
+  };
+  
+  // 🔹 그룹 모드에서 친구 선택 토글
+  const toggleSelectGroupFriend = (friendId) => {
+    setSelectedGroupFriendIds((prev) =>
+      prev.includes(friendId)
+        ? prev.filter((id) => id !== friendId)
+        : [...prev, friendId]
+    );
+  };
+
+
   // 검색 반영된 목록
   const filteredRooms = rooms.filter((room) =>
     (room.name || "").toLowerCase().includes(roomKeyword.trim().toLowerCase())
@@ -283,21 +471,39 @@ export default function ChatPage() {
       <main className="chat-page__body">
         {/* 대화방 목록 영역 */}
         <section className="chat-panel chat-panel--rooms">
-          <div className="chat-panel__header">
+                    <div className="chat-panel__header">
             <h3 className="chat-panel__title">대화방 목록</h3>
 
-            <button
-              className="chat-panel__primary-btn"
-              onClick={handleCreateRoom}
-            >
-              <img
-                src={add_comment}
-                alt="새 대화방"
-                className="chat-btn-icon"
-              />
-              <span>새 대화방</span>
-            </button>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                className="chat-panel__primary-btn"
+                onClick={handleCreateRoom}
+              >
+                <img
+                  src={add_comment}
+                  alt="새 대화방"
+                  className="chat-btn-icon"
+                />
+                <span>새 대화방</span>
+              </button>
+
+              {/* 🔹 새로 추가된 그룹 대화 만들기 버튼 */}
+              <button
+                className="chat-panel__primary-btn chat-panel__primary-btn--secondary"
+                onClick={handleGroupChatButtonClick}
+              >
+                <img
+                  src={add_comment}
+                  alt="그룹 대화 만들기"
+                  className="chat-btn-icon"
+                />
+                <span>
+                  {groupMode ? "선택한 친구들과 그룹 대화" : "그룹 대화 만들기"}
+                </span>
+              </button>
+            </div>
           </div>
+
 
           {/* 대화방 검색바 */}
           <div className="chat-search chat-search--room">
@@ -424,44 +630,74 @@ export default function ChatPage() {
             </div>
           </div>
 
-          <div className="chat-friend-list">
+                    <div className="chat-friend-list">
             {loadingFriends ? (
               <p className="chat-empty-text">친구 목록 불러오는 중...</p>
             ) : filteredFriends.length === 0 ? (
               <p className="chat-empty-text">등록된 친구가 없습니다.</p>
             ) : (
-              filteredFriends.map((f) => (
-                <div key={f.id} className="chat-friend-item">
-                  {/* 카드 밖 상단 우측: 친구 삭제 */}
-                  <div className="chat-friend-actions">
-                    <button
-                      className="chat-friend-delete"
-                      onClick={() => handleDeleteFriend(f)}
-                    >
-                      친구 삭제
-                    </button>
-                  </div>
+              filteredFriends.map((f) => {
+                const friendId = f.friendId || f.id;
+                const isSelectedForGroup =
+                  selectedGroupFriendIds.includes(friendId);
 
-                  {/* 친구 카드 */}
-                  <div className="chat-friend-card">
-                    <div className="chat-friend-avatar">
-                      <img
-                        src={profileBig}
-                        alt="친구 프로필"
-                        className="chat-friend-avatar-img"
-                      />
+                return (
+                  <div
+                    key={friendId}
+                    className={
+                      "chat-friend-item" +
+                      (isSelectedForGroup ? " chat-friend-item--selected" : "")
+                    }
+                    onClick={() => {
+                      if (groupMode && friendId) {
+                        toggleSelectGroupFriend(friendId);
+                      }
+                    }}
+                  >
+                    {/* 카드 밖 상단 우측: 1:1 채팅 / 친구 삭제 */}
+                    <div className="chat-friend-actions">
+                      <button
+                        className="chat-friend-chat-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCreateRoomWithFriend(f);
+                        }}
+                      >
+                        1:1 채팅
+                      </button>
+                      <button
+                        className="chat-friend-delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteFriend(f);
+                        }}
+                      >
+                        친구 삭제
+                      </button>
                     </div>
-                    <div className="chat-friend-texts">
-                      <div className="chat-friend-name">
-                        {f.nickname || f.name || f.id}
+
+                    {/* 친구 카드 */}
+                    <div className="chat-friend-card">
+                      <div className="chat-friend-avatar">
+                        <img
+                          src={profileBig}
+                          alt="친구 프로필"
+                          className="chat-friend-avatar-img"
+                        />
                       </div>
-                      <div className="chat-friend-status">친구</div>
+                      <div className="chat-friend-texts">
+                        <div className="chat-friend-name">
+                          {f.nickname || f.name || f.id}
+                        </div>
+                        <div className="chat-friend-status">친구</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
+
         </section>
       </main>
     </div>

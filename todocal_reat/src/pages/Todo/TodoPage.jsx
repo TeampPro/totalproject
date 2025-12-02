@@ -167,6 +167,11 @@ const TodoPage = () => {
                 <span className={classes.createdAt}>
                   작성일 : {formatDate(task.createdAt)}
                 </span>
+                {task.ownerId && (
+                  <span className={classes.createdAt}>
+                    작성자 : {task.ownerId}
+                  </span>
+                )}
               </div>
             </div>
           ))}

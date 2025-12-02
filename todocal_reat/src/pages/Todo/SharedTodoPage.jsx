@@ -177,10 +177,16 @@ const SharedTodoPage = () => {
 
               {/* 하단: 작성일 */}
               <div className={pageClasses.taskFooter}>
+              <span className={pageClasses.createdAt}>
+                작성일 : {formatDate(task.createdDate ?? task.createdAt)}
+              </span>
+
+              {task.ownerId && (
                 <span className={pageClasses.createdAt}>
-                  작성일 : {formatDate(task.createdDate ?? task.createdAt)}
+                  작성자 : {task.ownerId}
                 </span>
-              </div>
+              )}
+            </div>
             </div>
           ))}
         </div>

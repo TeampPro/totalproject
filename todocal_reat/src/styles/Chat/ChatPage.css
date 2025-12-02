@@ -24,7 +24,7 @@
 
 /* 왼쪽 뒤로가기 버튼 */
 .chat-page__back-btn {
-  width: 60px;              /* 피그마 기준 */
+  width: 60px; /* 피그마 기준 */
   height: 60px;
   border-radius: 999px;
   border: none;
@@ -289,7 +289,7 @@
 
 /* 각 대화방 세트(위 액션 + 아래 카드) */
 .chat-room-item {
-  width: 588px;   /* 카드 전체 폭 고정 */
+  width: 588px; /* 카드 전체 폭 고정 */
   margin-bottom: 14px;
 }
 
@@ -411,12 +411,12 @@
   box-sizing: border-box;
 }
 
-/* 친구 한 세트(위 친구 삭제 라인 + 아래 카드) */
+/* 친구 한 세트(위 액션 라인 + 아래 카드) */
 .chat-friend-item {
   margin-bottom: 12px;
 }
 
-/* 카드 밖 상단 우측: 친구 삭제 버튼 (피그마 스타일) */
+/* 카드 밖 상단 우측: 친구 관련 액션 라인 */
 .chat-friend-actions {
   display: flex;
   justify-content: flex-end;
@@ -424,6 +424,35 @@
   margin-bottom: 4px;
 }
 
+/* 1:1 채팅 버튼 */
+.chat-friend-chat-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  background: #48a9f8;
+  color: #ffffff;
+
+  font-feature-settings: "liga" off, "clig" off;
+  font-family: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.chat-friend-chat-btn:hover {
+  opacity: 0.9;
+}
+
+/* 친구 삭제 버튼 (피그마 스타일) */
 .chat-friend-delete {
   display: flex;
   width: 38px;
@@ -532,4 +561,15 @@
   .chat-panel--friends {
     margin-top: 16px;
   }
+}
+
+/* 새 대화방 옆 그룹 대화 만들기 버튼용(같은 스타일 + 약간 간격만) */
+.chat-panel__primary-btn--secondary {
+  /* 기본 스타일은 chat-panel__primary-btn 재사용 */
+}
+
+/* 그룹 모드에서 선택된 친구 강조 표시 */
+.chat-friend-item--selected .chat-friend-card {
+  border-color: #2563eb;
+  background: #e0edff;
 }
