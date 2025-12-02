@@ -294,7 +294,7 @@ const handleDeletePost = async () => {
           <button className="nav-btn" onClick={goNext}>
             다음글
           </button>
-          <button className="nav-btn" onClick={() => navigate("/main")}>
+          <button className="nav-btn" onClick={() => navigate("/board")}>
             목록
           </button>
         </div>
