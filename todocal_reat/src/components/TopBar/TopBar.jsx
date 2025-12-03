@@ -9,11 +9,17 @@ import ProfileIcon from "../../assets/profile.svg";
 import ListIcon from "../../assets/list.svg";
 import BackIcon from "../../assets/backIcon.svg"; // 🔹 뒤로가기 아이콘
 
-const TopBar = ({ onMenuClick, onProfileClick, showBackButton = false }) => {
+const TopBar = ({
+  onMenuClick,
+  onProfileClick,
+  showBackButton = false,
+  // ✅ 메인에서 쓰는 두 개 추가
+  notificationCount = 0,
+  onClickNotification = () => {},
+}) => {
   const navigate = useNavigate();
 
   const handleBackClick = () => {
-    // 히스토리가 있으면 뒤로, 없으면 메인으로
     if (window.history.length > 1) {
       navigate(-1);
     } else {
@@ -23,7 +29,6 @@ const TopBar = ({ onMenuClick, onProfileClick, showBackButton = false }) => {
 
   return (
     <header className="topbar">
-      {/* 🔹 메인 레이아웃과 폭을 맞추는 내부 컨테이너 꼭 필요! */}
       <div className="topbar-inner">
         {/* 왼쪽: 로고 + 텍스트 */}
         <div className="topbar-left">
@@ -43,7 +48,19 @@ const TopBar = ({ onMenuClick, onProfileClick, showBackButton = false }) => {
             </button>
           )}
 
-          <img src={BellIcon} alt="알림" className="topbar-icon" />
+          {/* ✅ 알림: 클릭 + 뱃지 적용 */}
+          <div
+            className="topbar-icon-wrapper"
+            onClick={onClickNotification}
+            style={{ cursor: "pointer" }}
+          >
+            <img src={BellIcon} alt="알림" className="topbar-icon" />
+            {notificationCount > 0 && (
+              <span className="topbar-badge">
+                {notificationCount > 9 ? "9+" : notificationCount}
+              </span>
+            )}
+          </div>
 
           <img
             src={ProfileIcon}

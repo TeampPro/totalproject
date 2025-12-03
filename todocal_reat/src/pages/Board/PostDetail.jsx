@@ -151,14 +151,18 @@ const PostDetail = () => {
 
   /** 이전글 이동 */
   const goPrev = async () => {
-    const res = await axios.get(`http://localhost:8080/api/board/${id}/prev`);
+    const res = await axios.get(
+      `http://localhost:8080/api/board/${id}/prev`
+    );
     if (res.data?.id) navigate(`/board/${res.data.id}`);
     else alert("이전 글이 없습니다.");
   };
 
   /** 다음글 이동 */
   const goNext = async () => {
-    const res = await axios.get(`http://localhost:8080/api/board/${id}/next`);
+    const res = await axios.get(
+      `http://localhost:8080/api/board/${id}/next`
+    );
     if (res.data?.id) navigate(`/board/${res.data.id}`);
     else alert("다음 글이 없습니다.");
   };
@@ -270,10 +274,10 @@ const PostDetail = () => {
         aria-label="목록으로 이동"
       />
 
-      {/* 제목 + 링크 아이콘 */}
-      <h1 className="post-detail-title">{post.title}</h1>
+      {/* 제목 */}
+      <h1 className="post-title">{post.title}</h1>
 
-      {/* 닉네임 / 작성자 / 날짜 */}
+      {/* 작성자 / 날짜 */}
       <div className="post-meta">
         <span className="meta-label">닉네임</span>
         <span className="meta-writer">{post.writer}</span>

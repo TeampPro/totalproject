@@ -1,5 +1,6 @@
 /* 전체 페이지 (연한 파란 배경 + 수평 가운데 정렬) */
 .login-fullpage {
+  position: relative; /* 뒤로가기 버튼 absolute 기준 */
   min-height: 100vh;
   background: #f4f9ff; /* 피그마 배경색 */
   display: flex;
@@ -26,8 +27,6 @@
   width: 380px;
   background: #f4f9ff;
   padding: 35px 30px;
-  /* border-radius: 20px; */
-  /* box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); */
   text-align: center;
 }
 
@@ -65,7 +64,7 @@
 .login-btn {
   margin-top: 10px;
   padding: 14px;
-  background-color: #56A4FF;
+  background-color: #56a4ff;
   border: none;
   border-radius: 12px;
   font-weight: bold;
@@ -117,7 +116,7 @@
 
 /* 카카오 로그인 버튼 */
 .kakao-btn {
-  background-color: #FEE500;
+  background-color: #fee500;
   color: #3a1d1d;
   display: flex;
   align-items: center;
@@ -130,4 +129,26 @@
 .kakao-logo {
   width: 22px;
   height: 22px;
+}
+
+/* 로그인 페이지 뒤로가기 버튼 */
+.login-back-button {
+  position: absolute;
+  top: 32px;
+  left: 32px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: #56a4ff;
+  border-radius: 999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-back-button img {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
 }

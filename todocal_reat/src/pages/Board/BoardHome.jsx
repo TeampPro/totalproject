@@ -5,7 +5,7 @@ import moment from "moment";
 import "../../styles/Board/Board.css";
 
 // 상단바
-import TopBar from "../../components/TopBar/TopBar.jsx";
+import ServerBar from "../../components/serverbar/ServerBar.jsx";
 
 // 아이콘들
 import PlusIcon from "../../assets/plusIcon.svg";
@@ -39,9 +39,13 @@ const BoardHome = () => {
   const [searchFieldLabel, setSearchFieldLabel] = useState("제목");
   const [searchValue, setSearchValue] = useState("");
 
+  // 7일 이내 마감 일정 (알림용)
+  const [urgentTodos, setUrgentTodos] = useState([]);
+  const [showAlertDropdown, setShowAlertDropdown] = useState(false);
+
   const navigate = useNavigate();
 
-  // 로그인 유저 정보 (공지 권한 체크용)
+  // 로그인 유저 정보 (공지 권한·알림용)
   const savedUser = JSON.parse(localStorage.getItem("user"));
   const loginUserType = savedUser?.userType || "NORMAL"; // ADMIN / NORMAL / guest 등
 
@@ -50,7 +54,6 @@ const BoardHome = () => {
     setSearchField(field);
     setSearchFieldLabel(label);
     setShowDropdown(false);
-
     setSearchValue("");
   };
 
@@ -114,6 +117,45 @@ const BoardHome = () => {
     loadNoticePosts();
   }, []);
 
+  // 7일 이내 마감 일정 조회 (알림용) – 메인 페이지 로직 그대로 사용
+  useEffect(() => {
+    const fetchUrgentTodos = async () => {
+      try {
+        const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+        if (!storedUser?.id) {
+          setUrgentTodos([]);
+          return;
+        }
+
+        const res = await axios.get("http://localhost:8080/api/tasks", {
+          params: { userId: storedUser.id },
+        });
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const urgent = (res.data || [])
+          .filter((t) => t.promiseDate)
+          .map((t) => {
+            const target = new Date(t.promiseDate);
+            target.setHours(0, 0, 0, 0);
+            const diffDays = Math.round(
+              (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+            );
+            return { ...t, diffDays };
+          })
+          .filter((t) => t.diffDays >= 0 && t.diffDays <= 7 && !t.completed)
+          .sort((a, b) => a.diffDays - b.diffDays);
+
+        setUrgentTodos(urgent);
+      } catch (err) {
+        console.error("게시판 상단 알림 일정 조회 실패:", err);
+      }
+    };
+
+    fetchUrgentTodos();
+  }, []);
+
   const formatDate = (dateString) => {
     if (!dateString) return "-";
     return moment(dateString).format("YYYY. MM. DD.");
@@ -145,14 +187,65 @@ const BoardHome = () => {
     navigate(`/board/write?category=${category}`);
   };
 
+  // 알림 종 버튼 클릭
+  const handleBellClick = () => {
+    if (!savedUser) {
+      alert("로그인 후 일정 알림을 확인할 수 있습니다.");
+      return;
+    }
+    setShowAlertDropdown((prev) => !prev);
+  };
+
+  // 알림 한 줄 클릭 시: 일정 페이지로 이동
+  const handleClickAlertItem = (todo) => {
+    setShowAlertDropdown(false);
+    if (todo.shared) {
+      navigate("/share");
+    } else {
+      navigate("/todo");
+    }
+  };
+
   return (
     <div className="board-page">
-      {/* 상단 공통 TopBar */}
-      <TopBar
-        showBackButton={true}
-        onMenuClick={() => {}}
-        onProfileClick={() => {}}
+      {/* 상단 공통 ServerBar */}
+      <ServerBar
+        notificationCount={urgentTodos.length}
+        onNotificationClick={handleBellClick}
       />
+
+      {/* 일정 알림 드롭다운 (MainPage에서 쓰던 alert-* 클래스 재사용) */}
+      {showAlertDropdown && (
+        <div className="alert-dropdown">
+          <div className="alert-dropdown-header">7일 이내 마감 일정</div>
+
+          {urgentTodos.length === 0 ? (
+            <div className="alert-dropdown-empty">
+              곧 마감되는 일정이 없습니다.
+            </div>
+          ) : (
+            <ul className="alert-dropdown-list">
+              {urgentTodos.map((todo) => (
+                <li
+                  key={todo.id}
+                  className="alert-dropdown-item"
+                  onClick={() => handleClickAlertItem(todo)}
+                >
+                  <span className="alert-dday">
+                    {todo.diffDays === 0 ? "D-Day" : `D-${todo.diffDays}`}
+                  </span>
+                  <span className="alert-title">{todo.title}</span>
+                  <span className="alert-date">
+                    {todo.promiseDate
+                      ? todo.promiseDate.substring(5, 10).replace("-", "/")
+                      : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {/* 게시판 메인 컨테이너 */}
       <div className="board-container">
@@ -297,7 +390,6 @@ const BoardHome = () => {
                     {post.notice ? "●" : "•"}
                   </span>
 
-                  {/* ✅ 리스트 안의 글 제목은 전부 같은(일반) 폰트 */}
                   <span className="post-title post-title-normal">
                     {post.title}
                   </span>

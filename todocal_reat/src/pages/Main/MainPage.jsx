@@ -35,6 +35,7 @@ const MainPage = ({ user, setUser }) => {
     localStorage.removeItem("user");
     setUser(null);
     alert("로그아웃 되었습니다.");
+    navigate("/login");
   };
 
   // 알림 한 줄 클릭 시: 알림창 닫고 일정 페이지로 이동
@@ -106,6 +107,41 @@ const MainPage = ({ user, setUser }) => {
             setShowAlertDropdown((prev) => !prev);
           }}
         />
+
+        {/* 상단 우측(TopBar 리스트 아이콘) 드롭다운 메뉴 */}
+        {user && menuOpen && (
+          <div className="topbar-menu-dropdown">
+            {user?.userType === "ADMIN" && (
+              <button
+                className="dropdown-item"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/admin/users");
+                }}
+              >
+                회원관리
+              </button>
+            )}
+            <button
+              className="dropdown-item"
+              onClick={() => {
+                setMenuOpen(false);
+                navigate("/myPage");
+              }}
+            >
+              마이페이지
+            </button>
+            <button
+              className="dropdown-item"
+              onClick={() => {
+                setMenuOpen(false);
+                handleLogout();
+              }}
+            >
+              로그아웃
+            </button>
+          </div>
+        )}
 
         {/* 일정 알림 드롭다운 */}
         {showAlertDropdown && (

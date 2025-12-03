@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import moment from "moment";
-import TopBar from "../../components/TopBar/TopBar.jsx";
+import ServerBar from "../../components/serverbar/ServerBar.jsx";
 import CalendarTodo from "../../pages/Todo/CalendarTodo.jsx";
 
 import pageClasses from "../../styles/Todo/TodoPage.module.css";
@@ -105,7 +105,7 @@ const SharedTodoPage = () => {
   return (
     <div className={pageClasses.todoPageOuter}>
       {/* 상단 공통 바 */}
-      <TopBar showBackButton /> {/* 🔹 뒤로가기 버튼 표시 */}
+      <ServerBar showBackButton /> {/* 🔹 뒤로가기 버튼 표시 */}
 
       <div className={pageClasses.todoPageContainer}>
         <div className={pageClasses.topBar}>
