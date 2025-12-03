@@ -28,6 +28,9 @@ export default function ChatRoom() {
   const [messages, setMessages] = useState([]);
   const [members, setMembers] = useState([]);
 
+  // 🔹 초대 모달 에러 메시지 (중복 초대 등)
+  const [inviteError, setInviteError] = useState("");
+
   // ✅ 방 입장 시, localStorage에 저장된 멤버 목록 복원
   useEffect(() => {
     if (!roomId) return;
@@ -69,7 +72,6 @@ export default function ChatRoom() {
 
   const [friends, setFriends] = useState([]);
   const [loadingFriends, setLoadingFriends] = useState(false);
-  const [selectedGroupIds, setSelectedGroupIds] = useState([]);
 
   const ws = useRef(null);
   const nickname = useRef("");
@@ -134,7 +136,7 @@ export default function ChatRoom() {
         const res = await axios.get(`/api/chat/rooms/${roomId}`);
         const data = res.data || {};
 
-        // 🔹 방 이름 세팅 (초대 링크로 직접 들어온 경우 roomName이 비어있을 수 있음)
+        // 방 이름 세팅 (초대 링크로 직접 들어온 경우 roomName이 비어있을 수 있음)
         if (data.name && !roomName) {
           setRoomName(data.name);
         }
@@ -425,6 +427,7 @@ export default function ChatRoom() {
       const fullLink = window.location.origin + res.data;
       setInviteLink(fullLink);
       setShowModal(true);
+      setInviteError("");
     } catch {
       alert("초대 링크 생성 실패");
     }
@@ -453,26 +456,9 @@ export default function ChatRoom() {
     }
   };
 
-  // 1:1 대화 (이전 기능 유지) – 해당 친구와 1:1 방 + 초대 링크 복사
+  // 🔹 모달 내 1:1 버튼용: 선택한 친구와 1:1 채팅방 생성 후 이동
   const handleInviteFriendOneToOne = async (friend) => {
     try {
-      if (!roomId) return;
-
-      let link = inviteLink;
-      if (!link) {
-        const res = await axios.post(`/api/chat/rooms/${roomId}/invite`);
-        link = window.location.origin + res.data;
-        setInviteLink(link);
-      }
-
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(link);
-        }
-      } catch (e) {
-        console.error("클립보드 복사 실패:", e);
-      }
-
       const baseName =
         nickname.current ||
         memberName ||
@@ -483,21 +469,22 @@ export default function ChatRoom() {
       const friendName = friend.nickname || friend.name || friend.id;
 
       if (!baseName || !friendName) {
-        alert("초대에 필요한 정보가 부족합니다.");
+        alert("1:1 대화에 필요한 정보가 부족합니다.");
         return;
       }
 
+      // 1) 새 1:1 방 생성 (나 기준)
       const resRoom = await axios.post("/api/chat/rooms", null, {
         params: { memberName: baseName },
       });
 
       if (!resRoom.data || !resRoom.data.id) {
-        throw new Error("방 생성 실패");
+        throw new Error("1:1 방 생성 실패");
       }
 
       const newRoom = resRoom.data;
-      const title = `${baseName} & ${friendName}`;
 
+      // 2) 친구 참여자로 추가
       try {
         await axios.post(`/api/chat/rooms/${newRoom.id}/join`, null, {
           params: { memberName: friendName },
@@ -506,162 +493,142 @@ export default function ChatRoom() {
         console.error("친구 1:1 방 참여 실패:", e);
       }
 
-      try {
-        await axios.patch(`/api/chat/rooms/${newRoom.id}/name`, {
-          name: title,
-        });
-      } catch (e) {
-        console.error("1:1 방 이름 변경 실패:", e);
-      }
-
-      alert(
-        `${friendName}님과의 1:1 채팅방으로 이동합니다.\n초대 링크가 복사되었으니 채팅창에 붙여넣어 보내주세요.`
-      );
-
-      setShowModal(false);
-
-      navigate(`/chat/${newRoom.id}`, {
-        state: { roomName: title, memberName: baseName },
-      });
-    } catch (e) {
-      console.error("1:1 초대방 생성 실패:", e);
-      alert("1:1 채팅방 생성 중 오류가 발생했습니다.");
-    }
-  };
-
-  // 그룹 대화용 선택 토글
-  const toggleSelectGroupFriend = (friend) => {
-    const id = friend.id || friend.friendId;
-    setSelectedGroupIds((prev) =>
-      prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id]
-    );
-  };
-
-  // 선택된 친구들과 그룹 채팅방 생성
-  const handleCreateGroupChatFromModal = async () => {
-    if (selectedGroupIds.length === 0) {
-      alert("그룹 대화에 초대할 친구를 선택해주세요.");
-      return;
-    }
-
-    try {
-      const baseName =
-        nickname.current ||
-        memberName ||
-        loginUser?.nickname ||
-        loginUser?.name ||
-        loginUser?.id;
-
-      if (!baseName) {
-        alert("로그인 정보를 확인해주세요.");
-        return;
-      }
-
-      const selectedFriends = friends.filter((f) =>
-        selectedGroupIds.includes(f.id || f.friendId)
-      );
-
-      if (selectedFriends.length === 0) {
-        alert("선택된 친구 정보가 없습니다.");
-        return;
-      }
-
-      // 1) 새 그룹 방 생성
-      const resRoom = await axios.post("/api/chat/rooms", null, {
-        params: { memberName: baseName },
-      });
-
-      if (!resRoom.data || !resRoom.data.id) {
-        throw new Error("그룹 방 생성 실패");
-      }
-
-      const newRoom = resRoom.data;
-
-      // 2) 친구들 참여자로 추가
-      for (const f of selectedFriends) {
-        const friendName = f.nickname || f.name || f.id;
-        if (!friendName) continue;
-
-        try {
-          await axios.post(`/api/chat/rooms/${newRoom.id}/join`, null, {
-            params: { memberName: friendName },
-          });
-        } catch (e) {
-          console.error("그룹 대화 참여 처리 실패:", e);
-        }
-      }
-
       // 3) 방 이름 변경
-      const title = `${baseName} 외 ${selectedFriends.length}명`;
-
+      const title = `${baseName} & ${friendName}`;
       try {
         const renameRes = await axios.patch(`/api/chat/rooms/${newRoom.id}/name`, {
           name: title,
         });
         newRoom.name = renameRes.data?.name || title;
       } catch (e) {
-        console.error("그룹 방 이름 변경 실패:", e);
+        console.error("1:1 방 이름 변경 실패:", e);
         newRoom.name = title;
       }
 
-      // 🔹 4) 우리가 알고 있는 참여자 목록 구성 (나 + 선택한 친구들)
-      const initialMembers = [
-        {
-          id: loginUser?.id,
-          nickname: baseName,
-          name: baseName,
-        },
-        ...selectedFriends.map((f) => ({
-          id: f.id || f.friendId,
-          nickname: f.nickname || f.name || f.id,
-          name: f.name || f.nickname || f.id,
-        })),
-      ];
+      // 4) 새 1:1 방으로 이동
+      navigate(`/chat/${newRoom.id}`, {
+        state: { roomName: newRoom.name, memberName: baseName },
+      });
+      setShowModal(false);
+      setInviteError("");
+    } catch (e) {
+      console.error("1:1 대화방 생성 실패:", e);
+      alert("1:1 대화방 생성 중 오류가 발생했습니다.");
+    }
+  };
 
-      // 🔹 5) 새 그룹 방 초대 링크 생성 + 복사
-      try {
-        const inviteRes = await axios.post(`/api/chat/rooms/${newRoom.id}/invite`);
-        const fullLink = window.location.origin + inviteRes.data;
+  // 🔹 '대화방 초대': 해당 친구를 현재 방에 바로 초대
+  const handleInviteFriendToCurrentRoom = async (friend) => {
+    try {
+      if (!roomId) return;
 
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          try {
-            await navigator.clipboard.writeText(fullLink);
-            alert(
-              "선택한 친구들과 그룹 대화를 시작합니다.\n그룹 대화방 초대 링크가 클립보드에 복사되었습니다."
-            );
-          } catch (copyErr) {
-            console.error("그룹 초대 링크 복사 실패:", copyErr);
-            alert(
-              "선택한 친구들과 그룹 대화를 시작합니다.\n(초대 링크 복사에 실패했습니다.)"
-            );
-          }
-        } else {
-          alert(
-            "선택한 친구들과 그룹 대화를 시작합니다.\n(브라우저에서 클립보드 복사를 지원하지 않습니다.)"
+      setInviteError("");
+
+      const friendName = friend.nickname || friend.name || friend.id || "친구";
+
+      // 🔸 현재 방 멤버 중복 여부 체크
+      const existingKeys = new Set(
+        members.map((m) => {
+          if (typeof m === "string") return m;
+          return (
+            m.id ||
+            m.userId ||
+            m.nickname ||
+            m.name ||
+            JSON.stringify(m)
           );
-        }
-      } catch (inviteErr) {
-        console.error("그룹 초대 링크 생성 실패:", inviteErr);
-        alert(
-          "선택한 친구들과 그룹 대화를 시작합니다.\n(초대 링크 생성에 실패했습니다.)"
-        );
+        })
+      );
+
+      const friendKey =
+        friend.id ||
+        friend.friendId ||
+        friend.nickname ||
+        friend.name ||
+        friend.id ||
+        JSON.stringify(friend);
+
+      if (existingKeys.has(friendKey)) {
+        setInviteError("현재 방에 이미 존재하는 사람입니다!");
+        return;
       }
 
-      // 6) 모달 닫고 선택 초기화 후, 새 그룹 방으로 이동 (초기 멤버 함께 전달)
-      setShowModal(false);
-      setSelectedGroupIds([]);
-
-      navigate(`/chat/${newRoom.id}`, {
-        state: {
-          roomName: newRoom.name,
-          memberName: baseName,
-          initialMembers, // 여기 전달
-        },
+      // 1) 백엔드에 해당 친구를 현재 방의 참여자로 추가
+      await axios.post(`/api/chat/rooms/${roomId}/join`, null, {
+        params: { memberName: friendName },
       });
+
+      // 2) 프론트의 members에도 반영 (중복 제거 병합)
+      setMembers((prev) => {
+        const merged = [...prev];
+
+        const exists = new Set(
+          merged.map((m) => {
+            if (typeof m === "string") return m;
+            return (
+              m.id ||
+              m.userId ||
+              m.nickname ||
+              m.name ||
+              JSON.stringify(m)
+            );
+          })
+        );
+
+        const key = friendKey;
+
+        if (!exists.has(key)) {
+          exists.add(key);
+          merged.push({
+            id: friend.id || friend.friendId,
+            nickname: friend.nickname || friend.name || friend.id,
+            name: friend.name || friend.nickname || friend.id,
+          });
+        }
+
+        return merged;
+      });
+
+      // 3) 시스템 메시지 형태로 "OOO님이 입장했습니다" 추가
+      setMessages((prev) => [
+        ...prev,
+        {
+          systemMessage: true,
+          message: `${friendName}님이 입장했습니다.`,
+          time: "",
+        },
+      ]);
+
+      alert(`${friendName}님을 대화방에 초대했습니다.`);
     } catch (e) {
-      console.error("그룹 채팅방 생성 실패:", e);
-      alert("그룹 채팅방 생성 중 오류가 발생했습니다.");
+      console.error("대화방 초대 실패:", e);
+      alert("해당 친구를 대화방에 초대하는 중 오류가 발생했습니다.");
     }
+  };
+
+  // 🔹 메시지 텍스트 안의 URL을 자동으로 링크로 렌더링
+  const renderMessageText = (text) => {
+    if (!text) return null;
+
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+
+    return parts.map((part, idx) => {
+      if (/^https?:\/\/[^\s]+$/.test(part)) {
+        return (
+          <a
+            key={idx}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="chat-message-link"
+          >
+            {part}
+          </a>
+        );
+      }
+      return <span key={idx}>{part}</span>;
+    });
   };
 
   const filteredMessages = messages.filter((m) => {
@@ -681,6 +648,11 @@ export default function ChatRoom() {
   const closeMenuPanels = () => {
     setMenuOpen(false);
     setShowMemberPanel(false);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setInviteError("");
   };
 
   return (
@@ -901,7 +873,9 @@ export default function ChatRoom() {
                     <div className="chat-sender-name">{m.sender}</div>
                   )}
                   <div className="chat-bubble">
-                    <span className="chat-message-text">{m.message}</span>
+                    <span className="chat-message-text">
+                      {renderMessageText(m.message)}
+                    </span>
                   </div>
                   {m.time && (
                     <div className="chat-message-time">{m.time}</div>
@@ -946,14 +920,19 @@ export default function ChatRoom() {
 
       {/* 초대 모달 */}
       {showModal && (
-        <div className="invite-modal-bg" onClick={() => setShowModal(false)}>
+        <div className="invite-modal-bg" onClick={handleCloseModal}>
           <div className="invite-modal" onClick={(e) => e.stopPropagation()}>
             <h3 className="invite-modal-title">친구 초대</h3>
 
             <div className="invite-modal-friends">
               <div className="invite-modal-friends-header">
-                친구에게 1:1 또는 그룹 대화로 초대하기
+                친구에게 1:1 또는 초대하기
               </div>
+
+              {/* 🔴 중복 초대 에러 메시지 출력 */}
+              {inviteError && (
+                <p className="invite-modal-error">{inviteError}</p>
+              )}
 
               {loadingFriends ? (
                 <p className="invite-modal-friends-empty">
@@ -967,7 +946,6 @@ export default function ChatRoom() {
                 <div className="invite-modal-friend-list">
                   {friends.map((f) => {
                     const friendId = f.id || f.friendId;
-                    const isSelected = selectedGroupIds.includes(friendId);
                     const displayName = f.nickname || f.name || f.id;
 
                     return (
@@ -988,30 +966,30 @@ export default function ChatRoom() {
                               {displayName}
                             </div>
                             <div className="invite-modal-friend-sub">
-                              1:1 또는 그룹 대화로 초대
+                              1:1 또는 대화방 초대
                             </div>
                           </div>
                         </div>
 
                         <div className="invite-modal-friend-right">
+                          {/* 1:1 대화 버튼 */}
                           <button
                             type="button"
-                            className="invite-modal-friend-btn"
+                            className="invite-modal-friend-btn chat-friend-chat-btn"
                             onClick={() => handleInviteFriendOneToOne(f)}
                           >
                             1:1 대화
                           </button>
+
+                          {/* 대화방 초대 버튼 */}
                           <button
                             type="button"
-                            className={
-                              "invite-modal-friend-btn invite-modal-friend-btn--group" +
-                              (isSelected
-                                ? " invite-modal-friend-btn--group-selected"
-                                : "")
+                            className="invite-modal-friend-btn invite-modal-friend-btn--group"
+                            onClick={() =>
+                              handleInviteFriendToCurrentRoom(f)
                             }
-                            onClick={() => toggleSelectGroupFriend(f)}
                           >
-                            그룹 대화
+                            대화방 초대
                           </button>
                         </div>
                       </div>
@@ -1019,20 +997,6 @@ export default function ChatRoom() {
                   })}
                 </div>
               )}
-
-              <div className="invite-modal-group-info">
-                <span>
-                  선택된 친구 수:{" "}
-                  <strong>{selectedGroupIds.length}</strong>명
-                </span>
-                <button
-                  type="button"
-                  className="invite-modal-group-start-btn"
-                  onClick={handleCreateGroupChatFromModal}
-                >
-                  선택한 친구들과 그룹 대화 시작
-                </button>
-              </div>
             </div>
 
             <div className="invite-modal-link">
@@ -1047,7 +1011,7 @@ export default function ChatRoom() {
                   링크 복사
                 </button>
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={handleCloseModal}
                   type="button"
                   className="invite-modal-close-btn"
                 >
