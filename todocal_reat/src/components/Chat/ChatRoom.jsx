@@ -27,9 +27,32 @@ export default function ChatRoom() {
   const [memberName, setMemberName] = useState("");
   const [messages, setMessages] = useState([]);
   const [members, setMembers] = useState([]);
+
+  // ✅ 방 입장 시, localStorage에 저장된 멤버 목록 복원
+  useEffect(() => {
+    if (!roomId) return;
+
+    try {
+      const stored = localStorage.getItem(`chat_room_members_${roomId}`);
+      if (!stored) return;
+
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        setMembers(parsed);
+      }
+    } catch (e) {
+      console.error("저장된 방 멤버 목록 복원 실패:", e);
+    }
+  }, [roomId]);
+
+  // location.state.initialMembers가 있으면 우선 적용
   useEffect(() => {
     const state = location.state;
-    if (state && Array.isArray(state.initialMembers) && state.initialMembers.length > 0) {
+    if (
+      state &&
+      Array.isArray(state.initialMembers) &&
+      state.initialMembers.length > 0
+    ) {
       setMembers(state.initialMembers);
     }
   }, [location.state]);
@@ -102,16 +125,21 @@ export default function ChatRoom() {
     navigate("/chat/invite");
   }, []);
 
-    // ✅ 방 정보에서 참여자 목록을 한 번 더 가져와서 members에 반영
+  // ✅ 방 정보에서 참여자 목록 및 방 이름을 가져와서 반영
   useEffect(() => {
     if (!roomId) return;
 
-    const fetchRoomMembers = async () => {
+    const fetchRoomInfo = async () => {
       try {
         const res = await axios.get(`/api/chat/rooms/${roomId}`);
         const data = res.data || {};
 
-        // 백엔드에서 내려줄 수 있는 여러 필드 케이스 고려
+        // 🔹 방 이름 세팅 (초대 링크로 직접 들어온 경우 roomName이 비어있을 수 있음)
+        if (data.name && !roomName) {
+          setRoomName(data.name);
+        }
+
+        // 백엔드에서 내려줄 수 있는 여러 필드 케이스 고려 (멤버)
         let list = [];
         if (Array.isArray(data.members)) list = data.members;
         else if (Array.isArray(data.participants)) list = data.participants;
@@ -155,12 +183,27 @@ export default function ChatRoom() {
           return merged;
         });
       } catch (err) {
-        console.error("채팅방 참여자 정보 조회 실패:", err);
+        console.error("채팅방 정보 조회 실패:", err);
       }
     };
 
-    fetchRoomMembers();
-  }, [roomId]);
+    fetchRoomInfo();
+  }, [roomId, roomName]);
+
+  // ✅ members가 바뀔 때마다 roomId별로 localStorage에 저장
+  useEffect(() => {
+    if (!roomId) return;
+    if (!members || members.length === 0) return;
+
+    try {
+      localStorage.setItem(
+        `chat_room_members_${roomId}`,
+        JSON.stringify(members)
+      );
+    } catch (e) {
+      console.error("방 멤버 목록 저장 실패:", e);
+    }
+  }, [roomId, members]);
 
   const connectWebSocket = () => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) return;
@@ -182,11 +225,15 @@ export default function ChatRoom() {
       }
     };
 
-        socket.onmessage = (event) => {
+    socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
-      // ✅ members가 오면 "교체"가 아니라 기존 + 새 목록을 합쳐서 저장
-      if (Array.isArray(data.members)) {
+      // 공통 멤버 병합 함수 (중복 제거)
+      const mergeMembers = (incoming) => {
+        if (!incoming) return;
+
+        const list = Array.isArray(incoming) ? incoming : [incoming];
+
         setMembers((prev) => {
           const merged = [...prev];
 
@@ -205,7 +252,7 @@ export default function ChatRoom() {
           );
 
           // 새로 온 멤버를 기존에 없으면 추가
-          data.members.forEach((m) => {
+          list.forEach((m) => {
             const key =
               typeof m === "string"
                 ? m
@@ -223,14 +270,45 @@ export default function ChatRoom() {
 
           return merged;
         });
+      };
+
+      // ✅ 1) 서버가 전체 멤버 배열을 보내주는 경우
+      if (Array.isArray(data.members)) {
+        mergeMembers(data.members);
+        return;
+      }
+      if (Array.isArray(data.participants)) {
+        mergeMembers(data.participants);
+        return;
+      }
+      if (Array.isArray(data.participantList)) {
+        mergeMembers(data.participantList);
         return;
       }
 
+      // ✅ 2) 초대로 새 멤버 한 명이 들어오는 이벤트 형태 (예: MEMBER_JOINED, JOIN 등)
+      if (
+        data.type === "MEMBER_JOINED" ||
+        data.type === "JOIN" ||
+        data.type === "MEMBER_ADDED"
+      ) {
+        if (data.member) {
+          mergeMembers(data.member);
+          return;
+        }
+      }
+
+      // 타입 없이 단순히 member 한 명만 오는 경우까지 대비
+      if (data.member && !data.message && !data.roomId) {
+        mergeMembers(data.member);
+        return;
+      }
+
+      // ✅ 3) 그 외에는 채팅 메시지로 처리
       if (data.roomId === roomId) {
         setMessages((prev) => [...prev, data]);
       }
     };
-
 
     socket.onerror = (err) => {
       console.error("⚠️ WebSocket 오류:", err);
@@ -239,13 +317,16 @@ export default function ChatRoom() {
     socket.onclose = (e) => {
       setIsConnected(false);
 
+      // 정상 종료 / 권한 문제 등은 재연결하지 않음
       if (e.code === 1000) return;
       if (e.code === 1008) return;
       if (e.code === 1003) {
         alert(e.reason || "채팅방 입장 권한이 없습니다.");
+        navigate("/chat");
         return;
       }
 
+      // 그 외에는 자동 재연결 시도
       reconnectTimer.current = setTimeout(() => connectWebSocket(), 2000);
     };
   };
@@ -456,7 +537,7 @@ export default function ChatRoom() {
     );
   };
 
-    // 선택된 친구들과 그룹 채팅방 생성
+  // 선택된 친구들과 그룹 채팅방 생성
   const handleCreateGroupChatFromModal = async () => {
     if (selectedGroupIds.length === 0) {
       alert("그룹 대화에 초대할 친구를 선택해주세요.");
@@ -574,7 +655,7 @@ export default function ChatRoom() {
         state: {
           roomName: newRoom.name,
           memberName: baseName,
-          initialMembers, // 🔴 여기 추가
+          initialMembers, // 여기 전달
         },
       });
     } catch (e) {
@@ -582,7 +663,6 @@ export default function ChatRoom() {
       alert("그룹 채팅방 생성 중 오류가 발생했습니다.");
     }
   };
-
 
   const filteredMessages = messages.filter((m) => {
     if (!searchText.trim()) return true;
