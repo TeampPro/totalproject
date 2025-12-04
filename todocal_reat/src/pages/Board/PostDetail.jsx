@@ -4,6 +4,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/Board/PostDetail.css";
 import moment from "moment";
+import list from "../../assets/commentList.svg";
+import modify from "../../assets/modify.svg";
 
 /** ======================
  *  대댓글 재귀 컴포넌트
@@ -34,23 +36,35 @@ const CommentNode = React.memo(function CommentNode({
   return (
     <div className="comment-item" style={{ marginLeft: depth * 20 }}>
       {isEditing ? (
-        <>
+        /* 🔥 수정 모드: 일반 댓글창처럼 */
+        <div className="inline-edit-form">
           <textarea
+            className="inline-edit-textarea"
             value={editContent}
             onChange={(e) => onChangeEditContent(e.target.value)}
+            placeholder="댓글을 수정하세요."
           />
-          <div className="comment-actions">
-            <button onClick={() => onSaveEdit(node.id)}>저장</button>
-            <button onClick={onCancelEdit}>취소</button>
+          <div className="inline-edit-actions">
+            <button
+              className="comment-btn-primary"
+              onClick={() => onSaveEdit(node.id)}
+            >
+              저장
+            </button>
+            <button className="comment-btn-secondary" onClick={onCancelEdit}>
+              취소
+            </button>
           </div>
-        </>
+        </div>
       ) : (
         <>
-          <div className="comment-content">{node.content}</div>
-
-          <div className="comment-meta">
-            <span>{node.writer}</span>
-            <span>{moment(node.createdAt).format("YYYY.MM.DD HH:mm")}</span>
+          {/* 🔥 이름 · 내용 · 시간을 한 줄에 배치 */}
+          <div className="comment-row">
+            <span className="comment-writer">{node.writer}</span>
+            <span className="comment-text">{node.content}</span>
+            <span className="comment-time">
+              {moment(node.createdAt).format("YYYY.MM.DD HH:mm")}
+            </span>
           </div>
 
           <div className="comment-actions">
@@ -65,15 +79,28 @@ const CommentNode = React.memo(function CommentNode({
             <button onClick={() => onStartReply(node.id)}>답글</button>
           </div>
 
+          {/* 🔥 답글 입력창도 일반 댓글창처럼 */}
           {isReplying && (
             <div className="reply-form">
               <textarea
                 value={replyContent}
                 onChange={(e) => onChangeReplyContent(e.target.value)}
-                placeholder="답글을 입력하세요"
+                placeholder="답글을 입력하세요."
               />
-              <button onClick={() => onSaveReply(node.id)}>등록</button>
-              <button onClick={onCancelReply}>취소</button>
+              <div className="reply-actions">
+                <button
+                  className="comment-btn-primary"
+                  onClick={() => onSaveReply(node.id)}
+                >
+                  등록
+                </button>
+                <button
+                  className="comment-btn-secondary"
+                  onClick={onCancelReply}
+                >
+                  취소
+                </button>
+              </div>
             </div>
           )}
         </>
@@ -151,18 +178,14 @@ const PostDetail = () => {
 
   /** 이전글 이동 */
   const goPrev = async () => {
-    const res = await axios.get(
-      `http://localhost:8080/api/board/${id}/prev`
-    );
+    const res = await axios.get(`http://localhost:8080/api/board/${id}/prev`);
     if (res.data?.id) navigate(`/board/${res.data.id}`);
     else alert("이전 글이 없습니다.");
   };
 
   /** 다음글 이동 */
   const goNext = async () => {
-    const res = await axios.get(
-      `http://localhost:8080/api/board/${id}/next`
-    );
+    const res = await axios.get(`http://localhost:8080/api/board/${id}/next`);
     if (res.data?.id) navigate(`/board/${res.data.id}`);
     else alert("다음 글이 없습니다.");
   };
@@ -237,7 +260,8 @@ const PostDetail = () => {
       });
 
       alert("게시글이 삭제되었습니다.");
-      navigate("/main");
+      // 삭제 후 게시글 목록으로 이동
+      navigate("/board");
     } catch (err) {
       console.error(err);
       alert("게시글 삭제 중 오류가 발생했습니다.");
@@ -266,12 +290,12 @@ const PostDetail = () => {
 
   return (
     <div className="post-detail-container">
-      {/* 상단 우측 X 버튼 */}
+      {/* 상단 우측 X 버튼 = 삭제 버튼 */}
       <button
         type="button"
         className="close-btn"
-        onClick={() => navigate(-1)}
-        aria-label="목록으로 이동"
+        onClick={handleDeletePost}
+        aria-label="게시글 삭제"
       />
 
       {/* 제목 */}
@@ -286,23 +310,30 @@ const PostDetail = () => {
         </span>
       </div>
 
-      {/* 본문 */}
-      <div className="post-content">{post.content}</div>
+      {/* 본문 + 수정하기 버튼 */}
+      <div className="post-content-wrapper">
+        <div className="post-content">{post.content}</div>
+
+        {post.writer === loginNickname && (
+          <button
+            className="post-edit-inline"
+            type="button"
+            onClick={() => navigate(`/board/write?id=${post.id}`)}
+          >
+            <img
+              src={modify}
+              alt="수정 아이콘"
+              className="modify-icon-inline"
+            />
+            수정하기
+          </button>
+        )}
+      </div>
 
       {/* 댓글 타이틀 */}
       <h3 className="comment-title">Comment</h3>
 
-      {/* 댓글 입력 */}
-      <div className="comment-form">
-        <textarea
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="댓글 내용을 입력해 주세요. Enter를 입력하여 등록."
-        />
-        <button onClick={handleAddComment}>등록</button>
-      </div>
-
-      {/* 댓글 리스트 */}
+      {/* ✅ 댓글 리스트: 기존 댓글 먼저 보여주기 */}
       <div className="comment-list">
         {commentTree.map((node) => (
           <CommentNode
@@ -334,51 +365,44 @@ const PostDetail = () => {
         ))}
       </div>
 
+      {/* ✅ 새 댓글 입력창: 리스트 아래로 이동 */}
+      <div className="comment-form">
+        <textarea
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="댓글 내용을 입력해 주세요. Enter를 입력하여 등록."
+        />
+        <button onClick={handleAddComment}>등록</button>
+      </div>
+
       {/* 하단 네비게이션 */}
       <div className="post-nav">
-        <div className="left-buttons">
-          {post.writer === loginNickname && (
-            <button
-              className="edit-btn"
-              type="button"
-              onClick={() => navigate(`/board/write?id=${post.id}`)}
-            >
-              수정
-            </button>
-          )}
-
-          {(post.writer === loginNickname || isAdmin) && (
-            <button
-              className="delete-btn"
-              type="button"
-              onClick={handleDeletePost}
-            >
-              삭제
-            </button>
-          )}
-        </div>
-
         <div className="right-buttons">
           <button
-            className="nav-btn prev-btn"
             type="button"
+            className="post-nav-item post-nav-prev"
             onClick={goPrev}
           >
-            이전글
+            <span className="arrow">&lt;</span>
+            <span className="label">이전글</span>
           </button>
+
           <button
-            className="nav-btn list-btn"
             type="button"
-            onClick={() => navigate("/main")}
+            className="post-nav-item post-nav-list"
+            onClick={() => navigate("/board")}
           >
-            목록
+            <img src={list} alt="목록 아이콘" className="list-icon" />
+            <span className="label">목록</span>
           </button>
+
           <button
-            className="nav-btn next-btn"
             type="button"
+            className="post-nav-item post-nav-next"
             onClick={goNext}
           >
-            다음글
+            <span className="label">다음글</span>
+            <span className="arrow">&gt;</span>
           </button>
         </div>
       </div>
