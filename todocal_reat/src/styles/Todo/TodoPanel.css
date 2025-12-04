@@ -120,8 +120,40 @@
 .todo-item-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
 }
+
+.todo-delete-btn {
+  border: none;
+  background: #48a9f8;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.todo-delete-btn:hover {
+  opacity: 0.9;
+}
+
+/* 완료 카드에서 삭제 버튼을 카드 세로 중앙으로 */
+.todo-item-done {
+  position: relative; /* 버튼 absolute 기준 */
+}
+
+.todo-item-done .todo-item-main {
+  padding-right: 60px; /* 버튼이 겹치지 않도록 오른쪽 여유 */
+}
+
+.todo-item-done .todo-delete-btn {
+  position: absolute;
+  right: 16px;        /* 오른쪽 여백 */
+  top: 50%;           /* 카드 세로 중앙 */
+  transform: translateY(-50%);
+}
+
 
 .todo-title {
   font-size: 15px;

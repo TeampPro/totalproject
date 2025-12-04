@@ -7,6 +7,7 @@ import "../../styles/Board/Board.css";
 // 상단바
 import ServerBar from "../../components/serverbar/ServerBar.jsx";
 
+
 // 아이콘들
 import PlusIcon from "../../assets/plusIcon.svg";
 import SearchIcon from "../../assets/search2.svg";
@@ -193,6 +194,7 @@ const BoardHome = () => {
       alert("로그인 후 일정 알림을 확인할 수 있습니다.");
       return;
     }
+    
     setShowAlertDropdown((prev) => !prev);
   };
 

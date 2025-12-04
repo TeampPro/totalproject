@@ -29,7 +29,7 @@ const WEEKDAYS_LONG = [
   "토요일",
 ];
 
-function Calendar({ onTodosChange, onDateSelected }, ref) {
+function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const isLoggedIn = !!storedUser;
@@ -133,7 +133,7 @@ function Calendar({ onTodosChange, onDateSelected }, ref) {
     if (isLoggedIn) {
       fetchTodos();
     }
-  }, [today, isLoggedIn]);
+  }, [today, isLoggedIn, reloadKey]);
 
   // 월 선택창 외부 클릭 닫기
   useEffect(() => {
@@ -193,27 +193,40 @@ function Calendar({ onTodosChange, onDateSelected }, ref) {
   };
 
   const handleDrop = async (todo, newDate) => {
-    try {
-      const updatedTodo = {
-        ...todo,
-        promiseDate: `${newDate}T${moment(todo.promiseDate).format(
-          "HH:mm:ss"
-        )}`,
-      };
+  try {
+    const oldStart = moment(todo.promiseDate);
+    const oldEnd = todo.endDateTime ? moment(todo.endDateTime) : null;
 
-      await api.put(`/api/tasks/${todo.id}`, updatedTodo);
+    // 새 날짜 + 기존 시작 시간(HH:mm:ss)
+    const newStartStr = `${newDate}T${oldStart.format("HH:mm:ss")}`;
 
-      setTodos((prev) =>
-        prev.map((t) =>
-          t.id === todo.id ? { ...updatedTodo, tDate: newDate } : t
-        )
-      );
-
-      onTodosChange && onTodosChange();
-    } catch (err) {
-      console.error("드래그앤드롭 저장 실패:", err);
+    // 종료 시간이 있으면: 새 날짜 + 기존 종료 시간(HH:mm:ss)
+    let newEndStr = null;
+    if (oldEnd && oldEnd.isValid()) {
+      newEndStr = `${newDate}T${oldEnd.format("HH:mm:ss")}`;
     }
-  };
+
+    const updatedTodo = {
+      ...todo,
+      promiseDate: newStartStr,
+      ...(newEndStr && { endDateTime: newEndStr }),
+    };
+
+    await api.put(`/api/tasks/${todo.id}`, updatedTodo);
+
+    setTodos((prev) =>
+      prev.map((t) =>
+        t.id === todo.id
+          ? { ...updatedTodo, tDate: newDate }
+          : t
+      )
+    );
+
+    onTodosChange && onTodosChange();
+  } catch (err) {
+    console.error("드래그앤드롭 저장 실패:", err);
+  }
+};
 
   // 달력 생성
   const calendarArr = () => {

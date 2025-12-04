@@ -8,6 +8,7 @@ function TimeHome({
   onDateSelected,
   disabled,
   user,
+  reloadKey,
 }) {
   const handleTodosChange = (...args) => {
     onTodosChange && onTodosChange(...args);
@@ -28,6 +29,7 @@ function TimeHome({
         <Calendar
           ref={calendarRef}
           onTodosChange={handleTodosChange}
+          reloadKey={reloadKey}
           // ✅ 캘린더에서 날짜 선택 → 부모(MainPage)에게 전달
           onDateSelected={(dateMoment) => {
             onDateSelected && onDateSelected(dateMoment);

@@ -1,4 +1,3 @@
-// src/components/Todo/TodoPanel.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -6,18 +5,18 @@ import "../../styles/Todo/TodoPanel.css";
 import TodoIcon from "../../assets/TodoIcon.svg";
 import CalIcon from "../../assets/calIcon.svg";
 
-function TodoPanel({ user, onAddTodo, reloadKey }) {
+function TodoPanel({ user, onAddTodo, reloadKey, onTodoUpdated, onTodoDeleted }) {
   const [todos, setTodos] = useState([]);
   const navigate = useNavigate();
 
-  // 로그인 여부 (props user 또는 localStorage 둘 다 체크)
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const isLoggedIn = !!(user?.id || storedUser?.id);
 
-  const getDDayText = (promiseDate) => {
-    if (!promiseDate) return "";
+  // D-Day 텍스트 계산
+  const getDDayText = (dateTimeString) => {
+    if (!dateTimeString) return "";
 
-    const target = new Date(promiseDate);
+    const target = new Date(dateTimeString);
     const today = new Date();
 
     target.setHours(0, 0, 0, 0);
@@ -31,7 +30,6 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
     return `D+${Math.abs(diffDays)}`;
   };
 
-  // ✅ 로그인 확인 헬퍼
   const ensureLogin = () => {
     if (isLoggedIn) return true;
 
@@ -45,7 +43,7 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
     return false;
   };
 
-  // ✅ Todo 리스트 불러오기 (로그인했을 때만)
+  // ✅ Todo 리스트 조회
   const fetchTodos = async () => {
     try {
       const params = {};
@@ -55,7 +53,22 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
         params,
       });
 
-      setTodos(res.data || []);
+      const list = Array.isArray(res.data) ? res.data : [];
+      const myId = storedUser?.id;
+
+      const filtered = list.filter((t) => {
+        if (!myId) return t.shared === true;
+        if (t.ownerId && t.ownerId === myId) return true;
+        if (t.shared === true && !t.ownerId) return true;
+        return false;
+      });
+
+      filtered.sort(
+        (a, b) =>
+          new Date(a.promiseDate).getTime() - new Date(b.promiseDate).getTime()
+      );
+
+      setTodos(filtered);
     } catch (err) {
       console.error("❌ Todo 패널 불러오기 실패:", err);
     }
@@ -68,12 +81,10 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadKey, isLoggedIn]);
 
-  // ✅ 진행/완료 토글 (DB에 반영) – 로그인 필요
-  //    ★ 여기서 completed만 사용하는 PATCH /complete API를 호출하도록 변경
+  // ✅ 진행/완료 토글
   const handleToggleStatus = async (todo) => {
     if (!ensureLogin()) return;
 
-    // ★ 변경: 현재 로그인한 userId 계산
     const currentUserId = user?.id || storedUser?.id;
     if (!currentUserId) {
       alert("로그인 정보가 없습니다. 다시 로그인 해주세요.");
@@ -83,10 +94,9 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
     try {
       const nextCompleted = !todo.completed;
 
-      // ★ 변경: PUT 전체 업데이트 → PATCH 완료 상태만 변경
       const res = await axios.patch(
         `http://localhost:8080/api/tasks/${todo.id}/complete`,
-        null, // 바디 없음
+        null,
         {
           params: {
             userId: currentUserId,
@@ -95,32 +105,65 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
         }
       );
 
-      const updated = res.data; // 서버에서 업데이트된 Task 반환된다고 가정
+      const updated = res.data;
 
-      // 로컬 상태 즉시 반영
       setTodos((prev) => prev.map((t) => (t.id === todo.id ? updated : t)));
+
+      // 🔁 메인페이지에 "이 일정이 이렇게 바뀌었다" 알리기
+      if (onTodoUpdated) {
+        onTodoUpdated(updated);
+      }
     } catch (err) {
       console.error("✅ 상태 변경 실패:", err);
       alert("상태 변경 중 오류가 발생했습니다.");
     }
   };
 
-  // ✅ 일정 추가 버튼 클릭 – 로그인 필요
+  // ✅ 일정 삭제
+  const handleDeleteTodo = async (todo) => {
+    if (!ensureLogin()) return;
+
+    const currentUserId = user?.id || storedUser?.id;
+    if (!currentUserId) {
+      alert("로그인 정보가 없습니다. 다시 로그인 해주세요.");
+      return;
+    }
+
+    if (!window.confirm("해당 일정을 삭제하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      await axios.delete(`http://localhost:8080/api/tasks/${todo.id}`, {
+        params: {
+          userId: currentUserId,
+        },
+      });
+
+      setTodos((prev) => prev.filter((t) => t.id !== todo.id));
+
+      // 🔁 메인페이지에 "이 일정이 삭제됐다" 알리기
+      if (onTodoDeleted) {
+        onTodoDeleted(todo.id);
+      }
+    } catch (err) {
+      console.error("❌ 일정 삭제 실패:", err);
+      alert("일정 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   const handleClickAdd = () => {
     if (!ensureLogin()) return;
     if (onAddTodo) onAddTodo();
   };
 
-  // ------------ 목록/카운트 로직 (로그인 상태일 때만 사용) ------------
-
+  // ------------ 목록/카운트 로직 ------------
   const inProgressTodos = todos.filter((t) => !t.completed);
   const doneTodos = todos.filter((t) => t.completed);
 
-  // 진행중: 3칸, 완료: 2칸
   const MAX_IN_PROGRESS_VISIBLE = 3;
   const MAX_DONE_VISIBLE = 2;
 
-  // 진행중
   const inProgressVisible = inProgressTodos.slice(0, MAX_IN_PROGRESS_VISIBLE);
   const inProgressHiddenCount = Math.max(
     0,
@@ -131,7 +174,6 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
     MAX_IN_PROGRESS_VISIBLE - inProgressVisible.length
   );
 
-  // 완료
   const doneVisible = doneTodos.slice(0, MAX_DONE_VISIBLE);
   const doneHiddenCount = Math.max(0, doneTodos.length - MAX_DONE_VISIBLE);
   const donePlaceholderCount = Math.max(
@@ -139,33 +181,72 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
     MAX_DONE_VISIBLE - doneVisible.length
   );
 
-  // 🔹 비로그인 전용(게스트) 뷰
+  // 🔹 비로그인 뷰
   if (!isLoggedIn) {
     return (
       <aside className="todo-panel todo-panel-guest">
-        {/* 헤더 */}
         <div className="todo-panel-header">
-          <div className="todo-panel-title-row">
-            <img src={TodoIcon} alt="할일아이콘" className="todo-panel-icon" />
-            <span className="todo-panel-title">할 일 목록</span>
+          <div className="todo-panel-header-left">
+            <img src={TodoIcon} alt="할 일 아이콘" className="todo-panel-icon" />
+            <div>
+              <h2 className="todo-panel-title">할 일 목록</h2>
+              <p className="todo-panel-subtitle">
+                로그인 후 일정을 관리해보세요.
+              </p>
+            </div>
           </div>
-          <p className="todo-panel-notice">
-            로그인 후 일정 등록 및 상태 변경이 가능합니다.
-          </p>
         </div>
 
-        {/* 제목 바로 아래 버튼 (로그인 유도용) */}
-        <button className="todo-panel-add-btn" onClick={handleClickAdd}>
-          + 일정 등록하기
-        </button>
-
-        {/* 진행 중 섹션 */}
-        <section className="todo-guest-section todo-guest-section-inprogress">
+        <section className="todo-guest-section">
           <div className="todo-guest-section-header">
-            <span className="todo-guest-section-title">진행 중</span>
+            <span className="todo-guest-section-title">진행중</span>
+            <span className="todo-guest-section-count">(2)</span>
+          </div>
+          <div className="todo-guest-card">
+            <div className="todo-guest-row">
+              <input type="checkbox" disabled className="todo-guest-checkbox" />
+              <div className="todo-guest-main">
+                <p className="todo-guest-text">오늘의 중요한 일정을 등록해보세요.</p>
+                <span className="todo-guest-badge">D-1</span>
+              </div>
+            </div>
+            <div className="todo-guest-row">
+              <input type="checkbox" disabled className="todo-guest-checkbox" />
+              <div className="todo-guest-main">
+                <p className="todo-guest-text">
+                  친구와 공유할 일정을 같이 관리할 수 있어요.
+                </p>
+                <span className="todo-guest-badge">D-3</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="todo-guest-section todo-guest-section-done">
+          <div className="todo-guest-section-header">
+            <span className="todo-guest-section-title">완료</span>
             <span className="todo-guest-section-count">(1)</span>
           </div>
+          <div className="todo-guest-card">
+            <div className="todo-guest-row">
+              <input
+                type="checkbox"
+                checked
+                readOnly
+                disabled
+                className="todo-guest-checkbox"
+              />
+              <div className="todo-guest-main">
+                <span className="todo-guest-text todo-guest-text-done">
+                  Planix 접속하기
+                </span>
+                <span className="todo-guest-badge">완료</span>
+              </div>
+            </div>
+          </div>
+        </section>
 
+        <section className="todo-guest-login-section">
           <div className="todo-guest-card">
             <div className="todo-guest-row">
               <input type="checkbox" disabled className="todo-guest-checkbox" />
@@ -184,65 +265,34 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
             </div>
           </div>
         </section>
-
-        {/* 완료 섹션 */}
-        <section className="todo-guest-section todo-guest-section-done">
-          <div className="todo-guest-section-header">
-            <span className="todo-guest-section-title">완료</span>
-            <span className="todo-guest-section-count">(1)</span>
-          </div>
-
-          <div className="todo-guest-card">
-            <div className="todo-guest-row todo-guest-row-done">
-              <input
-                type="checkbox"
-                checked
-                readOnly
-                disabled
-                className="todo-guest-checkbox"
-              />
-              <div className="todo-guest-main">
-                <span className="todo-guest-text todo-guest-text-done">
-                  Planix 접속하기
-                </span>
-                <span className="todo-guest-badge">완료</span>
-              </div>
-            </div>
-          </div>
-        </section>
       </aside>
     );
   }
 
-  // ============================================
-  // 🔹 여기부터는 “로그인 상태” UI
-  // ============================================
+  // 🔹 로그인 뷰
   return (
     <aside className="todo-panel">
-      {/* 헤더 */}
       <div className="todo-panel-header">
-        <div className="todo-panel-title-row">
-          <img src={TodoIcon} alt="할일아이콘" className="todo-panel-icon" />
-          <span className="todo-panel-title">할 일 목록</span>
+        <div className="todo-panel-header-left">
+          <img src={TodoIcon} alt="할 일 아이콘" className="todo-panel-icon" />
+          <div>
+            <h2 className="todo-panel-title">할 일 목록</h2>
+            <p className="todo-panel-subtitle">오늘의 할 일을 관리해보세요.</p>
+          </div>
         </div>
-
-        {!isLoggedIn && (
-          <p className="todo-panel-notice">
-            로그인 후 일정 등록 및 상태 변경이 가능합니다.
-          </p>
-        )}
       </div>
 
-      {/* 제목 바로 아래 버튼 */}
       <button className="todo-panel-add-btn" onClick={handleClickAdd}>
         + 일정 등록하기
       </button>
 
-      {/* 진행중 섹션 */}
+      {/* 진행중 */}
       <section className="todo-section todo-section-inprogress">
         <div className="todo-guest-section-header">
-            <span className="todo-guest-section-title">진행 중</span>
-            <span className="todo-guest-section-count">({inProgressTodos.length})</span>
+          <span className="todo-guest-section-title">진행중</span>
+          <span className="todo-guest-section-count">
+            ({inProgressTodos.length})
+          </span>
         </div>
         <div className="todo-list todo-list-inprogress">
           {inProgressVisible.map((todo) => (
@@ -273,7 +323,6 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
             </div>
           ))}
 
-          {/* 3칸 유지용 placeholder */}
           {Array.from({ length: inProgressPlaceholderCount }).map((_, idx) => (
             <div
               key={`in-progress-placeholder-${idx}`}
@@ -289,12 +338,14 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
         </div>
       </section>
 
-      {/* 완료 섹션 */}
+      {/* 완료 */}
       <section className="todo-section todo-section-done">
         <div className="todo-guest-section-header">
-            <span className="todo-guest-section-title">완료</span>
-            <span className="todo-guest-section-count">({doneTodos.length})</span>
-          </div>
+          <span className="todo-guest-section-title">완료</span>
+          <span className="todo-guest-section-count">
+            ({doneTodos.length})
+          </span>
+        </div>
         <div className="todo-list todo-list-done">
           {doneVisible.map((todo) => (
             <div key={todo.id} className="todo-item todo-item-done">
@@ -307,6 +358,13 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
               <div className="todo-item-main">
                 <div className="todo-item-top">
                   <span className="todo-title">{todo.title}</span>
+                  <button
+                    type="button"
+                    className="todo-delete-btn"
+                    onClick={() => handleDeleteTodo(todo)}
+                  >
+                    삭제
+                  </button>
                 </div>
 
                 {todo.promiseDate && (
@@ -324,7 +382,6 @@ function TodoPanel({ user, onAddTodo, reloadKey }) {
             </div>
           ))}
 
-          {/* 2칸 유지용 placeholder */}
           {Array.from({ length: donePlaceholderCount }).map((_, idx) => (
             <div
               key={`done-placeholder-${idx}`}

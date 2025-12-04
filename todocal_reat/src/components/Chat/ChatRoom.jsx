@@ -442,19 +442,41 @@ export default function ChatRoom() {
     alert("초대 링크가 복사되었습니다!");
   };
 
-  const handleLeaveRoom = () => {
+    const handleLeaveRoom = () => {
     navigate("/chat");
   };
 
-  const handleChangeRoomName = () => {
+  // ✅ 채팅방 안에서 제목 변경 시, 서버에도 반영
+  const handleChangeRoomName = async () => {
     const newName = window.prompt(
       "새 대화방 이름을 입력해주세요.",
       roomName || ""
     );
-    if (newName && newName.trim()) {
-      setRoomName(newName.trim());
+
+    // 취소 눌렀을 때
+    if (newName === null) return;
+
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      alert("이름은 비워둘 수 없습니다.");
+      return;
+    }
+
+    try {
+      const res = await axios.patch(`/api/chat/rooms/${roomId}/name`, {
+        name: trimmed,
+      });
+
+      const updatedName = res.data?.name ?? trimmed;
+
+      // 화면 상단 제목 갱신
+      setRoomName(updatedName);
+    } catch (err) {
+      console.error("채팅방 이름 변경 실패:", err);
+      alert("채팅방 이름 변경에 실패했습니다.");
     }
   };
+
 
   // 🔹 모달 내 1:1 버튼용: 선택한 친구와 1:1 채팅방 생성 후 이동
   const handleInviteFriendOneToOne = async (friend) => {

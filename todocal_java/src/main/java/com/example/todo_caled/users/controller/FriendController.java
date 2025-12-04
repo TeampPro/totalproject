@@ -23,6 +23,16 @@ public class FriendController {
         friendService.sendRequest(req);
         return ResponseEntity.ok().build();
     }
+    // 친구 삭제
+    @DeleteMapping
+    public ResponseEntity<Void> deleteFriend(
+            @RequestParam("userId") String userId,
+            @RequestParam("friendId") String friendId
+    ) {
+        friendService.deleteFriend(userId, friendId);
+        return ResponseEntity.noContent().build();
+    }
+
 
     /** 나에게 온 친구 요청 목록 */
     @GetMapping("/requests")

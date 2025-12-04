@@ -29,4 +29,17 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     List<Friendship> findAcceptedFriends(@Param("loginId") String loginId);
 
     Optional<Friendship> findByIdAndReceiverId(Long id, String receiverId);
+
+    @Query("""
+       select f
+       from Friendship f
+       where ((f.requesterId = :userId and f.receiverId = :friendId)
+           or (f.requesterId = :friendId and f.receiverId = :userId))
+         and f.status = 'ACCEPTED'
+       """)
+    Optional<Friendship> findAcceptedFriendship(
+            @Param("userId") String userId,
+            @Param("friendId") String friendId
+    );
+
 }

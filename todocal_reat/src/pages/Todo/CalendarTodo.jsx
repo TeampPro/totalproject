@@ -16,15 +16,16 @@ import { fetchFriends } from "../../api/friendApi";
  * - editTodo: 수정할 일정 객체 (없으면 새로 생성)
  * - defaultDate: 새 일정 생성 시 기본 날짜 (YYYY-MM-DD)
  */
-  function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
-    const isEdit = !!editTodo;
+function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
+  const isEdit = !!editTodo;
 
-    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-    const loginId =
-      storedUser?.id || storedUser?.userId || storedUser?.loginId || null;
+  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+  const loginId =
+    storedUser?.id || storedUser?.userId || storedUser?.loginId || null;
 
-    // ✅ 수정 모드에서는 기존 ownerId 를 우선 사용, 없으면 로그인 아이디 사용
-    const ownerId = editTodo?.ownerId || loginId;
+  // ✅ 수정 모드에서는 기존 ownerId 를 우선 사용, 없으면 로그인 아이디 사용
+  const ownerId = editTodo?.ownerId || loginId;
+
   // -----------------------------
   // 초기값 세팅
   // -----------------------------
@@ -111,8 +112,14 @@ import { fetchFriends } from "../../api/friendApi";
       return;
     }
 
-    const start = moment(`${date}T${startTime || "09:00"}`);
-    const end = moment(`${date}T${endTime || startTime || "10:00"}`);
+    // 🔥 여기서부터 수정 포인트
+    //   - ISO 문자열(UTC)로 보내지 않고
+    //   - "YYYY-MM-DDTHH:mm:ss" 로컬시간 문자열로 그대로 보냄
+    const startStr = `${date}T${startTime || "09:00"}:00`;
+    const endStr = `${date}T${endTime || startTime || "10:00"}:00`;
+
+    const start = moment(startStr);
+    const end = moment(endStr);
 
     if (!start.isValid()) {
       alert("시작 시간이 올바르지 않습니다.");
@@ -126,8 +133,9 @@ import { fetchFriends } from "../../api/friendApi";
     const payload = {
       title: title.trim(),
       content: content.trim(),
-      promiseDate: start.toISOString(),
-      endDateTime: end.toISOString(),
+      // ⬇⬇⬇ 기존: start.toISOString(), end.toISOString()
+      promiseDate: startStr,
+      endDateTime: endStr,
       ownerId,
       shared,
       location: location.trim() || null,
@@ -160,25 +168,22 @@ import { fetchFriends } from "../../api/friendApi";
   // -----------------------------
   // 삭제 (수정 모드만)
   // -----------------------------
-  // src/pages/Todo/CalendarTodo.jsx
-
   const handleDelete = async () => {
-  if (!isEdit || !editTodo?.id) return;
-  if (!window.confirm("해당 일정을 삭제하시겠습니까?")) return;
+    if (!isEdit || !editTodo?.id) return;
+    if (!window.confirm("해당 일정을 삭제하시겠습니까?")) return;
 
-  try {
-    await api.del(`/api/tasks/${editTodo.id}`, {
-      params: { userId: ownerId },   // ✅ editTodo.ownerId 대신 ownerId 사용
-    });
-    alert("일정이 삭제되었습니다.");
-    if (onSave) onSave({ deleted: true, id: editTodo.id });
-    onClose();
-  } catch (err) {
-    console.error("❌ 일정 삭제 실패:", err);
-    alert("일정 삭제 중 오류가 발생했습니다.");
-  }
-};
-
+    try {
+      await api.del(`/api/tasks/${editTodo.id}`, {
+        params: { userId: ownerId }, // ✅ editTodo.ownerId 대신 ownerId 사용
+      });
+      alert("일정이 삭제되었습니다.");
+      if (onSave) onSave({ deleted: true, id: editTodo.id });
+      onClose();
+    } catch (err) {
+      console.error("❌ 일정 삭제 실패:", err);
+      alert("일정 삭제 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <div className="todo-modal-overlay">
@@ -362,8 +367,7 @@ import { fetchFriends } from "../../api/friendApi";
                         key={fid}
                         type="button"
                         className={
-                          "todo-share-friend" +
-                          (selected ? " selected" : "")
+                          "todo-share-friend" + (selected ? " selected" : "")
                         }
                         onClick={() => toggleFriend(fid)}
                       >

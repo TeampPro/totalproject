@@ -104,6 +104,8 @@ const ServerBar = ({ showBackButton = true }) => {
       alert("로그인 후 일정 알림을 확인할 수 있습니다.");
       return;
     }
+    setMenuOpen(false);
+
     setShowAlertDropdown((prev) => !prev);
   };
 
@@ -166,7 +168,10 @@ const ServerBar = ({ showBackButton = true }) => {
             src={ListIcon}
             alt="메뉴"
             className="server-bar-icon"
-            onClick={() => setMenuOpen((prev) => !prev)}
+            onClick={() => {
+              setShowAlertDropdown(false);
+              setMenuOpen((prev) => !prev)
+            }}
           />
         </div>
 

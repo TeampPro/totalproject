@@ -31,6 +31,9 @@ public class FriendService {
             throw new IllegalArgumentException("본인에게는 친구 요청을 보낼 수 없습니다.");
         }
 
+
+
+
         // 유저 존재 여부 체크
         User from = userRepository.findById(req.getRequesterId());
         User to   = userRepository.findById(req.getReceiverId());
@@ -115,6 +118,14 @@ public class FriendService {
 
         friendship.setStatus(Status.ACCEPTED);
         friendship.setRespondedAt(LocalDateTime.now());
+    }
+    // 친구 삭제
+    public void deleteFriend(String userId, String friendId) {
+        Friendship friendship = friendshipRepository
+                .findAcceptedFriendship(userId, friendId)
+                .orElseThrow(() -> new IllegalArgumentException("친구 관계가 존재하지 않습니다."));
+
+        friendshipRepository.delete(friendship);
     }
 
     /** 거절 */
