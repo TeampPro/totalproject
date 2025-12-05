@@ -1023,16 +1023,7 @@ export default function ChatRoom() {
             </div>
 
             <div className="invite-modal-link">
-              <div className="invite-modal-link-label">초대 링크</div>
-              <p className="invite-modal-link-box">{inviteLink}</p>
               <div className="invite-modal-actions">
-                <button
-                  onClick={copyLink}
-                  type="button"
-                  className="invite-modal-copy-btn"
-                >
-                  링크 복사
-                </button>
                 <button
                   onClick={handleCloseModal}
                   type="button"

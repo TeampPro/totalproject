@@ -45,7 +45,7 @@ import AdminTaskDetail from "./components/AdminPage/AdminTaskDetail.jsx";
 
 import "./App.css";
 
-function App() {
+function AppRoutes() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
@@ -55,7 +55,7 @@ function App() {
   useEffect(() => {
     const savedRaw = localStorage.getItem("user");
     const token = localStorage.getItem("token");
-    if (!savedRaw || !token){
+    if (!savedRaw || !token) {
       localStorage.removeItem("user");
       localStorage.removeItem("token");
       setUser(null);
@@ -74,23 +74,23 @@ function App() {
       try {
         const freshUser = await api.get("/api/auth/me");
 
-        if(!canceled) {
+        if (!canceled) {
           setUser(freshUser);
           localStorage.setItem("user", JSON.stringify(freshUser));
         }
       } catch (err) {
-          if(!canceled) {
-            console.error("세션 검증 실패:", err);
-            clearUser();
-          }
+        if (!canceled) {
+          console.error("세션 검증 실패:", err);
+          clearUser();
         }
-    }
+      }
+    };
 
-      validateSession();
+    validateSession();
 
-      return () => {
-        canceled = true;
-      };
+    return () => {
+      canceled = true;
+    };
   }, []);
 
   const handleLogout = () => {
@@ -102,7 +102,7 @@ function App() {
     });
 
     localStorage.removeItem("user");
-    localStorage.removeItem("token")
+    localStorage.removeItem("token");
     setUser(null);
     alert("로그아웃 되었습니다.");
     navigate("/main");
@@ -116,6 +116,7 @@ function App() {
     <>
       <div className="content">
         <Routes>
+          {/* 기본 경로 → /main 으로 리다이렉트 */}
           <Route path="/" element={<Navigate to="/main" replace />} />
 
           <Route
@@ -127,7 +128,6 @@ function App() {
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/beLogin" element={<BeLogin setUser={setUser} />} />
-          {/* ✅ 카카오 로그인 성공 콜백 라우트 추가 */}
           <Route
             path="/auth/kakao/success"
             element={<KakaoCallback setUser={setUser} />}
@@ -139,7 +139,6 @@ function App() {
 
           {/* Board */}
           <Route path="/board" element={<BoardHome />} />
-          {/* Board */}
           <Route path="/board/:id" element={<PostDetail />} />
           <Route path="/board/write" element={<PostWrite />} />
 
@@ -171,10 +170,13 @@ function App() {
   );
 }
 
-export default function Root() {
+export default function App() {
+  const basename =
+    import.meta.env.MODE === "production" ? "/totalproject" : "/";
+
   return (
-    <BrowserRouter>
-      <App />
+    <BrowserRouter basename={basename}>
+      <AppRoutes />
     </BrowserRouter>
   );
 }
