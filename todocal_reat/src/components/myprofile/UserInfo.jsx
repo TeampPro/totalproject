@@ -71,8 +71,16 @@ function UserInfo({ user, onLogout, small }) {
           {/* 🔵 파란 원 (배경) */}
           <img src={round} alt="avatar-round" className="avatar-round" />
 
-          {/* 😀 프로필 아이콘 – 파란 원 안에 들어가게 */}
-          <img src={profileIcon} alt="프로필" className="profile-image" />
+          {/* 😀 프로필 이미지 (있으면 서버 이미지, 없으면 기본 아이콘) */}
+          <img
+            src={
+              userInfo.profileImage
+                ? `${API_BASE_URL}/api/uploads/${userInfo.profileImage}`
+                : profileIcon
+            }
+            alt="프로필"
+            className="profile-image"
+          />
         </div>
 
         <div className="info-box">

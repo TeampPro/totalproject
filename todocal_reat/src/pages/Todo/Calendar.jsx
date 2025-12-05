@@ -61,7 +61,9 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
   const openAddTodo = (date) => {
     if (!isLoggedIn) {
       if (
-        window.confirm("로그인이 필요한 기능입니다.\n로그인 페이지로 이동할까요?")
+        window.confirm(
+          "로그인이 필요한 기능입니다.\n로그인 페이지로 이동할까요?"
+        )
       ) {
         navigate("/login");
       }
@@ -319,6 +321,7 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
       <div className="calendar-card">
         {/* 상단 헤더 */}
         <div className="calendar-header">
+          {/* 이전 달 버튼 */}
           <button
             className="nav-btn left-btn"
             onClick={() => setMoment(today.clone().subtract(1, "month"))}
@@ -326,57 +329,61 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
             <img src={leftIcon} alt="left" />
           </button>
 
-          <div
-            className="current-year-month"
-            onClick={() => setShowMonthPicker((prev) => !prev)}
-          >
-            {headerText}
+          {/* 🔥 가운데: 날짜 텍스트 + monthpicker 를 세로로 배치 */}
+          <div className="calendar-header-center">
+            <div
+              className="current-year-month"
+              onClick={() => setShowMonthPicker((prev) => !prev)}
+            >
+              {headerText}
+            </div>
+
+            {/* 월 선택 드롭다운 (날짜 바로 아래) */}
+            {showMonthPicker && (
+              <div className="month-picker" ref={monthPickerRef}>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                >
+                  {Array.from({ length: 11 }, (_, i) => 2020 + i).map((y) => (
+                    <option key={y} value={y}>
+                      {y}년
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                    <option key={m} value={m}>
+                      {m}월
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={() => {
+                    setMoment(
+                      moment({ year: selectedYear, month: selectedMonth - 1 })
+                    );
+                    setShowMonthPicker(false);
+                  }}
+                >
+                  이동
+                </button>
+              </div>
+            )}
           </div>
 
+          {/* 다음 달 버튼 */}
           <button
             className="nav-btn right-btn"
             onClick={() => setMoment(today.clone().add(1, "month"))}
           >
             <img src={rightIcon} alt="right" />
           </button>
-
-          {/* 월 선택 드롭다운 */}
-          {showMonthPicker && (
-            <div className="month-picker" ref={monthPickerRef}>
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(Number(e.target.value))}
-              >
-                {Array.from({ length: 11 }, (_, i) => 2020 + i).map((y) => (
-                  <option key={y} value={y}>
-                    {y}년
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              >
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m}>
-                    {m}월
-                  </option>
-                ))}
-              </select>
-
-              <button
-                onClick={() => {
-                  setMoment(
-                    moment({ year: selectedYear, month: selectedMonth - 1 })
-                  );
-                  setShowMonthPicker(false);
-                }}
-              >
-                이동
-              </button>
-            </div>
-          )}
         </div>
 
         <div className="calendar-weekdays">
@@ -391,8 +398,10 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
             </div>
           ))}
         </div>
+
         {/* 메인 캘린더 */}
         <div className="calendar-grid">{calendarArr()}</div>
+
         {/* ✅ 선택 날짜 일정 카드 */}
         <div className="calendar-day-panel">
           <div className="calendar-day-panel-header">
@@ -414,7 +423,6 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
                 {selectedDayTodos.map((todo) => (
                   <li key={todo.id} className="calendar-day-item">
                     <div className="calendar-day-item-title">{todo.title}</div>
-                    {/* 필요하면 시간 / 메모 등 추가 가능 */}
                   </li>
                 ))}
               </ul>

@@ -35,18 +35,45 @@ export default function ChatRoom() {
   useEffect(() => {
     if (!roomId) return;
 
-    try {
-      const stored = localStorage.getItem(`chat_room_members_${roomId}`);
-      if (!stored) return;
+    const fetchRoomInfo = async () => {
+      try {
+        const res = await axios.get(`/api/chat/rooms/${roomId}`);
+        const data = res.data || {};
 
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        setMembers(parsed);
+        // ✅ 서버에서 내려준 이름으로 항상 덮어쓰기
+        if (data.name) {
+          setRoomName(data.name);
+        }
+
+        let list = [];
+        if (Array.isArray(data.members)) list = data.members;
+        else if (Array.isArray(data.participants)) list = data.participants;
+        else if (Array.isArray(data.participantList))
+          list = data.participantList;
+
+        if (list.length === 0) return;
+
+        setMembers((prev) => {
+          const merged = [...prev];
+          const exists = new Set(prev.map((m) => getMemberKey(m)));
+
+          list.forEach((m) => {
+            const key = getMemberKey(m);
+            if (key && !exists.has(key)) {
+              exists.add(key);
+              merged.push(m);
+            }
+          });
+
+          return merged;
+        });
+      } catch (err) {
+        console.error("채팅방 정보 조회 실패:", err);
       }
-    } catch (e) {
-      console.error("저장된 방 멤버 목록 복원 실패:", e);
-    }
-  }, [roomId]);
+    };
+
+    fetchRoomInfo();
+  }, [roomId]); // ✅ roomId만 의존
 
   // location.state.initialMembers가 있으면 우선 적용
   useEffect(() => {
@@ -86,6 +113,31 @@ export default function ChatRoom() {
     const { scrollTop, clientHeight, scrollHeight } = chatBoxRef.current;
     const isBottom = scrollHeight - scrollTop - clientHeight < 50;
     setAutoScroll(isBottom);
+  };
+  // ChatRoom 컴포넌트 내부, useState들 정의 아래 아무 데나
+  // ChatRoom 컴포넌트 안, useState들 아래
+  const getMemberKey = (m) => {
+    if (!m) return "";
+    if (typeof m === "string") return m;
+
+    const nick =
+      m.nickname ||
+      m.name ||
+      m.memberName || // 서버가 memberName 으로 줄 수도 있음
+      m.sender;
+
+    // 닉네임/이름이 있으면 그걸 우선 키로 사용
+    if (nick) return String(nick);
+
+    // 그 외에는 id 계열로 키 생성
+    return (
+      m.id ||
+      m.userId ||
+      m.friendId ||
+      m.memberId ||
+      m.username ||
+      JSON.stringify(m)
+    );
   };
 
   useEffect(() => {
@@ -145,38 +197,19 @@ export default function ChatRoom() {
         let list = [];
         if (Array.isArray(data.members)) list = data.members;
         else if (Array.isArray(data.participants)) list = data.participants;
-        else if (Array.isArray(data.participantList)) list = data.participantList;
+        else if (Array.isArray(data.participantList))
+          list = data.participantList;
 
         if (list.length === 0) return;
 
-        // 기존 members와 합치기 (중복 제거)
+        // ✅ 기존 members와 합치기 (중복 제거)
         setMembers((prev) => {
           const merged = [...prev];
-
-          const exists = new Set(
-            merged.map((m) => {
-              if (typeof m === "string") return m;
-              return (
-                m.id ||
-                m.userId ||
-                m.nickname ||
-                m.name ||
-                JSON.stringify(m)
-              );
-            })
-          );
+          const exists = new Set(prev.map((m) => getMemberKey(m)));
 
           list.forEach((m) => {
-            const key =
-              typeof m === "string"
-                ? m
-                : m.id ||
-                  m.userId ||
-                  m.nickname ||
-                  m.name ||
-                  JSON.stringify(m);
-
-            if (!exists.has(key)) {
+            const key = getMemberKey(m);
+            if (key && !exists.has(key)) {
               exists.add(key);
               merged.push(m);
             }
@@ -231,6 +264,7 @@ export default function ChatRoom() {
       const data = JSON.parse(event.data);
 
       // 공통 멤버 병합 함수 (중복 제거)
+      // socket.onmessage 안쪽
       const mergeMembers = (incoming) => {
         if (!incoming) return;
 
@@ -238,33 +272,11 @@ export default function ChatRoom() {
 
         setMembers((prev) => {
           const merged = [...prev];
+          const exists = new Set(prev.map((m) => getMemberKey(m)));
 
-          // 기존 멤버 키 세트
-          const exists = new Set(
-            merged.map((m) => {
-              if (typeof m === "string") return m;
-              return (
-                m.id ||
-                m.userId ||
-                m.nickname ||
-                m.name ||
-                JSON.stringify(m)
-              );
-            })
-          );
-
-          // 새로 온 멤버를 기존에 없으면 추가
           list.forEach((m) => {
-            const key =
-              typeof m === "string"
-                ? m
-                : m.id ||
-                  m.userId ||
-                  m.nickname ||
-                  m.name ||
-                  JSON.stringify(m);
-
-            if (!exists.has(key)) {
+            const key = getMemberKey(m);
+            if (key && !exists.has(key)) {
               exists.add(key);
               merged.push(m);
             }
@@ -336,10 +348,19 @@ export default function ChatRoom() {
   useEffect(() => {
     if (!memberName || !roomId) return;
 
+    const skipJoin = location.state?.skipJoin;
+
     let cancelled = false;
 
     const joinAndConnect = async () => {
       try {
+        // ✅ 새로 만든 1:1 방처럼, 이미 서버에 join 되어 있는 경우
+        if (skipJoin) {
+          if (!cancelled) connectWebSocket();
+          return;
+        }
+
+        // ✅ 그 외 일반적인 경우에는 join → WebSocket 연결
         await axios.post(`/api/chat/rooms/${roomId}/join`, null, {
           params: { memberName },
         });
@@ -361,7 +382,7 @@ export default function ChatRoom() {
         ws.current = null;
       }
     };
-  }, [memberName, roomId]);
+  }, [memberName, roomId, location.state?.skipJoin]);
 
   useEffect(() => {
     const loadOldMessages = async () => {
@@ -495,7 +516,7 @@ export default function ChatRoom() {
         return;
       }
 
-      // 1) 새 1:1 방 생성 (나 기준)
+      // 1) 새 1:1 방 생성
       const resRoom = await axios.post("/api/chat/rooms", null, {
         params: { memberName: baseName },
       });
@@ -516,21 +537,43 @@ export default function ChatRoom() {
       }
 
       // 3) 방 이름 변경
+      // 3) 방 이름 변경
       const title = `${baseName} & ${friendName}`;
       try {
-        const renameRes = await axios.patch(`/api/chat/rooms/${newRoom.id}/name`, {
-          name: title,
-        });
+        const renameRes = await axios.patch(
+          `/api/chat/rooms/${newRoom.id}/name`,
+          {
+            name: title,
+          }
+        );
         newRoom.name = renameRes.data?.name || title;
       } catch (e) {
         console.error("1:1 방 이름 변경 실패:", e);
         newRoom.name = title;
       }
 
-      // 4) 새 1:1 방으로 이동
+      // ✅ 4) 새 1:1 방으로 이동 + 초기 멤버 전달
+      // 4) 새 1:1 방으로 이동 + 초기 멤버 전달
+      const myMemberObj = {
+        id: loginUser?.id,
+        nickname: baseName,
+        name: baseName,
+      };
+      const friendMemberObj = {
+        id: friend.id || friend.friendId || friend.userId,
+        nickname: friendName,
+        name: friend.name || friend.nickname || friend.id,
+      };
+
       navigate(`/chat/${newRoom.id}`, {
-        state: { roomName: newRoom.name, memberName: baseName },
+        state: {
+          roomName: newRoom.name,
+          memberName: baseName,
+          initialMembers: [myMemberObj, friendMemberObj],
+          skipJoin: true, // ✅ 이 방은 이미 내가 참여자로 등록된 상태다!
+        },
       });
+
       setShowModal(false);
       setInviteError("");
     } catch (e) {
@@ -540,6 +583,7 @@ export default function ChatRoom() {
   };
 
   // 🔹 '대화방 초대': 해당 친구를 현재 방에 바로 초대
+  // 🔹 '대화방 초대': 해당 친구를 현재 방에 바로 초대
   const handleInviteFriendToCurrentRoom = async (friend) => {
     try {
       if (!roomId) return;
@@ -548,62 +592,30 @@ export default function ChatRoom() {
 
       const friendName = friend.nickname || friend.name || friend.id || "친구";
 
-      // 🔸 현재 방 멤버 중복 여부 체크
-      const existingKeys = new Set(
-        members.map((m) => {
-          if (typeof m === "string") return m;
-          return (
-            m.id ||
-            m.userId ||
-            m.nickname ||
-            m.name ||
-            JSON.stringify(m)
-          );
-        })
-      );
+      // ✅ 공통 키로 비교
+      const friendKey = getMemberKey(friend);
+      const existingKeys = new Set(members.map((m) => getMemberKey(m)));
 
-      const friendKey =
-        friend.id ||
-        friend.friendId ||
-        friend.nickname ||
-        friend.name ||
-        friend.id ||
-        JSON.stringify(friend);
-
-      if (existingKeys.has(friendKey)) {
+      if (friendKey && existingKeys.has(friendKey)) {
         setInviteError("현재 방에 이미 존재하는 사람입니다!");
         return;
       }
 
-      // 1) 백엔드에 해당 친구를 현재 방의 참여자로 추가
+      // 1) 백엔드에 친구를 현재 방 참여자로 추가
       await axios.post(`/api/chat/rooms/${roomId}/join`, null, {
         params: { memberName: friendName },
       });
 
-      // 2) 프론트의 members에도 반영 (중복 제거 병합)
+      // 2) 프론트 members에도 반영 (중복 방지)
       setMembers((prev) => {
         const merged = [...prev];
+        const exists = new Set(prev.map((m) => getMemberKey(m)));
 
-        const exists = new Set(
-          merged.map((m) => {
-            if (typeof m === "string") return m;
-            return (
-              m.id ||
-              m.userId ||
-              m.nickname ||
-              m.name ||
-              JSON.stringify(m)
-            );
-          })
-        );
-
-        const key = friendKey;
-
-        if (!exists.has(key)) {
-          exists.add(key);
+        if (!exists.has(friendKey)) {
+          exists.add(friendKey);
           merged.push({
-            id: friend.id || friend.friendId,
-            nickname: friend.nickname || friend.name || friend.id,
+            id: friend.id || friend.friendId || friend.userId,
+            nickname: friendName,
             name: friend.name || friend.nickname || friend.id,
           });
         }
@@ -611,7 +623,7 @@ export default function ChatRoom() {
         return merged;
       });
 
-      // 3) 시스템 메시지 형태로 "OOO님이 입장했습니다" 추가
+      // 3) 시스템 메시지
       setMessages((prev) => [
         ...prev,
         {
@@ -859,11 +871,7 @@ export default function ChatRoom() {
         )}
 
         {/* 메시지 리스트 */}
-        <div
-          className="chat-messages"
-          ref={chatBoxRef}
-          onScroll={handleScroll}
-        >
+        <div className="chat-messages" ref={chatBoxRef} onScroll={handleScroll}>
           {filteredMessages.map((m, i) => {
             if (m.systemMessage) {
               return (
@@ -899,9 +907,7 @@ export default function ChatRoom() {
                       {renderMessageText(m.message)}
                     </span>
                   </div>
-                  {m.time && (
-                    <div className="chat-message-time">{m.time}</div>
-                  )}
+                  {m.time && <div className="chat-message-time">{m.time}</div>}
                 </div>
               </div>
             );
@@ -971,10 +977,7 @@ export default function ChatRoom() {
                     const displayName = f.nickname || f.name || f.id;
 
                     return (
-                      <div
-                        key={friendId}
-                        className="invite-modal-friend-item"
-                      >
+                      <div key={friendId} className="invite-modal-friend-item">
                         <div className="invite-modal-friend-left">
                           <div className="invite-modal-friend-avatar">
                             <img
@@ -1007,9 +1010,7 @@ export default function ChatRoom() {
                           <button
                             type="button"
                             className="invite-modal-friend-btn invite-modal-friend-btn--group"
-                            onClick={() =>
-                              handleInviteFriendToCurrentRoom(f)
-                            }
+                            onClick={() => handleInviteFriendToCurrentRoom(f)}
                           >
                             대화방 초대
                           </button>

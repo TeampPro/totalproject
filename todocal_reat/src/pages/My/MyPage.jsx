@@ -105,21 +105,31 @@ function MyPage() {
       alert(data?.message || "내 정보가 저장되었습니다.");
       setIsEditing(false);
 
-      const savedUser = JSON.parse(localStorage.getItem("user"));
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          ...savedUser,
-          nickname,
-          name: userInfo.name,
-          email: userInfo.email,
-        })
-      );
+      // 🔹 로컬 user 정보도 같이 업데이트
+      const savedUser = JSON.parse(localStorage.getItem("user") || "null");
+      const updatedUser = {
+        ...savedUser,
+        nickname,
+        name: userInfo.name,
+        email: userInfo.email,
+        // 서버가 프로필 파일명 내려준다고 가정 (ex: "abc.png")
+        profileImage: data?.profileImage ?? savedUser?.profileImage ?? null,
+      };
 
-      setUserInfo((prev) => ({ ...prev, nickname }));
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      // 상태도 동기화
+      setUserInfo((prev) => ({
+        ...prev,
+        nickname,
+        // 필요한 경우 profileImage도 상태에 넣기
+        profileImage: updatedUser.profileImage,
+      }));
+
       if (data?.profileImage) {
         setPreview(`${API_BASE}/api/uploads/${data.profileImage}`);
       }
+
     } catch (err) {
       console.error("내 정보 저장 실패:", err);
       alert(err.message || "내 정보 저장 중 오류가 발생했습니다.");

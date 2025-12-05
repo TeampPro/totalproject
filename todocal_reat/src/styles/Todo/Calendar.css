@@ -74,19 +74,24 @@
 
 /* 월 선택 드롭다운 */
 .month-picker {
-  position: absolute;
-  top: 110%;
-  right: 0;
-  z-index: 20;
-  background: #ffffff;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  padding: 8px 10px;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
-  display: flex;
+  position: absolute;     /* 🔥 위에 겹쳐서 뜨게 */
+  top: 100%;              /* 날짜 텍스트 바로 아래에서 시작 */
+  left: 50%;
+  transform: translateX(-50%);  /* 가운데 정렬 */
+
+  z-index: 10;            /* 달력 위로 올라오게 */
+  margin-top: 4px;
+
+  display: inline-flex;
   align-items: center;
   gap: 6px;
+
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
+
 
 .month-picker select {
   padding: 4px 6px;

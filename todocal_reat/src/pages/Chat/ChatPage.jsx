@@ -207,15 +207,17 @@ export default function ChatPage() {
       const roomName = `${memberName} & ${friendName}`;
 
       // 2) 친구를 해당 방에 참여자로 추가
+      // 2) 친구를 해당 방에 참여자로 추가
       try {
-        await axios.post(
-          `/api/chat/rooms/${createdRoom.id}/join`,
-          null,
-          { params: { memberName: friendName } }
-        );
+        await axios.post(`/api/chat/rooms/${createdRoom.id}/join`, null, {
+          params: { memberName: friendName },
+        });
+
+        // ✅ 친구까지 참여된 이후, 프론트에서도 인원 수 맞춰주기
+        const baseCount = createdRoom.participantCount ?? 1; // 방 생성 시 나 1명
+        createdRoom.participantCount = baseCount + 1; // 나 + 친구 = 2명
       } catch (e) {
         console.error("❌ 친구 방 참여 처리 오류:", e);
-        // 참여 실패해도 방은 생성되므로 alert만 띄우고 계속 진행
         alert("친구를 방에 참여시키는 데 실패했습니다.");
       }
 
@@ -231,7 +233,7 @@ export default function ChatPage() {
         createdRoom.name = roomName;
       }
 
-      // 4) 목록에 추가
+      // 4) 목록에 추가 (이제 이름 + participantCount 둘 다 최신 상태)
       setRooms((prev) => [...prev, createdRoom]);
 
       // ✅ 1:1 방 초기 멤버 (나 + 친구)
@@ -272,7 +274,10 @@ export default function ChatPage() {
   const handleRenameRoom = async (e, room) => {
     e.stopPropagation();
 
-    const newName = window.prompt("새 채팅방 이름을 입력하세요.", room.name || "");
+    const newName = window.prompt(
+      "새 채팅방 이름을 입력하세요.",
+      room.name || ""
+    );
     if (newName === null) return;
 
     const trimmed = newName.trim();
@@ -345,6 +350,7 @@ export default function ChatPage() {
   }
 
   // 🔹 그룹 모드 토글 + 실행
+  // 🔹 그룹 모드 토글 + 실행
   const handleGroupChatButtonClick = async () => {
     // 아직 그룹 모드가 아니면 -> 모드 켜고 선택 안내만
     if (!groupMode) {
@@ -354,12 +360,34 @@ export default function ChatPage() {
       return;
     }
 
-    // 그룹 모드인 상태에서 다시 버튼 클릭 -> 실제 그룹 방 생성 시도
+    // 이미 그룹 모드인 상태에서 버튼을 다시 누른 상황
+
+    // 0명 선택
     if (selectedGroupFriendIds.length === 0) {
       alert("그룹 대화에 추가할 친구를 한 명 이상 선택해주세요.");
       return;
     }
 
+    // ✅ 1명만 선택된 경우 → 사실상 1:1 대화이므로 기존 1:1 로직 사용
+    if (selectedGroupFriendIds.length === 1) {
+      const onlyId = selectedGroupFriendIds[0];
+      const friend = friends.find((f) => (f.friendId || f.id) === onlyId);
+
+      if (!friend) {
+        alert("선택된 친구 정보를 찾을 수 없습니다.");
+        return;
+      }
+
+      // 이미 구현되어 있는 1:1 생성 함수 재사용
+      await handleCreateRoomWithFriend(friend);
+
+      // 그룹 모드 해제 & 선택 초기화
+      setGroupMode(false);
+      setSelectedGroupFriendIds([]);
+      return;
+    }
+
+    // ✅ 여기부터는 진짜 '그룹 대화' (친구 2명 이상 선택된 경우)만 처리
     try {
       const memberName = getMemberName();
       localStorage.setItem("memberName", memberName);
@@ -399,6 +427,10 @@ export default function ChatPage() {
         }
       }
 
+      // ✅ 프론트에서도 참여자 수 맞춰주기 (나 + 친구들)
+      const baseCount = createdRoom.participantCount ?? 1; // 나 1명
+      createdRoom.participantCount = baseCount + selectedFriends.length;
+
       // 3) 방 이름 설정 (나 + 몇 명)
       const title = `${memberName} 외 ${selectedFriends.length}명`;
       try {
@@ -412,7 +444,7 @@ export default function ChatPage() {
         createdRoom.name = title;
       }
 
-      // 4) 새 그룹 방 초대 링크 생성 + 복사
+      // 4) 초대 링크 생성(기존 코드 그대로)
       try {
         const inviteRes = await axios.post(
           `/api/chat/rooms/${createdRoom.id}/invite`
@@ -443,7 +475,7 @@ export default function ChatPage() {
         );
       }
 
-      // 5) 방 목록에 추가 + 그룹 모드 해제
+      // 5) 방 목록에 추가
       setRooms((prev) => [...prev, createdRoom]);
       setGroupMode(false);
       setSelectedGroupFriendIds([]);
@@ -461,10 +493,7 @@ export default function ChatPage() {
         ...selectedFriends.map((f) => ({
           name: f.nickname || f.name || f.id,
           profileImageUrl:
-            f.profileImageUrl ||
-            f.profileUrl ||
-            f.imageUrl ||
-            null,
+            f.profileImageUrl || f.profileUrl || f.imageUrl || null,
         })),
       ];
 
@@ -500,8 +529,9 @@ export default function ChatPage() {
     const keyword = friendKeyword.trim().toLowerCase();
     if (!keyword) return true;
 
-    const nameStr =
-      (f.nickname || f.name || f.id || "").toString().toLowerCase();
+    const nameStr = (f.nickname || f.name || f.id || "")
+      .toString()
+      .toLowerCase();
 
     return nameStr.includes(keyword);
   });
@@ -517,11 +547,7 @@ export default function ChatPage() {
         <div className="chat-page__logo-box">
           <div className="chat-page__logo-wrap">
             <img src={logo} alt=";P 로고" className="chat-page__logo-icon" />
-            <img
-              src={talk}
-              alt="TALK!"
-              className="chat-page__logo-text-img"
-            />
+            <img src={talk} alt="TALK!" className="chat-page__logo-text-img" />
           </div>
 
           <p className="chat-page__subtitle">
