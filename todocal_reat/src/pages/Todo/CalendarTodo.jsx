@@ -26,6 +26,10 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
   // ✅ 수정 모드에서는 기존 ownerId 를 우선 사용, 없으면 로그인 아이디 사용
   const ownerId = editTodo?.ownerId || loginId;
 
+  // ✅ 작성자인지 여부 (ownerId가 있고, 로그인 아이디와 같은 경우만 true)
+  const isOwner =
+    !isEdit || !editTodo?.ownerId || editTodo.ownerId === loginId;
+
   // -----------------------------
   // 초기값 세팅
   // -----------------------------
@@ -398,9 +402,12 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
             >
               취소
             </button>
-            <button type="submit" className="primary-btn">
-              {isEdit ? "수정하기" : "추가하기"}
-            </button>
+            {/* ✅ 작성자일 때만 저장/수정 버튼 노출 */}
+            {isOwner && (
+              <button type="submit" className="primary-btn">
+                {isEdit ? "수정하기" : "추가하기"}
+              </button>
+            )}
           </div>
         </form>
       </div>
