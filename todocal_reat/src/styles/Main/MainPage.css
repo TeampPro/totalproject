@@ -104,7 +104,7 @@
 
 /* === 알림(7일 이내 마감 일정) 드롭다운 공통 스타일 === */
 .alert-dropdown {
-  position: fixed;          /* 화면 기준으로 고정 */
+  position: absolute;  
   top: 120px;                /* 상단바(72px) 바로 아래 정도 */
   right: 350px;             /* 🔔 아이콘 바로 아래쪽에 오도록 (값은 필요하면 미세조정) */
   background-color: #ffffff;
@@ -225,4 +225,11 @@
 .friend-request-btn.reject {
   background-color: #e5e7eb;
   color: #555;
+}
+
+.board-page .alert-dropdown,
+.todo-page .alert-dropdown,
+.share-page .alert-dropdown {
+  top: 70px;
+  right: 0; 
 }

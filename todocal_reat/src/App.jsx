@@ -43,6 +43,9 @@ import AdminUserInfo from "./components/AdminPage/AdminUserInfo.jsx";
 import AdminUserTasks from "./components/AdminPage/AdminUserTasks.jsx";
 import AdminTaskDetail from "./components/AdminPage/AdminTaskDetail.jsx";
 
+// hooks
+import useInactivityLogout from "./hooks/useInactivityLogout";
+
 import "./App.css";
 
 function App() {
@@ -50,6 +53,8 @@ function App() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
+
+  useInactivityLogout();
 
   // 앱 시작 시: localStorage에 user 있으면 서버 세션 확인
   useEffect(() => {

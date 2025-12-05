@@ -99,7 +99,7 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 8px 6px;
+  padding: 1px 4px;
   border-radius: 10px;
   background: #f9fbff;
 }

@@ -60,7 +60,7 @@ export default function MenuBar() {
 
       {/* 커뮤니티 → 게시판(/board)으로 이동 */}
       <div
-        className="menu-btn"
+        className={`menu-btn ${isActive("/board") ? "active" : ""}`}
         onClick={() => {
           if (!requireLogin()) return;
           navigate("/board");
@@ -72,7 +72,7 @@ export default function MenuBar() {
 
       {/* 채팅 */}
       <div
-        className="menu-btn"
+        className={`menu-btn ${isActive("/chat") ? "active" : ""}`}
         onClick={() => {
           if (!requireLogin()) return;
           navigate("/chat");

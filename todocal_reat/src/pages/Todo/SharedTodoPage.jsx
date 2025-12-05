@@ -103,10 +103,9 @@ const SharedTodoPage = () => {
   };
 
   return (
-    <div className={pageClasses.todoPageOuter}>
+    <div className={`share-page ${pageClasses.todoPageOuter}`}>
       {/* 상단 공통 바 */}
       <ServerBar showBackButton /> {/* 🔹 뒤로가기 버튼 표시 */}
-
       <div className={pageClasses.todoPageContainer}>
         <div className={pageClasses.topBar}>
           {/* 공유 일정 전용 헤더 */}
@@ -177,16 +176,16 @@ const SharedTodoPage = () => {
 
               {/* 하단: 작성일 */}
               <div className={pageClasses.taskFooter}>
-              <span className={pageClasses.createdAt}>
-                작성일 : {formatDate(task.createdDate ?? task.createdAt)}
-              </span>
-
-              {task.ownerId && (
                 <span className={pageClasses.createdAt}>
-                  작성자 : {task.ownerId}
+                  작성일 : {formatDate(task.createdDate ?? task.createdAt)}
                 </span>
-              )}
-            </div>
+
+                {task.ownerId && (
+                  <span className={pageClasses.createdAt}>
+                    작성자 : {task.ownerId}
+                  </span>
+                )}
+              </div>
             </div>
           ))}
         </div>

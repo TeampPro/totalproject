@@ -107,10 +107,9 @@ const TodoPage = () => {
 };
 
   return (
-    <div className={classes.todoPageOuter}>
+    <div className={`todo-page ${classes.todoPageOuter}`}>
       {/* 상단 헤더 */}
       <TopBar showBackButton /> {/* 🔹 뒤로가기 버튼 표시 */}
-
       <div className={classes.todoPageContainer}>
         <div className={classes.topBar}>
           <TodoHeader onChangeFilter={setFilter} active={filter} />
