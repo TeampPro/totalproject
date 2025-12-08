@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../../api/setupAxios";
 import "../../styles/AdminPage/adminUserManage.css";
 
 const FILTER_OPTIONS = [
@@ -54,7 +54,7 @@ function AdminUserManage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/admin/users");
+        const res = await axios.get("/api/admin/users");
         setUsers(res.data || []);
         console.log("👤 관리자 회원 목록:", res.data);
       } catch (err) {
@@ -168,7 +168,7 @@ function AdminUserManage() {
     if (!window.confirm("정말 이 회원을 탈퇴 처리하시겠습니까?")) return;
     try {
       await axios.delete(
-        `http://localhost:8080/api/admin/users/${encodeURIComponent(userId)}`
+        `/api/admin/users/${encodeURIComponent(userId)}`
       );
       alert("회원이 탈퇴 처리되었습니다.");
       setUsers((prev) => prev.filter((u) => u.id !== userId));

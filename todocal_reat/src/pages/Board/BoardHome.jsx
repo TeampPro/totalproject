@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../../api/setupAxios.js";
 import moment from "moment";
 import "../../styles/Board/Board.css";
 
@@ -67,7 +67,7 @@ const BoardHome = () => {
         keyword: searchValue,
       };
 
-      const res = await axios.get("http://localhost:8080/api/board/search", {
+      const res = await axios.get("/api/board/search", {
         params,
       });
 
@@ -84,9 +84,8 @@ const BoardHome = () => {
     try {
       setLoading(true);
       setError("");
-      const res = await axios.get(
-        `http://localhost:8080/api/board/list/${cat}`
-      );
+      const res = await axios.get( `/api/board/list/${cat}`);
+      
       setPosts(res.data);
       setCurrentPage(1);
     } catch (err) {
@@ -106,9 +105,8 @@ const BoardHome = () => {
   useEffect(() => {
     const loadNoticePosts = async () => {
       try {
-        const res = await axios.get(
-          "http://localhost:8080/api/board/list/notice"
-        );
+        const res = await axios.get("/api/board/list/notice");
+
         setNoticePosts(res.data);
       } catch (err) {
         console.error("공지사항 목록 불러오기 실패:", err);
@@ -128,7 +126,7 @@ const BoardHome = () => {
           return;
         }
 
-        const res = await axios.get("http://localhost:8080/api/tasks", {
+        const res = await axios.get("/api/tasks", {
           params: { userId: storedUser.id },
         });
 

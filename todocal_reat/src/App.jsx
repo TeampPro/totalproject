@@ -1,7 +1,7 @@
+// src/App.jsx
 import { api, apiFetch } from "./api/http.js";
 import { useState, useEffect } from "react";
 import {
-  BrowserRouter,
   Routes,
   Route,
   Navigate,
@@ -46,9 +46,11 @@ import AdminTaskDetail from "./components/AdminPage/AdminTaskDetail.jsx";
 import "./App.css";
 
 function AppRoutes() {
-  const { pathname } = useLocation();
-  const navigate = useNavigate();
+  // 🔹 location 전체를 받고 pathname 분리
+  const location = useLocation();
+  const pathname = location.pathname;
 
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
   // 앱 시작 시: localStorage에 user 있으면 서버 세션 확인
@@ -92,6 +94,21 @@ function AppRoutes() {
       canceled = true;
     };
   }, []);
+
+  // 🔔 카카오 로그인 에러 쿼리 처리 (?error=kakao)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const error = params.get("error");
+
+    if (error === "kakao") {
+      alert("카카오 로그인에 실패했습니다. 다시 시도해주세요.");
+
+      // 이미 /login 이 아니면 /login 으로 이동
+      if (pathname !== "/login") {
+        navigate("/login", { replace: true });
+      }
+    }
+  }, [location.search, pathname, navigate]);
 
   const handleLogout = () => {
     // 서버 세션도 함께 끊기
@@ -170,13 +187,7 @@ function AppRoutes() {
   );
 }
 
+// 여기서는 Router 안 씀 (BrowserRouter는 main.jsx 등에서 한 번만 감싸기)
 export default function App() {
-  const basename =
-    import.meta.env.MODE === "production" ? "/totalproject" : "/";
-
-  return (
-    <BrowserRouter basename={basename}>
-      <AppRoutes />
-    </BrowserRouter>
-  );
+  return <AppRoutes />;
 }

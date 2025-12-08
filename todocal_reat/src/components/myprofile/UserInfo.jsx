@@ -1,7 +1,7 @@
 // src/components/myprofile/UserInfo.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../../api/setupAxios";
 import "../../styles/myprofile/UserInfo.css";
 import profileIcon from "../../assets/profileBig.svg";
 import smileIcon from "../../assets/smile.svg";
@@ -12,14 +12,13 @@ function UserInfo({ user, onLogout, small }) {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
 
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+  const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
   useEffect(() => {
     if (!user) return;
 
     axios
-      .get(`${API_BASE_URL}/api/user/${user.id}`)
+      .get(`/api/user/${user.id}`)
       .then((res) => setUserInfo(res.data))
       .catch((err) => console.error("유저 정보 불러오기 실패:", err));
   }, [user, API_BASE_URL]);

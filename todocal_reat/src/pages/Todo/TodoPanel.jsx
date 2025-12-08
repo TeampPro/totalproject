@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../../api/setupAxios";
 import "../../styles/Todo/TodoPanel.css";
 import TodoIcon from "../../assets/TodoIcon.svg";
 import CalIcon from "../../assets/calIcon.svg";
@@ -49,7 +49,7 @@ function TodoPanel({ user, onAddTodo, reloadKey, onTodoUpdated, onTodoDeleted })
       const params = {};
       if (storedUser?.id) params.userId = storedUser.id;
 
-      const res = await axios.get("http://localhost:8080/api/tasks", {
+      const res = await axios.get("/api/tasks", {
         params,
       });
 
@@ -95,7 +95,7 @@ function TodoPanel({ user, onAddTodo, reloadKey, onTodoUpdated, onTodoDeleted })
       const nextCompleted = !todo.completed;
 
       const res = await axios.patch(
-        `http://localhost:8080/api/tasks/${todo.id}/complete`,
+        `/api/tasks/${todo.id}/complete`,
         null,
         {
           params: {
@@ -134,7 +134,7 @@ function TodoPanel({ user, onAddTodo, reloadKey, onTodoUpdated, onTodoDeleted })
     }
 
     try {
-      await axios.delete(`http://localhost:8080/api/tasks/${todo.id}`, {
+      await axios.delete(`/api/tasks/${todo.id}`, {
         params: {
           userId: currentUserId,
         },

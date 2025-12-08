@@ -1,16 +1,21 @@
 package com.example.todo_caled.users.controller;
 
+import com.example.todo_caled.security.CustomUserDetailService;
+import com.example.todo_caled.security.JwtTokenProvider;
 import com.example.todo_caled.users.entity.User;
 import com.example.todo_caled.users.repository.UserRepository;
 import com.example.todo_caled.users.service.KakaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/kakao")
 public class KakaoController {
@@ -20,6 +25,12 @@ public class KakaoController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private CustomUserDetailService userDetailService;
 
     // ✅ 카카오에서 redirect_uri 로 GET 요청이 들어오는 콜백
     @GetMapping("/callback")
@@ -54,18 +65,37 @@ public class KakaoController {
             // 4️⃣ React 카카오 콜백 페이지로 리다이렉트 (우리 로그인 ID 전달)
             String loginId = existingUser.getId(); // 예: kakao_xxxxx
 
+            UserDetails userDetails = userDetailService.loadUserByUsername(loginId);
+
+            Authentication authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            String jwt = jwtTokenProvider.createToken(authentication);
+
             HttpHeaders headers = new HttpHeaders();
             String redirectUrl =
-                    "http://localhost:5173/auth/kakao/success?id=" + loginId;
+                    "https://teamppro.github.io/totalproject/auth/kakao/success"
+                            + "?id=" + loginId
+                            + "&token=" + jwt;
+
             headers.setLocation(URI.create(redirectUrl));
 
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
 
         } catch (Exception e) {
+
+            e.printStackTrace();
             // 에러 시 로그인 페이지로 돌려보내기
             HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(URI.create("http://localhost:5173/login?error=kakao"));
+            headers.setLocation(URI.create("https://teamppro.github.io/totalproject/?error=kakao"));
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
+
         }
     }
 }

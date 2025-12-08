@@ -18,6 +18,7 @@ function Login({ setUser }) {
     script.async = true;
     script.onload = () => {
       if (window.Kakao && !window.Kakao.isInitialized()) {
+        // 🔑 카카오 REST 키 (그대로 사용)
         window.Kakao.init("ea5df118a470f99f77bbff428c5d972e");
       }
     };
@@ -100,10 +101,11 @@ function Login({ setUser }) {
 
   // 카카오 로그인
   const handleKakaoLogin = () => {
+    // 🔁 여기 redirect_uri 만 배포용 ngrok 백엔드 콜백으로 변경
     window.location.href =
       "https://kauth.kakao.com/oauth/authorize" +
       "?client_id=ea5df118a470f99f77bbff428c5d972e" +
-      "&redirect_uri=http://localhost:8080/api/kakao/callback" +
+      "&redirect_uri=https://overstraightly-nonverbalized-ciera.ngrok-free.dev/api/kakao/callback" +
       "&response_type=code" +
       "&prompt=login";
   };

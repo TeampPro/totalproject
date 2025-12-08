@@ -1,7 +1,7 @@
 // src/pages/Board/PostDetail.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../../api/setupAxios";
 import "../../styles/Board/PostDetail.css";
 import moment from "moment";
 import list from "../../assets/commentList.svg";
@@ -159,7 +159,7 @@ const PostDetail = () => {
   /** 게시글 불러오기 */
   const loadPost = async () => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/board/${id}`);
+      const res = await axios.get(`/api/board/${id}`);
       setPost(res.data);
     } catch (err) {
       alert("게시글을 불러오는 중 오류 발생");
@@ -169,7 +169,7 @@ const PostDetail = () => {
   /** 댓글 불러오기 */
   const loadComments = async () => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/comments/${id}`);
+      const res = await axios.get(`/api/comments/${id}`);
       setComments(res.data);
     } catch (err) {
       // 필요 시 에러 처리
@@ -178,14 +178,14 @@ const PostDetail = () => {
 
   /** 이전글 이동 */
   const goPrev = async () => {
-    const res = await axios.get(`http://localhost:8080/api/board/${id}/prev`);
+    const res = await axios.get(`/api/board/${id}/prev`);
     if (res.data?.id) navigate(`/board/${res.data.id}`);
     else alert("이전 글이 없습니다.");
   };
 
   /** 다음글 이동 */
   const goNext = async () => {
-    const res = await axios.get(`http://localhost:8080/api/board/${id}/next`);
+    const res = await axios.get(`/api/board/${id}/next`);
     if (res.data?.id) navigate(`/board/${res.data.id}`);
     else alert("다음 글이 없습니다.");
   };
@@ -199,7 +199,7 @@ const PostDetail = () => {
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
 
-    await axios.post(`http://localhost:8080/api/comments/${id}`, {
+    await axios.post(`/api/comments/${id}`, {
       writer: loginNickname,
       content: newComment,
       parentId: null,
@@ -213,7 +213,7 @@ const PostDetail = () => {
   const handleAddReply = async (parentId) => {
     if (!replyContent.trim()) return;
 
-    await axios.post(`http://localhost:8080/api/comments/${id}`, {
+    await axios.post(`/api/comments/${id}`, {
       writer: loginNickname,
       content: replyContent,
       parentId,
@@ -226,7 +226,7 @@ const PostDetail = () => {
 
   /** 댓글 삭제 */
   const handleDeleteComment = async (cid) => {
-    await axios.delete(`http://localhost:8080/api/comments/${cid}`, {
+    await axios.delete(`/api/comments/${cid}`, {
       data: {
         writer: loginNickname,
         userType: loginUserType,
@@ -237,7 +237,7 @@ const PostDetail = () => {
 
   /** 댓글 수정 */
   const handleEdit = async (cid) => {
-    await axios.put(`http://localhost:8080/api/comments/${cid}`, {
+    await axios.put(`/api/comments/${cid}`, {
       content: editContent,
       writer: loginNickname,
     });
@@ -252,7 +252,7 @@ const PostDetail = () => {
     if (!ok) return;
 
     try {
-      await axios.delete(`http://localhost:8080/api/board/${id}`, {
+      await axios.delete(`/api/board/${id}`, {
         data: {
           writer: loginNickname,
           userType: loginUserType,

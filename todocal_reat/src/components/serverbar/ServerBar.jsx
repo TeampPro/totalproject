@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/serverbar/ServerBar.css";
-import axios from "axios";
+import axios from "../../api/setupAxios";
 
 import Logo from "../../assets/logo.svg";
 import PlanixLogo from "../../assets/planix3.svg";
@@ -68,7 +68,7 @@ const ServerBar = ({ showBackButton = true }) => {
           return;
         }
 
-        const res = await axios.get("http://localhost:8080/api/tasks", {
+        const res = await axios.get("/api/tasks", {
           params: { userId: user.id },
         });
 

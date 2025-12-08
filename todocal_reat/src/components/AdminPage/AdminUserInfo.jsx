@@ -1,7 +1,7 @@
 // src/components/AdminPage/AdminUserInfo.jsx
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import axios from "../../api/setupAxios";
 
 function AdminUserInfo() {
   const { userId } = useParams(); // URL의 :userId (예: as11)
@@ -31,7 +31,7 @@ function AdminUserInfo() {
     const fetchUser = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8080/api/admin/users/${encodeURIComponent(userId)}`
+          `/api/admin/users/${encodeURIComponent(userId)}`
         );
         const u = res.data;
 
@@ -93,7 +93,7 @@ function AdminUserInfo() {
     try {
       setSaving(true);
       const res = await axios.put(
-        `http://localhost:8080/api/admin/users/${encodeURIComponent(user.id)}`,
+        `/api/admin/users/${encodeURIComponent(user.id)}`,
         payload
       );
 
