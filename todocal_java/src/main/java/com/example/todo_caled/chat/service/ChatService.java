@@ -285,4 +285,49 @@ public class ChatService {
         chatRoomMemberRepository.deleteByRoomId(roomId);
         chatRoomRepository.deleteById(roomId);
     }
+
+    /** 방 나가기
+     *  - 방 생성자(제일 먼저 join 한 사람)가 나가면: 방 전체 삭제
+     *  - 일반 참여자가 나가면: 해당 멤버만 삭제, 방은 유지
+     */
+    @Transactional
+    public void leaveOrDeleteRoom(String roomId, String memberName) {
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
+
+        // 방 멤버 목록 (입장 순)
+        List<ChatRoomMember> members =
+                chatRoomMemberRepository.findByRoomIdOrderByJoinedAtAsc(roomId);
+
+        if (members.isEmpty()) {
+            // 멤버 정보가 없으면 안전하게 방만 삭제
+            deleteRoom(roomId);
+            return;
+        }
+
+        // ✅ 방 생성자: 제일 먼저 join 한 멤버
+        ChatRoomMember owner = members.get(0);
+
+        // 생성자가 나가기를 누른 경우 → 방 전체 삭제
+        if (owner.getMemberName().equals(memberName)) {
+            deleteRoom(roomId);
+            return;
+        }
+
+        // 일반 참여자: 본인 멤버만 삭제
+        ChatRoomMember me = members.stream()
+                .filter(m -> m.getMemberName().equals(memberName))
+                .findFirst()
+                .orElse(null);
+
+        if (me == null) {
+            // 이미 멤버가 아닌 경우는 그냥 무시
+            return;
+        }
+
+        chatRoomMemberRepository.delete(me);
+        int newCount = Math.max(room.getParticipantCount() - 1, 0);
+        room.setParticipantCount(newCount);
+        chatRoomRepository.save(room);
+    }
 }

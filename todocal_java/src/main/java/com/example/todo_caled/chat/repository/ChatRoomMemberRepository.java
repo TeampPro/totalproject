@@ -20,4 +20,7 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
     @Modifying
     @Query("UPDATE ChatRoomMember m SET m.memberName = :newName WHERE m.memberName = :oldName")
     void updateMemberName(@Param("oldName") String oldName, @Param("newName") String newName);
+
+    // ✅ 방 멤버 전체(입장 시간 순) 조회 – 방 생성자(첫 번째 멤버) 판별용
+    List<ChatRoomMember> findByRoomIdOrderByJoinedAtAsc(String roomId);
 }

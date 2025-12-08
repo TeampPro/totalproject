@@ -92,7 +92,8 @@ public class ChatController {
 
     // ✅ 채팅방 삭제
     @DeleteMapping("/rooms/{roomId}")
-    public void deleteRoom(@PathVariable String roomId) {
-        chatService.deleteRoom(roomId);
+    public void leaveOrDeleteRoom(@PathVariable String roomId,
+                                  @RequestParam String memberName) {
+        chatService.leaveOrDeleteRoom(roomId, memberName);
     }
 }
