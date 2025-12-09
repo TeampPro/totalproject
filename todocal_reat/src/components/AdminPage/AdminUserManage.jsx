@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../api/setupAxios";
-import "../../styles/AdminPage/adminUserManage.css";
+import "../../styles/AdminPage/AdminUserManage.css";
 
 const FILTER_OPTIONS = [
   { value: "role", label: "직책" },
