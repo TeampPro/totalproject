@@ -25,10 +25,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(
-        origins = "http://localhost:5173",
-        allowCredentials = "true"
-)
 @RequiredArgsConstructor
 public class UserController {
 

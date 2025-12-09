@@ -23,15 +23,10 @@ function SignUp() {
     }
 
     try {
-      const res = await fetch(
-        `http://localhost:8080/api/users/check-id?id=${encodeURIComponent(id)}`
+    
+      const data = await apiFetch(
+        `/api/users/check-id?id=${encodeURIComponent(id)}`
       );
-
-      if (!res.ok) {
-        throw new Error("서버 오류");
-      }
-
-      const data = await res.json(); // { available: true/false }
 
       setIdChecked(true);
       setIsIdAvailable(data.available);

@@ -1,7 +1,8 @@
-// src/components/Admin/AdminTaskDetail.jsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import axios from "../../api/setupAxios";
+
+
 
 function AdminTaskDetail() {
   const { taskId } = useParams(); // URL의 :taskId
@@ -13,7 +14,7 @@ function AdminTaskDetail() {
     const fetchTask = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8080/api/tasks/${taskId}`
+          `/api/tasks/${taskId}`
         );
         setTask(res.data || null);
       } catch (err) {

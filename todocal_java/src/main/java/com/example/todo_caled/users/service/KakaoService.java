@@ -42,6 +42,9 @@ public class KakaoService {
         HttpEntity<String> request = new HttpEntity<>(body, headers);
         ResponseEntity<String> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, request, String.class);
 
+        System.out.println("🔹 Kakao token response status = " + response.getStatusCode());
+        System.out.println("🔹 Kakao token response body   = " + response.getBody());
+
         JsonNode jsonNode = objectMapper.readTree(response.getBody());
         return jsonNode.get("access_token").asText();
     }
@@ -55,6 +58,9 @@ public class KakaoService {
 
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(userInfoUrl, HttpMethod.GET, request, String.class);
+
+        System.out.println("🔹 Kakao token response status = " + response.getStatusCode());
+        System.out.println("🔹 Kakao token response body   = " + response.getBody());
 
         JsonNode jsonNode = objectMapper.readTree(response.getBody());
         Map<String, Object> result = new HashMap<>();

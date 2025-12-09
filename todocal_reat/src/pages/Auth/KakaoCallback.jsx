@@ -1,4 +1,3 @@
-// src/pages/Auth/KakaoCallback.jsx
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -9,6 +8,7 @@ function KakaoCallback({ setUser }) {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const id = params.get("id");
+    const token = params.get("token");
 
     if (!id) {
       alert("카카오 로그인 정보가 올바르지 않습니다. 다시 시도해주세요.");
@@ -27,6 +27,7 @@ function KakaoCallback({ setUser }) {
 
     // 1️⃣ localStorage 저장
     localStorage.setItem("user", JSON.stringify(kakaoUser));
+    localStorage.setItem("token", token);
 
     // 2️⃣ App.jsx 의 user 상태 갱신
     setUser(kakaoUser);

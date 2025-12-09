@@ -10,7 +10,6 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/board")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class PostController {
 
     private final PostService postService;

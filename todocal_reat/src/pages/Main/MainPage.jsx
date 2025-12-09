@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/Main/MainPage.css";
-import axios from "axios";
+import axios from "../../api/setupAxios.js";
 import moment from "moment";
 import "moment/locale/ko";
 moment.locale("ko");
@@ -64,7 +64,7 @@ const MainPage = ({ user, setUser }) => {
         return;
       }
 
-      const res = await axios.get("http://localhost:8080/api/tasks", {
+      const res = await axios.get("/api/tasks", {
         params: { userId: storedUser.id },
       });
 

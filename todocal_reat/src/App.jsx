@@ -1,7 +1,7 @@
+// src/App.jsx
 import { api, apiFetch } from "./api/http.js";
 import { useState, useEffect } from "react";
 import {
-  BrowserRouter,
   Routes,
   Route,
   Navigate,
@@ -48,10 +48,12 @@ import useInactivityLogout from "./hooks/useInactivityLogout";
 
 import "./App.css";
 
-function App() {
-  const { pathname } = useLocation();
-  const navigate = useNavigate();
+function AppRoutes() {
+  // 🔹 location 전체를 받고 pathname 분리
+  const location = useLocation();
+  const pathname = location.pathname;
 
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
   useInactivityLogout();
@@ -60,7 +62,7 @@ function App() {
   useEffect(() => {
     const savedRaw = localStorage.getItem("user");
     const token = localStorage.getItem("token");
-    if (!savedRaw || !token){
+    if (!savedRaw || !token) {
       localStorage.removeItem("user");
       localStorage.removeItem("token");
       setUser(null);
@@ -79,24 +81,39 @@ function App() {
       try {
         const freshUser = await api.get("/api/auth/me");
 
-        if(!canceled) {
+        if (!canceled) {
           setUser(freshUser);
           localStorage.setItem("user", JSON.stringify(freshUser));
         }
       } catch (err) {
-          if(!canceled) {
-            console.error("세션 검증 실패:", err);
-            clearUser();
-          }
+        if (!canceled) {
+          console.error("세션 검증 실패:", err);
+          clearUser();
         }
-    }
+      }
+    };
 
-      validateSession();
+    validateSession();
 
-      return () => {
-        canceled = true;
-      };
+    return () => {
+      canceled = true;
+    };
   }, []);
+
+  // 🔔 카카오 로그인 에러 쿼리 처리 (?error=kakao)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const error = params.get("error");
+
+    if (error === "kakao") {
+      alert("카카오 로그인에 실패했습니다. 다시 시도해주세요.");
+
+      // 이미 /login 이 아니면 /login 으로 이동
+      if (pathname !== "/login") {
+        navigate("/login", { replace: true });
+      }
+    }
+  }, [location.search, pathname, navigate]);
 
   const handleLogout = () => {
     // 서버 세션도 함께 끊기
@@ -107,7 +124,7 @@ function App() {
     });
 
     localStorage.removeItem("user");
-    localStorage.removeItem("token")
+    localStorage.removeItem("token");
     setUser(null);
     alert("로그아웃 되었습니다.");
     navigate("/main");
@@ -121,6 +138,7 @@ function App() {
     <>
       <div className="content">
         <Routes>
+          {/* 기본 경로 → /main 으로 리다이렉트 */}
           <Route path="/" element={<Navigate to="/main" replace />} />
 
           <Route
@@ -132,7 +150,6 @@ function App() {
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/beLogin" element={<BeLogin setUser={setUser} />} />
-          {/* ✅ 카카오 로그인 성공 콜백 라우트 추가 */}
           <Route
             path="/auth/kakao/success"
             element={<KakaoCallback setUser={setUser} />}
@@ -144,7 +161,6 @@ function App() {
 
           {/* Board */}
           <Route path="/board" element={<BoardHome />} />
-          {/* Board */}
           <Route path="/board/:id" element={<PostDetail />} />
           <Route path="/board/write" element={<PostWrite />} />
 
@@ -176,10 +192,7 @@ function App() {
   );
 }
 
-export default function Root() {
-  return (
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  );
+// 여기서는 Router 안 씀 (BrowserRouter는 main.jsx 등에서 한 번만 감싸기)
+export default function App() {
+  return <AppRoutes />;
 }

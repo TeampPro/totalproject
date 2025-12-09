@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import axios from "axios";
+import axios from "../../api/setupAxios";
 import "../../styles/Board/PostWrite.css";
 
 const PostWrite = () => {
@@ -30,7 +30,7 @@ const PostWrite = () => {
     if (!editId) return;
 
     const loadPost = async () => {
-      const res = await axios.get(`http://localhost:8080/api/board/${editId}`);
+      const res = await axios.get(`/api/board/${editId}`);
       const p = res.data;
 
       setCategory(p.category);
@@ -61,12 +61,12 @@ const PostWrite = () => {
 
     try {
       if (editId) {
-        await axios.put(`http://localhost:8080/api/board/${editId}`, payload);
+        await axios.put(`/api/board/${editId}`, payload);
         alert("수정되었습니다!");
         navigate(`/board/${editId}`);
       } else {
         const res = await axios.post(
-          `http://localhost:8080/api/board/create`,
+          `/api/board/create`,
           payload
         );
         alert("등록되었습니다!");

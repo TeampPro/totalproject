@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../../api/setupAxios";
 import moment from "moment";
 import "../../styles/TimeCalendar/TimeCalendar.css";
 import TimeEventBlock from "./TimeEventBlock";
@@ -28,8 +28,8 @@ function TimeCalendar({ selectedDate }) {
 
       const query = params.toString();
       const url = query
-        ? `http://localhost:8080/api/todos/all?${query}`
-        : "http://localhost:8080/api/todos/all";
+        ? `/api/todos/all?${query}`
+        : "/api/todos/all";
 
       const res = await axios.get(url);
       const filtered = res.data.filter(

@@ -1,7 +1,7 @@
 // src/components/AdminPage/AdminUserTasks.jsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import axios from "../../api/setupAxios";
 
 function AdminUserTasks() {
   const { userId } = useParams(); // URL 의 :userId (예: as11)
@@ -24,7 +24,7 @@ function AdminUserTasks() {
     const fetchTasks = async () => {
       try {
         // /api/tasks?userId=as11  → as11 이 볼 수 있는 일정들
-        const res = await axios.get("http://localhost:8080/api/tasks", {
+        const res = await axios.get("/api/tasks", {
           params: { userId },
         });
 
@@ -105,7 +105,7 @@ function AdminUserTasks() {
       };
 
       await axios.put(
-        `http://localhost:8080/api/tasks/${editingTask.id}`,
+        `/api/tasks/${editingTask.id}`,
         payload
       );
 
@@ -144,7 +144,7 @@ function AdminUserTasks() {
     if (!window.confirm("정말 이 일정을 삭제하시겠습니까?")) return;
 
     try {
-      await axios.delete(`http://localhost:8080/api/tasks/${taskId}`);
+      await axios.delete(`/api/tasks/${taskId}`);
       setTasks((prev) => prev.filter((t) => t.id !== taskId));
       alert("일정이 삭제되었습니다.");
     } catch (err) {

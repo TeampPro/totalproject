@@ -46,8 +46,10 @@ public class SecurityConfig {
                                 "/api/users/check-id"   // 🔥 아이디 중복확인 허용
                         ).permitAll()
                         .requestMatchers(
+                                "/swagger-ui.html",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/v3/api-docs.yaml"
                         ).permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated()
@@ -63,17 +65,33 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // 개발용: 전부 허용.
-        config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("*"));
+
+        // ✅ 허용할 origin을 구체적으로 나열 (와일드카드 금지)
+        config.setAllowedOrigins(List.of(
+                "https://teamppro.github.io", // GitHub Pages 프론트
+                "http://localhost:5173",      // Vite dev 서버
+                "http://localhost:5174",      // 다른 포트 쓰면 추가
+                "http://localhost:8080"       // 직접 테스트할 때
+        ));
+
+        // 사용할 HTTP 메서드
+        config.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
+
+        // 요청 헤더는 전부 허용
         config.setAllowedHeaders(List.of("*"));
+
+        // ✅ 자격증명(쿠키·Authorization 헤더) 허용
         config.setAllowCredentials(true);
+
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
