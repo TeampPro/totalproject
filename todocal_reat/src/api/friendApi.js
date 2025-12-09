@@ -1,5 +1,4 @@
-// src/api/friendApi.js
-import axios from "./setupAxios"; // ✅ 같은 폴더 기준
+import axios from "./setupAxios";
 
 // 내 친구 목록
 export const fetchFriends = async (userId) => {

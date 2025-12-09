@@ -349,9 +349,9 @@ public class UserController {
 
     // 아이디 또는 닉네임으로 유저 검색
     @GetMapping("/users/search")
-    public ResponseEntity<List<Map<String, Object>>> searchUsers(@RequestParam("keyword") String keyword){
-        if(keyword == null || keyword.isBlank()) {
-            return ResponseEntity.ok(Collections.emptyList());
+    public ResponseEntity<List<Map<String, Object>>> searchUsers(@RequestParam("keyword") String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return ResponseEntity.ok(List.of());
         }
 
         List<User> users = userRepository.searchByIdOrNickname(keyword);
@@ -361,8 +361,9 @@ public class UserController {
                     Map<String, Object> m = new HashMap<>();
                     m.put("id", u.getId());
                     m.put("name", u.getName());
+                    m.put("nickname", u.getNickname());
                     m.put("email", u.getEmail());
-                    m.put("userType", u.getUserId());
+                    m.put("userType", u.getUserType());
                     m.put("profileImage", u.getProfileImage());
                     return m;
                 })
