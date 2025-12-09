@@ -33,6 +33,9 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const isLoggedIn = !!storedUser;
+  // 🔹 로그인한 유저 아이디 통합
+  const loginUserId =
+    storedUser?.id || storedUser?.userId || storedUser?.loginId || null;
 
   // 현재 보고 있는 달
   const [getMoment, setMoment] = useState(moment());
@@ -102,30 +105,40 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
   // ----------------------------
   // Todo 불러오기 (Task 기반, userId 필터)
   // ----------------------------
-  const fetchTodos = async () => {
+    const fetchTodos = async () => {
     if (!isLoggedIn) return;
     try {
-      const savedUser = JSON.parse(localStorage.getItem("user") || "null");
-
       const params = {};
-      if (savedUser && savedUser.id) {
-        params.userId = savedUser.id;
+      if (loginUserId) {
+        params.userId = loginUserId;
       }
 
       const data = await api.get("/api/tasks", { params });
 
-      const mapped = (data || []).map((todo) => ({
-        ...todo,
-        tDate: todo.promiseDate
-          ? moment(todo.promiseDate).format("YYYY-MM-DD")
-          : null,
-      }));
+      setTodos((prev) => {
+        const list = Array.isArray(data) ? data : [];
 
-      setTodos(mapped);
+        return list.map((todo) => {
+          const prevItem = prev.find((p) => p.id === todo.id);
+
+          return {
+            ...todo,
+            // 🔵 이전에 프론트에서 들고 있던 sharedUserIds 가 있으면 그대로 유지
+            sharedUserIds:
+              prevItem?.sharedUserIds ??
+              (Array.isArray(todo.sharedUserIds) ? todo.sharedUserIds : []),
+
+            tDate: todo.promiseDate
+              ? moment(todo.promiseDate).format("YYYY-MM-DD")
+              : null,
+          };
+        });
+      });
     } catch (err) {
       console.error("Todo 불러오기 실패:", err);
     }
   };
+
 
   // ----------------------------
   // 최초 로딩: 공휴일 + Todo
@@ -167,7 +180,7 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
 
   const selectedDayTodos = getTodosForDay(selectedDate);
 
-  const handleSave = (savedTodo) => {
+    const handleSave = (savedTodo) => {
     if (!savedTodo) return;
 
     if (savedTodo.deleted) {
@@ -176,7 +189,7 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
       return;
     }
 
-    const normalized = {
+    const normalizedBase = {
       ...savedTodo,
       tDate: moment(savedTodo.promiseDate ?? savedTodo.tDate).format(
         "YYYY-MM-DD"
@@ -184,8 +197,17 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
     };
 
     setTodos((prev) => {
-      const idx = prev.findIndex((t) => t.id === normalized.id);
-      if (idx === -1) return [...prev, normalized];
+      const idx = prev.findIndex((t) => t.id === normalizedBase.id);
+      if (idx === -1) return [...prev, normalizedBase];
+
+      const old = prev[idx];
+
+      // 🔒 새 데이터에 sharedUserIds가 없으면 기존 값을 유지
+      const normalized =
+        normalizedBase.sharedUserIds === undefined
+          ? { ...normalizedBase, sharedUserIds: old.sharedUserIds }
+          : normalizedBase;
+
       const copy = [...prev];
       copy[idx] = normalized;
       return copy;
@@ -194,41 +216,43 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
     onTodosChange && onTodosChange();
   };
 
+
   const handleDrop = async (todo, newDate) => {
-  try {
-    const oldStart = moment(todo.promiseDate);
-    const oldEnd = todo.endDateTime ? moment(todo.endDateTime) : null;
+    try {
+      const oldStart = moment(todo.promiseDate);
+      const oldEnd = todo.endDateTime ? moment(todo.endDateTime) : null;
 
-    // 새 날짜 + 기존 시작 시간(HH:mm:ss)
-    const newStartStr = `${newDate}T${oldStart.format("HH:mm:ss")}`;
+      // 새 날짜 + 기존 시작 시간(HH:mm:ss)
+      const newStartStr = `${newDate}T${oldStart.format("HH:mm:ss")}`;
 
-    // 종료 시간이 있으면: 새 날짜 + 기존 종료 시간(HH:mm:ss)
-    let newEndStr = null;
-    if (oldEnd && oldEnd.isValid()) {
-      newEndStr = `${newDate}T${oldEnd.format("HH:mm:ss")}`;
+      // 종료 시간이 있으면: 새 날짜 + 기존 종료 시간(HH:mm:ss)
+      let newEndStr = null;
+      if (oldEnd && oldEnd.isValid()) {
+        newEndStr = `${newDate}T${oldEnd.format("HH:mm:ss")}`;
+      }
+
+      const updatedTodo = {
+        ...todo,
+        promiseDate: newStartStr,
+        ...(newEndStr && { endDateTime: newEndStr }),
+      };
+
+      // 🔹 드래그로 날짜 변경 시에도 userId 함께 전송
+      await api.put(`/api/tasks/${todo.id}`, updatedTodo, {
+        params: { userId: loginUserId },
+      });
+
+      setTodos((prev) =>
+        prev.map((t) =>
+          t.id === todo.id ? { ...updatedTodo, tDate: newDate } : t
+        )
+      );
+
+      onTodosChange && onTodosChange();
+    } catch (err) {
+      console.error("드래그앤드롭 저장 실패:", err);
     }
-
-    const updatedTodo = {
-      ...todo,
-      promiseDate: newStartStr,
-      ...(newEndStr && { endDateTime: newEndStr }),
-    };
-
-    await api.put(`/api/tasks/${todo.id}`, updatedTodo);
-
-    setTodos((prev) =>
-      prev.map((t) =>
-        t.id === todo.id
-          ? { ...updatedTodo, tDate: newDate }
-          : t
-      )
-    );
-
-    onTodosChange && onTodosChange();
-  } catch (err) {
-    console.error("드래그앤드롭 저장 실패:", err);
-  }
-};
+  };
 
   // 달력 생성
   const calendarArr = () => {
@@ -329,7 +353,7 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
             <img src={leftIcon} alt="left" />
           </button>
 
-          {/* 🔥 가운데: 날짜 텍스트 + monthpicker 를 세로로 배치 */}
+          {/* 가운데: 날짜 텍스트 + monthpicker */}
           <div className="calendar-header-center">
             <div
               className="current-year-month"
@@ -338,7 +362,7 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
               {headerText}
             </div>
 
-            {/* 월 선택 드롭다운 (날짜 바로 아래) */}
+            {/* 월 선택 드롭다운 */}
             {showMonthPicker && (
               <div className="month-picker" ref={monthPickerRef}>
                 <select
@@ -402,7 +426,7 @@ function Calendar({ onTodosChange, onDateSelected, reloadKey }, ref) {
         {/* 메인 캘린더 */}
         <div className="calendar-grid">{calendarArr()}</div>
 
-        {/* ✅ 선택 날짜 일정 카드 */}
+        {/* 선택 날짜 일정 카드 */}
         <div className="calendar-day-panel">
           <div className="calendar-day-panel-header">
             <span className="calendar-day-icon">

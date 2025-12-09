@@ -22,9 +22,18 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const loginId =
     storedUser?.id || storedUser?.userId || storedUser?.loginId || null;
+  const userType = storedUser?.userType;
+  const isAdmin = userType === "ADMIN";
 
   // ✅ 수정 모드에서는 기존 ownerId 를 우선 사용, 없으면 로그인 아이디 사용
   const ownerId = editTodo?.ownerId || loginId;
+
+  // ✅ 수정 화면에서 내가 수정/삭제 할 수 있는지 여부
+  const canModify =
+    !isEdit || // 새로 추가는 항상 가능
+    !editTodo?.ownerId || // ownerId 없는 옛날 데이터 → 처음 수정하는 사람이 주인
+    editTodo.ownerId === loginId || // 내가 작성자
+    isAdmin; // 관리자
 
   // -----------------------------
   // 초기값 세팅
@@ -103,6 +112,12 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // 수정 모드인데 권한 없으면 바로 차단
+    if (isEdit && !canModify) {
+      alert("이 일정은 수정할 권한이 없습니다.");
+      return;
+    }
+
     if (!title.trim()) {
       alert("제목을 입력해 주세요.");
       return;
@@ -112,9 +127,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
       return;
     }
 
-    // 🔥 여기서부터 수정 포인트
-    //   - ISO 문자열(UTC)로 보내지 않고
-    //   - "YYYY-MM-DDTHH:mm:ss" 로컬시간 문자열로 그대로 보냄
+    // "YYYY-MM-DDTHH:mm:ss" 로컬시간 문자열
     const startStr = `${date}T${startTime || "09:00"}:00`;
     const endStr = `${date}T${endTime || startTime || "10:00"}:00`;
 
@@ -133,7 +146,6 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
     const payload = {
       title: title.trim(),
       content: content.trim(),
-      // ⬇⬇⬇ 기존: start.toISOString(), end.toISOString()
       promiseDate: startStr,
       endDateTime: endStr,
       ownerId,
@@ -144,11 +156,13 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
       sharedUserIds: shared ? selectedFriendIds : [],
     };
 
-    try {
+        try {
       let res;
       if (isEdit && editTodo?.id != null) {
-        // 수정
-        res = await api.put(`/api/tasks/${editTodo.id}`, payload);
+        // 수정: 로그인한 사용자 아이디를 userId로 전달
+        res = await api.put(`/api/tasks/${editTodo.id}`, payload, {
+          params: { userId: loginId },
+        });
         alert("일정이 수정되었습니다.");
       } else {
         // 생성
@@ -156,7 +170,16 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
         alert("일정이 저장되었습니다.");
       }
 
-      const saved = res?.data ?? res ?? null;
+      // 🔥 서버 응답에는 sharedUserIds가 안 실려 있으니까
+      //    프론트에서 선택한 목록을 다시 붙여서 부모로 넘겨준다.
+      const base = res?.data ?? res ?? null;
+      const saved = base
+        ? {
+            ...base,
+            sharedUserIds: shared ? selectedFriendIds : [],
+          }
+        : null;
+
       if (onSave) onSave(saved);
       onClose();
     } catch (err) {
@@ -170,11 +193,16 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
   // -----------------------------
   const handleDelete = async () => {
     if (!isEdit || !editTodo?.id) return;
+    if (!canModify) {
+      alert("이 일정은 삭제할 권한이 없습니다.");
+      return;
+    }
     if (!window.confirm("해당 일정을 삭제하시겠습니까?")) return;
 
     try {
+      // 🔹 삭제도 로그인 유저 아이디를 userId 로 전달
       await api.del(`/api/tasks/${editTodo.id}`, {
-        params: { userId: ownerId }, // ✅ editTodo.ownerId 대신 ownerId 사용
+        params: { userId: loginId },
       });
       alert("일정이 삭제되었습니다.");
       if (onSave) onSave({ deleted: true, id: editTodo.id });
@@ -188,7 +216,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
   return (
     <div className="todo-modal-overlay">
       <div className="todo-modal">
-        {/* 상단 헤더 (기존 CSS 구조 그대로) */}
+        {/* 상단 헤더 */}
         <div className="todo-modal-header">
           <div className="todo-modal-titleBox">
             <img
@@ -211,7 +239,23 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
           </button>
         </div>
 
-        {/* 본문 (기존 .todo-modal-body 구조 유지) */}
+        {/* 권한 안내 (수정 모드 + 권한 없음일 때) */}
+        {isEdit && !canModify && (
+          <div
+            style={{
+              fontSize: 11,
+              color: "#d92d20",
+              marginBottom: 8,
+              padding: "4px 8px",
+              background: "#fff4f4",
+              borderRadius: 6,
+            }}
+          >
+            이 일정은 다른 사용자가 작성한 공유 일정입니다.
+          </div>
+        )}
+
+        {/* 본문 */}
         <form className="todo-modal-body" onSubmit={handleSubmit}>
           {/* 제목 */}
           <div className="todo-field">
@@ -223,6 +267,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={50}
+              disabled={isEdit && !canModify}
             />
           </div>
 
@@ -235,6 +280,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               maxLength={200}
+              disabled={isEdit && !canModify}
             />
           </div>
 
@@ -251,6 +297,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
                 style={{ flex: 1 }}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                disabled={isEdit && !canModify}
               />
             </div>
             <div
@@ -266,6 +313,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
                 style={{ flex: 1 }}
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
+                disabled={isEdit && !canModify}
               />
               <input
                 type="time"
@@ -273,6 +321,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
                 style={{ flex: 1 }}
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
+                disabled={isEdit && !canModify}
               />
             </div>
           </div>
@@ -289,11 +338,12 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               maxLength={100}
+              disabled={isEdit && !canModify}
             />
           </div>
 
-          {/* 완료 체크 (수정일 때만) */}
-          {isEdit && (
+          {/* 완료 체크 (수정 + 권한 있을 때만) */}
+          {isEdit && canModify && (
             <div className="todo-field">
               <div className="todo-field-label">완료 상태</div>
               <div className="todo-field-sub">
@@ -311,7 +361,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
             </div>
           )}
 
-          {/* 공유 토글 줄 (기존 .todo-shared-row 활용) */}
+          {/* 공유 토글 */}
           <div className="todo-field todo-shared-row">
             <div>
               <div className="todo-field-label shared-label">공유 일정</div>
@@ -323,6 +373,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
               type="button"
               className="toggle-btn"
               onClick={() => setShared((prev) => !prev)}
+              disabled={isEdit && !canModify}
             >
               <img
                 src={shared ? toggleOn : toggleOff}
@@ -331,7 +382,7 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
             </button>
           </div>
 
-          {/* 🔥 공유 ON일 때 하단에 친구 리스트 (리스트 형태로 선택) */}
+          {/* 공유 ON일 때 친구 리스트 */}
           {shared && (
             <div className="todo-field todo-share-list-wrap">
               <div className="todo-field-label">공유할 친구</div>
@@ -370,8 +421,11 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
                           "todo-share-friend" + (selected ? " selected" : "")
                         }
                         onClick={() => toggleFriend(fid)}
+                        disabled={isEdit && !canModify}
                       >
-                        <span className="todo-share-friend-name">{label}</span>
+                        <span className="todo-share-friend-name">
+                          {label}
+                        </span>
                       </button>
                     );
                   })}
@@ -380,9 +434,9 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
             </div>
           )}
 
-          {/* 하단 버튼들 (기존 .modal-buttons 스타일 활용) */}
+          {/* 하단 버튼들 */}
           <div className="modal-buttons">
-            {isEdit && (
+            {isEdit && canModify && (
               <button
                 type="button"
                 className="danger-btn"
@@ -398,9 +452,11 @@ function CalendarTodo({ onClose, onSave, editTodo, defaultDate }) {
             >
               취소
             </button>
-            <button type="submit" className="primary-btn">
-              {isEdit ? "수정하기" : "추가하기"}
-            </button>
+            {(!isEdit || canModify) && (
+              <button type="submit" className="primary-btn">
+                {isEdit ? "수정하기" : "추가하기"}
+              </button>
+            )}
           </div>
         </form>
       </div>

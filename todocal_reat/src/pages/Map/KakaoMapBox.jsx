@@ -82,17 +82,21 @@ function KakaoMapBox() {
           first.road_address_name || first.address_name || "주소 정보 없음";
         const phone = first.phone || "전화번호 없음";
 
+        const mapLink = `https://map.kakao.com/link/map/${placeName},${first.y},${first.x}`;
+        const toLink = `https://map.kakao.com/link/to/${placeName},${first.y},${first.x}`;
+
         const iwContent = `
-          <div style="padding:8px; font-size:13px; line-height:1.5;">
-            <b style="font-size:14px;">${placeName}</b><br/>
-            📞 ${phone}<br/>
-            📍 ${address}<br/>
-            <a href="https://map.kakao.com/link/map/${placeName},${first.y},${first.x}" 
-              target="_blank" style="color:blue;">큰지도보기</a>
-            <a href="https://map.kakao.com/link/to/${placeName},${first.y},${first.x}" 
-              target="_blank" style="color:blue; margin-left:5px;">길찾기</a>
+          <div class="map-iw">
+            <div class="map-iw-title">${placeName}</div>
+            <div class="map-iw-line">📞 ${phone}</div>
+            <div class="map-iw-line">📍 ${address}</div>
+            <div class="map-iw-links">
+              <a href="${mapLink}" target="_blank">큰지도보기</a>
+              <a href="${toLink}" target="_blank">길찾기</a>
+            </div>
           </div>
         `;
+
 
         const infowindow = new window.kakao.maps.InfoWindow({
           content: iwContent,

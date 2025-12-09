@@ -185,3 +185,47 @@
   height: 1px;
   background: #e6e6e6;
 }
+/* ===== Kakao InfoWindow 안에 들어가는 커스텀 박스 ===== */
+
+.map-iw {
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #d7d7d7;
+  padding: 8px 10px 10px;
+  min-width: 180px;
+
+  font-size: 12px;
+  line-height: 1.4;
+  color: #111827;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.map-iw-title {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.map-iw-line {
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+.map-iw-links {
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid #eeeeee;
+
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.map-iw-links a {
+  color: #3182f6;
+  text-decoration: none;
+}
+
+.map-iw-links a:hover {
+  text-decoration: underline;
+}
