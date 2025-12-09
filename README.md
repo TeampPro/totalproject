@@ -12,7 +12,7 @@
 <!-- 🎬 서비스 대표 GIF 영역 -->
 <p align="center">
   <!-- 아래 src에 본인 저장소의 GIF 경로를 넣어주세요. -->
-  <img src="./assets/group.png" alt="서비스 시연 GIF" width="50" />
+  <img src="./assets/group.svg" alt="서비스 시연 GIF" width="50" />
 </p>
 
 ---
