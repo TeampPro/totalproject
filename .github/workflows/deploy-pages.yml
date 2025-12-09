@@ -2,7 +2,8 @@
 
 on:
   push:
-    branches: [develop]  # 배포를 트리거할 브랜치 (원하면 main으로 변경)
+    branches:
+      - develop      # 필요하면 여기 - main 도 추가
 
 permissions:
   contents: read
@@ -24,11 +25,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: "npm"
+          node-version: 20      # cache 옵션 제거
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install        # npm ci -> npm install 로 변경
         working-directory: todocal_reat
 
       - name: Build
