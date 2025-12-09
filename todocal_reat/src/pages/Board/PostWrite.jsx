@@ -42,12 +42,11 @@ const PostWrite = () => {
     loadPost();
   }, [editId]);
 
-  // ⭐ 저장 처리
+  // 저장 처리
   const handleSave = async () => {
     if (!title.trim()) return alert("제목을 입력하세요!");
     if (!content.trim()) return alert("내용을 입력하세요!");
 
-    // ★ 프론트단에서도 한 번 더 막기 (공지사항 + 관리자 아닌 경우)
     if (
       (category === "notice" || category.toLowerCase() === "notice") &&
       loginUserType !== "ADMIN"
@@ -56,7 +55,6 @@ const PostWrite = () => {
       return;
     }
 
-    // ★ userType 을 같이 보냄 (@Transient 필드로 전달)
     const payload = { category, title, content, writer, userType: loginUserType };
 
     try {

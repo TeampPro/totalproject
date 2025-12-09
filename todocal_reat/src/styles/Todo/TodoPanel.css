@@ -36,6 +36,7 @@
 .todo-panel-icon {
   width: 18px;
   height: 18px;
+  margin-top: 4px;
 }
 
 .todo-panel-title {
@@ -376,4 +377,18 @@
 .todo-item-done .todo-title {
   color: #99a1af;               /* 살짝 연한 회색 */
   text-decoration: line-through; /* ✅ 취소선 */
+}
+
+/* 헤더 왼쪽 영역: 아이콘 + 제목 블록 한 줄 정렬 */
+.todo-panel-header-left {
+  display: flex;
+  gap: 8px; /* 아이콘과 텍스트 사이 간격 */
+}
+
+/* 서브 타이틀 스타일도 추가해 주면 더 안정적 */
+.todo-panel-subtitle {
+  margin: 0;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #9ca3af;
 }

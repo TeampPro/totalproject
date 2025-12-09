@@ -12,6 +12,10 @@ function TodoPanel({ user, onAddTodo, reloadKey, onTodoUpdated, onTodoDeleted })
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const isLoggedIn = !!(user?.id || storedUser?.id);
 
+  const goLogin = () => {
+    navigate("/login");
+  }
+
   // D-Day 텍스트 계산
   const getDDayText = (dateTimeString) => {
     if (!dateTimeString) return "";
@@ -257,7 +261,7 @@ function TodoPanel({ user, onAddTodo, reloadKey, onTodoUpdated, onTodoDeleted })
                 <button
                   type="button"
                   className="todo-guest-login-btn"
-                  onClick={ensureLogin}
+                  onClick={goLogin}
                 >
                   Planix 로그인
                 </button>
