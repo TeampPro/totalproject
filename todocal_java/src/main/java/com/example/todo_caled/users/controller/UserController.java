@@ -347,4 +347,28 @@ public class UserController {
         return ResponseEntity.ok(Map.of("available", available));
     }
 
+    // 아이디 또는 닉네임으로 유저 검색
+    @GetMapping("/users/search")
+    public ResponseEntity<List<Map<String, Object>>> searchUsers(@RequestParam("keyword") String keyword){
+        if(keyword == null || keyword.isBlank()) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+
+        List<User> users = userRepository.searchByIdOrNickname(keyword);
+
+        List<Map<String, Object>> result = users.stream()
+                .map(u -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("id", u.getId());
+                    m.put("name", u.getName());
+                    m.put("email", u.getEmail());
+                    m.put("userType", u.getUserId());
+                    m.put("profileImage", u.getProfileImage());
+                    return m;
+                })
+                .toList();
+
+        return ResponseEntity.ok(result);
+    }
+
 }

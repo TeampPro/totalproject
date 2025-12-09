@@ -1,3 +1,5 @@
+// src/components/Friend/FriendPanel.jsx (위치는 프로젝트 구조에 맞게)
+
 import { useEffect, useState } from "react";
 import {
   fetchFriends,
@@ -5,17 +7,18 @@ import {
   sendFriendRequest,
   acceptFriendRequest,
   rejectFriendRequest,
-} from "../../api/friendApi.js\
-";
+  searchUsers, // ✅ 추가
+} from "../../api/friendApi.js";
 
 export default function FriendPanel() {
   const [friends, setFriends] = useState([]);
   const [requests, setRequests] = useState([]);
-  const [searchId, setSearchId] = useState("");
 
-  // 로그인 정보
+  const [keyword, setKeyword] = useState("");        // ✅ 아이디 또는 닉네임
+  const [searchResults, setSearchResults] = useState([]); // ✅ 검색 결과 리스트
+
   const user = JSON.parse(localStorage.getItem("user") || "null");
-  const myId = user?.id; // 필요하면 user.loginId 로 변경
+  const myId = user?.id;
 
   useEffect(() => {
     if (!myId) return;
@@ -36,16 +39,37 @@ export default function FriendPanel() {
     }
   };
 
-  const handleSendRequest = async () => {
-    if (!searchId.trim()) return;
+  // ✅ 아이디 / 닉네임으로 유저 검색
+  const handleSearch = async () => {
+    if (!keyword.trim()) {
+      alert("아이디 또는 닉네임을 입력해주세요.");
+      return;
+    }
     if (!myId) {
       alert("로그인이 필요합니다.");
       return;
     }
     try {
-      await sendFriendRequest(myId, searchId.trim());
+      const users = await searchUsers(keyword.trim());
+      setSearchResults(users);
+      if (users.length === 0) {
+        alert("검색 결과가 없습니다.");
+      }
+    } catch (e) {
+      console.error("유저 검색 실패:", e);
+      alert("유저 검색 중 오류가 발생했습니다.");
+    }
+  };
+
+  // ✅ 선택된 유저에게 친구 요청 보내기
+  const handleSendRequest = async (targetId) => {
+    if (!myId) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    try {
+      await sendFriendRequest(myId, targetId);
       alert("친구 요청을 보냈습니다.");
-      setSearchId("");
       await loadData();
     } catch (e) {
       console.error("친구 요청 실패:", e);
@@ -85,15 +109,36 @@ export default function FriendPanel() {
     <div>
       <h2>친구</h2>
 
-      {/* 친구 찾기 / 친구 요청 보내기 */}
+      {/* 🔹 친구 찾기 (아이디 or 닉네임) */}
       <div>
         <input
-          value={searchId}
-          onChange={(e) => setSearchId(e.target.value)}
-          placeholder="친구 아이디 입력"
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          placeholder="아이디 또는 닉네임 입력"
         />
-        <button onClick={handleSendRequest}>친구 요청</button>
+        <button onClick={handleSearch}>검색</button>
       </div>
+
+      {/* 🔹 검색 결과 목록 + 친구 요청 버튼 */}
+      {searchResults.length > 0 && (
+        <div>
+          <h3>검색 결과</h3>
+          {searchResults.map((u) => (
+            <div key={u.id} style={{ marginBottom: "4px" }}>
+              {/* 닉네임(있으면) + 아이디 같이 보여주기 */}
+              <span>
+                {u.nickname ? `${u.nickname} (${u.id})` : u.id}
+              </span>
+              <button
+                style={{ marginLeft: "8px" }}
+                onClick={() => handleSendRequest(u.id)}
+              >
+                친구 요청
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* 받은 친구 요청 목록 */}
       <h3>받은 친구 요청</h3>
@@ -102,7 +147,6 @@ export default function FriendPanel() {
       ) : (
         requests.map((r) => (
           <div key={r.requestId}>
-            {/* 보내는 사람 정보: 닉네임 → 이름 → 아이디 우선순위로 표시 */}
             {r.fromNickname || r.fromName || r.fromId}
             <button onClick={() => handleAccept(r.requestId)}>수락</button>
             <button onClick={() => handleReject(r.requestId)}>거절</button>

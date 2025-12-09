@@ -1,5 +1,5 @@
 // src/api/friendApi.js
-import axios from "../api/setupAxios"; // ✅ 공통 axios 설정 사용
+import axios from "./setupAxios"; // ✅ 같은 폴더 기준
 
 // 내 친구 목록
 export const fetchFriends = async (userId) => {
@@ -17,8 +17,15 @@ export const fetchFriendRequests = async (userId) => {
   return res.data;
 };
 
-// 기존 이름과 호환 (FriendPage에서 fetchReceivedRequests 쓰는 경우 대비)
 export const fetchReceivedRequests = fetchFriendRequests;
+
+// ✅ 아이디 또는 닉네임으로 유저 검색
+export const searchUsers = async (keyword) => {
+  const res = await axios.get("/api/users/search", {
+    params: { keyword },
+  });
+  return res.data; // [{id, nickname, name, email, ...}, ...]
+};
 
 // 친구 요청 보내기
 export const sendFriendRequest = async (fromUserId, toUserId) => {
@@ -61,6 +68,5 @@ export const deleteFriend = async (userId, friendId) => {
   return res.data;
 };
 
-// 혹시 다른 파일에서 쓰고 있을지도 모를 이름도 같이 export
 export const acceptFriend = acceptFriendRequest;
 export const rejectFriend = rejectFriendRequest;

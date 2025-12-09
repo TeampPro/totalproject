@@ -28,4 +28,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByKakaoId(String kakaoId);
 
     List<User> findByUserTypeNotIgnoreCase(String userType);
+
+    @Query("""
+           SELECT u FROM User u
+           WHERE LOWER(u.id)       LIKE LOWER(CONCAT('%', :keyword, '%'))
+              OR LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           """)
+    List<User> searchByIdOrNickname(@Param("keyword") String keyword);
+
 }
