@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "../../api/setupAxios";
-import "../../styles/Board/PostWrite.css";
+import "../../styles/board/PostWrite.css";
 
 const PostWrite = () => {
   const navigate = useNavigate();
