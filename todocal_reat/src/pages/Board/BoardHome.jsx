@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../api/setupAxios.js";
 import moment from "moment";
-import "../../styles/Board/Board.css";
+import "../../styles/board/Board.css";
 
 // 상단바
 import ServerBar from "../../components/serverbar/ServerBar.jsx";

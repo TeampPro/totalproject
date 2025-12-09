@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../../api/setupAxios";
-import "../../styles/Board/PostDetail.css";
+import "../../styles/board/PostDetail.css";
 import moment from "moment";
 import list from "../../assets/commentList.svg";
 import modify from "../../assets/modify.svg";
