@@ -302,20 +302,25 @@ export default function ChatPage() {
     }
   };
 
-  // 방 삭제 (UI에서는 '나가기')
+   // 방 삭제 (UI에서는 '나가기')
   const handleDeleteRoom = async (e, roomId) => {
     e.stopPropagation();
     if (!window.confirm("이 채팅방에서 나가시겠습니까?")) return;
 
     try {
-      await axios.delete(`/api/chat/rooms/${roomId}`);
+      const memberName = getMemberName(); // ✅ 현재 접속 닉네임/아이디
+
+      await axios.delete(`/api/chat/rooms/${roomId}`, {
+        params: { memberName },
+      });
+
+      // 내 입장에서는 방을 더 이상 보지 않도록 목록에서 제거
       setRooms((prev) => prev.filter((r) => r.id !== roomId));
     } catch (err) {
-      console.error("❌ 채팅방 삭제 오류:", err);
+      console.error("❌ 채팅방 나가기/삭제 오류:", err);
       alert("채팅방 나가기 중 문제가 발생했습니다.");
     }
   };
-
   // 친구 삭제
   const handleDeleteFriend = async (friend) => {
     if (!loginUser?.id) {
