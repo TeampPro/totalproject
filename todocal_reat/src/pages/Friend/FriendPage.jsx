@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react";
-import { fetchFriends, fetchFriendRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest } from "../../api/friendApi";
+import {
+  fetchFriends,
+  fetchFriendRequests,
+  sendFriendRequest,
+  acceptFriendRequest,
+  rejectFriendRequest,
+  searchUsers,         // ✅ 추가
+} from "../../api/friendApi";
 import "../../styles/friend/FriendPage.css";
 
 export default function FriendPage() {
   const [friends, setFriends] = useState([]);
   const [requests, setRequests] = useState([]);
-  const [searchId, setSearchId] = useState("");
+  const [searchId, setSearchId] = useState(""); // 아이디 or 닉네임
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
-  const myId = user?.id; // 필요하면 loginId 등으로 변경
+  const myId = user?.id;
 
   useEffect(() => {
     if (!myId) return;
@@ -29,22 +36,40 @@ export default function FriendPage() {
     }
   };
 
+  // ✅ 아이디 또는 닉네임으로 상대 검색 후 친구 요청 보내기
   const handleSendRequest = async () => {
-    const targetId = searchId.trim();
-    if (!targetId) return;
+    const keyword = searchId.trim();
+    if (!keyword) return;
+
     if (!myId) {
       alert("로그인이 필요합니다.");
       return;
     }
 
     try {
+      // 1) 검색
+      const users = await searchUsers(keyword);
+
+      if (users.length === 0) {
+        alert("해당 아이디/닉네임을 가진 유저가 없습니다.");
+        return;
+      }
+
+      if (users.length > 1) {
+        alert("여러 명이 검색됩니다. 좀 더 정확한 아이디/닉네임을 입력해주세요.");
+        return;
+      }
+
+      const targetId = users[0].id; // 실제 로그인 아이디
+
+      // 2) 친구 요청
       await sendFriendRequest(myId, targetId);
       alert("친구 요청을 보냈습니다.");
       setSearchId("");
       await loadData();
     } catch (e) {
       console.error("친구 요청 실패:", e);
-      alert("친구 요청 중 오류가 발생했습니다.");
+      alert(e.response?.data?.message || "친구 요청 중 오류가 발생했습니다.");
     }
   };
 
@@ -91,9 +116,12 @@ export default function FriendPage() {
               className="friend-input"
               value={searchId}
               onChange={(e) => setSearchId(e.target.value)}
-              placeholder="상대방 아이디 입력"
+              placeholder="아이디 또는 닉네임 입력"  // ✅ 문구 변경
             />
-            <button className="friend-button friend-button--primary" onClick={handleSendRequest}>
+            <button
+              className="friend-button friend-button--primary"
+              onClick={handleSendRequest}
+            >
               친구 요청 보내기
             </button>
           </div>
@@ -125,12 +153,17 @@ export default function FriendPage() {
             ) : (
               <ul className="friend-list">
                 {requests.map((r) => (
-                  <li key={r.requestId} className="friend-list__item friend-list__item--request">
+                  <li
+                    key={r.requestId}
+                    className="friend-list__item friend-list__item--request"
+                  >
                     <div className="friend-request__info">
                       <span className="friend-list__name">
                         {r.fromNickname || r.fromName || r.fromId}
                       </span>
-                      <span className="friend-request__id">요청 ID: {r.requestId}</span>
+                      <span className="friend-request__id">
+                        요청 ID: {r.requestId}
+                      </span>
                     </div>
                     <div className="friend-request__buttons">
                       <button
