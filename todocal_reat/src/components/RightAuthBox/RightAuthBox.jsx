@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/RightAuthBox/RightAuthBox.css";
 import Planix from "../../assets/planix1.svg";

@@ -21,7 +21,7 @@ const MonthTasks = () => {
 
         setTasks(monthTasks);
       } catch (err) {
-        console.error("?? ?? ?? ??:", err);
+        console.error("월간 일정 조회 실패:", err);
       }
     };
 

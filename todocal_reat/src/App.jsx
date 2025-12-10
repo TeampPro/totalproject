@@ -1,14 +1,6 @@
-// src/App.jsx
 import { api, apiFetch } from "./api/http.js";
 import { useState, useEffect } from "react";
-import {
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
-
+import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import MenuBar from "./components/MenuBar/MenuBar.jsx";
 
 // Auth

@@ -1,4 +1,3 @@
-// src/pages/Weather/WeatherBoard.jsx
 import { useEffect, useState } from "react";
 import "../../styles/Weather/WeatherBoard.css";
 import { api } from "../../api/http";
@@ -57,7 +56,7 @@ export default function WeatherBoard() {
     return obj[key] ?? obj[` ${key}`] ?? obj[String(key)?.trim()];
   };
 
-  function formatDate(dateStr) {
+  function formatDate(dateStr) {  
     if (!dateStr) return "날짜 정보 없음";
     const clean = String(dateStr);
     const year = clean.slice(0, 4);
@@ -67,7 +66,7 @@ export default function WeatherBoard() {
   }
 
   function formatTime(timeVal) {
-    if (timeVal === undefined || timeVal === null) return "??:??";
+    if (timeVal === undefined || timeVal === null) return "--:--";
     const clean = String(timeVal).replace(/\D/g, "").padStart(4, "0").slice(0, 4);
     return `${clean.slice(0, 2)}:${clean.slice(2, 4)}`;
   }

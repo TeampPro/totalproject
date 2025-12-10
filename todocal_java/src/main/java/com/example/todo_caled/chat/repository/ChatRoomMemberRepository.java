@@ -1,4 +1,3 @@
-// src/main/java/com/example/todo_caled/chat/repository/ChatRoomMemberRepository.java
 package com.example.todo_caled.chat.repository;
 
 import com.example.todo_caled.chat.entity.ChatRoomMember;

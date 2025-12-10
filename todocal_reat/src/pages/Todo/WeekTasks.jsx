@@ -21,7 +21,7 @@ const WeekTasks = () => {
 
         setTasks(weekTasks);
       } catch (err) {
-        console.error("?? ?? ?? ??:", err);
+        console.error("주간 일정 조회 실패:", err);
       }
     };
 

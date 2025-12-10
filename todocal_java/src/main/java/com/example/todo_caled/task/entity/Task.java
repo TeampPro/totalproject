@@ -1,4 +1,3 @@
-// src/main/java/com/example/todo_caled/task/entity/Task.java
 package com.example.todo_caled.task.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

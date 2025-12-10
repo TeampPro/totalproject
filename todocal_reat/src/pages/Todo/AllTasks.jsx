@@ -31,7 +31,7 @@ const AllTasks = ({ filter = "all" }) => {
         const data = await api.get(pathName);
         setRaw(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("? ? ?? ?? ??:", err);
+        console.error("전체 작업 조회 실패:", err);
       }
     };
 

@@ -49,7 +49,7 @@ export async function apiFetch(path, options = {}) {
   if (!res.ok) {
     const message =
       (data && data.message) ||
-      `?? ?? (${res.status} ${res.statusText})`;
+      `요청 실패 (${res.status} ${res.statusText})`;
     const error = new Error(message);
     error.status = res.status;
     error.data = data;

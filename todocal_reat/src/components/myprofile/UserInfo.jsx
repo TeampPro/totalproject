@@ -1,5 +1,3 @@
-// src/components/myprofile/UserInfo.jsx
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../api/setupAxios";

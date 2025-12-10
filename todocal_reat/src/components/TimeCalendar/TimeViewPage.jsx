@@ -1,4 +1,3 @@
-// src/components/TimeCalendar/TimeViewPage.jsx
 import { useState, useEffect } from "react";
 import moment from "moment";
 import "moment/locale/ko";

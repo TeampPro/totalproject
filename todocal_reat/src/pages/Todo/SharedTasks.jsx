@@ -13,7 +13,7 @@ const SharedTasks = () => {
         const data = await api.get("/api/tasks/shared");
         setTasks(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("?? ?? ?? ??:", err);
+        console.error("공유 일정 조회 실패:", err);
         setError(err.message);
       }
     };

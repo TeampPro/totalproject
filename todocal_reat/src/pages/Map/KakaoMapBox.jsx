@@ -1,4 +1,3 @@
-// src/pages/Map/KakaoMapBox.jsx
 import { useEffect, useState, useRef } from "react";
 import "../../styles/Map/KakaoMapBox.css";
 import searchIcon from "../../assets/search.svg";

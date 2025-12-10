@@ -1,5 +1,3 @@
-// src/components/Friend/FriendPanel.jsx (위치는 프로젝트 구조에 맞게)
-
 import { useEffect, useState } from "react";
 import {
   fetchFriends,

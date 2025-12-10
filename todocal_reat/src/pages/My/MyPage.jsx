@@ -1,5 +1,3 @@
-// src/pages/My/MyPage.jsx
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, apiFetch } from "../../api/http";
