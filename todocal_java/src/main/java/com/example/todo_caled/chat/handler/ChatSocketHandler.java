@@ -1,5 +1,6 @@
 package com.example.todo_caled.chat.handler;
 
+import com.example.todo_caled.chat.dto.ChatMemberListDto;
 import com.example.todo_caled.chat.dto.ChatMessageDto;
 import com.example.todo_caled.chat.service.ChatService;
 import com.google.gson.Gson;
@@ -35,6 +36,7 @@ public class ChatSocketHandler extends TextWebSocketHandler {
         URI uri = session.getUri();
         String query = (uri != null && uri.getQuery() != null) ? uri.getQuery() : "";
         Map<String, String> params = parseQuery(query);
+
         String roomId = params.get("roomId");
         String memberName = params.get("memberName");
 
@@ -45,9 +47,38 @@ public class ChatSocketHandler extends TextWebSocketHandler {
             return;
         }
 
+        // 중복 닉네임 세션 제거
+        Set<WebSocketSession> currentSessions = roomSessions.computeIfAbsent(roomId, k -> Collections.synchronizedSet(new HashSet<>()));
+
+        for (WebSocketSession s : new HashSet<>(currentSessions)) {
+            String existingName = (String) s.getAttributes().get("memberName");
+            if (memberName.equals(existingName)) {
+                try {
+                    s.close(CloseStatus.POLICY_VIOLATION.withReason("DUPLICATE_SESSION"));
+                } catch (Exception ignored) {}
+                currentSessions.remove(s);
+            }
+        }
+
+        session.getAttributes().put("memberName", memberName);
+
         // 정상 입장 처리
         roomSessions.computeIfAbsent(roomId, k -> Collections.synchronizedSet(new HashSet<>())).add(session);
         sessionRoom.put(session.getId(), roomId);
+
+        ChatMessageDto enterMsg = ChatMessageDto.builder()
+                        .roomId(roomId)
+                        .sender("SYSTEM")
+                        .message(memberName + "님이 입장했습니다.")
+                        .time(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()))
+                        .systemMessage(true)
+                        .build();
+
+        // 입장 시스템 메시지 전송
+        broadcast(roomId, enterMsg);
+
+        // 참가자 목록 갱신
+        broadcastMemberList(roomId);
 
         log.info("WebSocket 연결됨: roomId={}, memberName={}, session={}", roomId, memberName, session.getId());
     }
@@ -55,7 +86,7 @@ public class ChatSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         ChatMessageDto dto = gson.fromJson(message.getPayload(), ChatMessageDto.class);
-        dto.setTime(new SimpleDateFormat("HH:mm:ss").format(new Date()));
+        dto.setTime(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
 
         String roomId = sessionRoom.get(session.getId());
         if (roomId == null) {
@@ -84,9 +115,27 @@ public class ChatSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         String roomId = sessionRoom.remove(session.getId());
+        String memberName = (String) session.getAttributes().get("memberName");
+
         if (roomId != null) {
             Set<WebSocketSession> set = roomSessions.get(roomId);
-            if (set != null) set.remove(session);
+            if(set != null) {
+                set.remove(session);
+            }
+        }
+
+        if (roomId != null && memberName != null) {
+
+            ChatMessageDto exitMsg = ChatMessageDto.builder()
+                    .roomId(roomId)
+                    .sender("SYSTEM")
+                    .message(memberName + "님이 퇴장했습니다.")
+                    .time(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()))
+                    .systemMessage(true)
+                    .build();
+
+            broadcast(roomId, exitMsg);
+            broadcastMemberList(roomId);
         }
         log.info("연결 종료: {}", session.getId());
     }
@@ -104,4 +153,51 @@ public class ChatSocketHandler extends TextWebSocketHandler {
         }
         return map;
     }
+
+    private void broadcast(String roomId, ChatMessageDto dto) throws Exception {
+        Set<WebSocketSession> sessions = roomSessions.get(roomId);
+        if (sessions == null) return;
+
+        String json = gson.toJson(dto);
+
+        for (WebSocketSession s : sessions) {
+            if (s.isOpen()) {
+                s.sendMessage(new TextMessage(json));
+            }
+        }
+    }
+
+    private void broadcastMemberList(String roomId) throws Exception {
+
+        // 현재 방 세션들
+        Set<WebSocketSession> sessions = roomSessions.get(roomId);
+        if (sessions == null) return;
+
+        Set<String> memberSet = new LinkedHashSet<>();
+        for (WebSocketSession s : sessions) {
+            Object name = s.getAttributes().get("memberName");
+            if (name != null) {
+                memberSet.add(name.toString());
+            }
+        }
+
+        // memberSet을 members List 로 변환
+        List<String> members = new ArrayList<>(memberSet);
+
+        ChatMemberListDto dto = ChatMemberListDto.builder()
+                .roomId(roomId)
+                .members(members)   // 🔥 빈 리스트가 아니라 실제 참가자 전달
+                .systemMessage(true)
+                .build();
+
+        String json = gson.toJson(dto);
+
+        // 모든 세션에 전송
+        for (WebSocketSession s : sessions) {
+            if (s.isOpen()) {
+                s.sendMessage(new TextMessage(json));
+            }
+        }
+    }
+
 }

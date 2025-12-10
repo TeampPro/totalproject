@@ -1,0 +1,266 @@
+/* 전체 배경 */
+.mypage-wrapper {
+  min-height: 100vh;
+  background: #f4fbff;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 0;
+  position: relative;
+  font-family: "Paperlogy-Medium", system-ui, -apple-system, sans-serif;
+}
+
+/* 화면 왼쪽 상단 뒤로가기 아이콘 버튼 */
+.mypage-back-icon-btn {
+  position: fixed;
+  left: 32px;
+  top: 32px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.mypage-back-icon-btn img {
+  width: 40px;
+  height: 40px;
+  display: block;
+}
+
+/* 가운데 큰 카드(실제로는 배경과 거의 같은 느낌) */
+.mypage-shell {
+  width: 100%;
+  max-width: 1000px;          /* 너무 넓어지지 않게 */
+  min-height: 90vh;
+  background: #f4fbff;
+  border-radius: 40px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  padding: 40px 80px 60px;
+  box-sizing: border-box;
+}
+
+
+/* 상단 프로필 부분 */
+.mypage-profile-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.mypage-avatar {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible; /* 🔥 바깥으로 튀어나오는 버튼도 보이게 */
+}
+
+
+/* border.svg – 전체를 감싸는 테두리 */
+.mypage-avatar-border {
+  position: absolute;
+  inset: 0;              /* top/right/bottom/left 모두 0 */
+  width: 100%;
+  height: 100%;
+  pointer-events: none;  /* 클릭 안 먹게 */
+}
+
+/* 실제 프로필 이미지가 들어가는 동그라미 */
+.mypage-avatar-inner {
+  position: relative;
+  width: 124px;
+  height: 124px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #4bb4ff;   /* 기본 배경색 (이미지 없을 때) */
+}
+
+.mypage-avatar-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 연필 아이콘 + 파일 입력 */
+.mypage-avatar-edit {
+  position: absolute;
+  right: -6px;     /* 살짝 밖으로 뺀 위치 → 필요하면 0~8px 사이로 조절 */
+  bottom: -6px;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: #48A9F8;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;     /* 🔥 border.svg / 프로필 이미지 위로 강제 */
+}
+
+.mypage-avatar-edit img {
+  width: 20px;
+  height: 20px;
+}
+
+/* 실제 파일 input은 숨김 */
+.mypage-avatar-edit input {
+  display: none;
+}
+
+
+
+.mypage-display-name {
+  margin-top: 32px;
+  font-size: 32px;
+  font-family: "Paperlogy-SemiBold", "Paperlogy-Medium", sans-serif;
+}
+
+/* 가운데 정보 박스 (파란 테두리) */
+.mypage-main-panel {
+  border-radius: 28px;
+  border: 2px solid #2f80ff;
+  background: #ffffff;
+  padding: 24px 48px 28px;
+  margin: 42px auto 0;        /* 좌우 auto → 가운데 정렬 */
+  max-width: 640px;           /* 피그마처럼 박스를 조금 좁게 */
+}
+
+
+.mypage-main-title {
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 16px;
+  color: #6b7280;
+  font-family: "Paperlogy-Regular", "Paperlogy-Medium", sans-serif;
+}
+
+/* label/value 2열 레이아웃 */
+.mypage-info-grid {
+  display: grid;
+  row-gap: 14px;
+  /* margin-bottom: 20px; */
+  margin: 0 auto 20px;
+}
+
+.mypage-info-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  align-items: center;
+}
+
+.mypage-info-label {
+  font-size: 20px;
+  color: #9ca3af;
+  font-family: "Paperlogy-Regular", "Paperlogy-Medium", sans-serif;
+}
+
+.mypage-info-value {
+  font-size: 24px;
+  color: #111827;
+  font-family: "Paperlogy-Medium", system-ui, -apple-system, sans-serif;
+  padding-left: 8px;
+}
+
+/* 편집 상태에서의 인풋 */
+.mypage-info-value input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #d1d5db;
+  padding: 4px 0 6px;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  font-family: "Paperlogy-Medium", system-ui, -apple-system, sans-serif;
+}
+
+/* 내 정보 수정 / 저장 버튼 */
+.mypage-main-btn {
+  display: block;
+  margin: 0 auto;
+  margin-top: 8px;
+  padding: 8px 28px;
+  border-radius: 999px;
+  border: none;
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 16px;
+  cursor: pointer;
+  font-family: "Paperlogy-SemiBold", "Paperlogy-Medium", sans-serif;
+}
+
+/* 비회원 경고 */
+.mypage-warning {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #ef4444;
+}
+
+/* 비밀번호 변경 영역 */
+.mypage-password-section {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.mypage-password-title {
+  font-size: 20px;
+  margin-bottom: 12px;
+  font-family: "Paperlogy-SemiBold", "Paperlogy-Medium", sans-serif;
+}
+
+.mypage-password-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  max-width: 320px;
+  margin: 20px auto;
+}
+
+.mypage-password-fields input {
+  border-radius: 999px;
+  border: none;
+  padding: 20px 24px;
+  background: #ffffff;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  outline: none;
+  font-family: "Paperlogy-Medium", system-ui, -apple-system, sans-serif;
+}
+
+.mypage-password-btn-new {
+  margin-top: 14px;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 24px;
+  background: #2f80ff;
+  color: #ffffff;
+  cursor: pointer;
+  font-family: "Paperlogy-SemiBold", "Paperlogy-Medium", sans-serif;
+}
+
+/* 하단 버튼들 */
+.mypage-footer-btn {
+  display: block;
+  margin: 18px auto 0;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 24px;
+  font-size: 16px;
+  cursor: pointer;
+  font-family: "Paperlogy-SemiBold", "Paperlogy-Medium", sans-serif;
+}
+
+.mypage-footer-btn-danger {
+  background: transparent;
+  color: #9ca3af;
+  text-decoration: underline;
+  font-size: 16px;
+}
+
+.mypage-footer-btn-secondary {
+  background: #e5e7eb;
+  color: #374151;
+}

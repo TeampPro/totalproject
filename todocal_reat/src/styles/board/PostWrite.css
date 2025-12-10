@@ -1,0 +1,49 @@
+﻿.post-write-container {
+  padding: 20px;
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.post-write-container label {
+  margin-top: 15px;
+  display: block;
+  font-weight: bold;
+}
+
+.post-write-container input,
+.post-write-container select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.post-write-container textarea {
+  width: 100%;
+  height: 250px;
+  padding: 12px;
+  margin-top: 5px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  resize: none;
+}
+
+.write-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.write-actions button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.write-actions button:last-child {
+  background-color: #1976d2;
+  color: white;
+}

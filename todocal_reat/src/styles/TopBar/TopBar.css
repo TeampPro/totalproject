@@ -1,0 +1,164 @@
+/* 상단 바 전체 배경 */
+.topbar {
+  width: 100%;
+  height: 72px;
+  background: #f6fbff;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* ✅ page-inner 안에서 또 한 번 폭 제한 + 가운데 정렬 */
+.topbar-inner {
+  width: 100%;
+  max-width: 1360px;      /* 🔥 캘린더/메인 그리드랑 비슷한 폭 (원하면 1120/1100으로 줄여도 됨) */
+  margin: 24px auto 16px;         /* 가운데 정렬 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Left side: 로고 + 글자 */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 0;
+}
+
+.topbar-logo {
+  width: 70px;
+  height: 70px;
+}
+
+.topbar-planix {
+  height: 26px;
+}
+
+/* Right side: 뒤로가기(옵션) + 아이콘 3개 */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-right: 10px;      /* 기본값 0에서 필요하면 4~8px 정도만 조정 */
+}
+
+/* 알림 아이콘은 뱃지 때문에 한번 더 래핑 */
+.topbar-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 🔹 뒤로가기 버튼 (알림 아이콘 왼쪽) */
+.topbar-back-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 52px;   /* ✅ 다른 아이콘과 동일 크기 */
+  height: 52px;  /* ✅ 다른 아이콘과 동일 크기 */
+
+  padding: 0;    /* 아이콘 자체가 꽉 차도록 */
+}
+
+.topbar-back-btn img {
+  width: 100%;
+  height: 100%;
+  transition: 0.2s ease;
+}
+
+.topbar-back-btn:hover img {
+  transform: scale(1.05);
+}
+
+/* 공통 아이콘 스타일 (벨 / 프로필 / 메뉴) */
+.topbar-icon {
+  width: 54px;
+  height: 54px;
+  cursor: pointer;
+  transition: 0.2s ease;
+  padding: 6px;
+  border-radius: 50%;
+}
+
+.topbar-icon:hover {
+  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* 알림 숫자 뱃지 */
+.topbar-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ff4d4f;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 작을 때 아이콘/로고 사이즈 살짝 줄이기 */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 16px;
+  }
+
+  .topbar-logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  .topbar-planix {
+    height: 22px;
+  }
+
+  .topbar-icon {
+    width: 34px;
+    height: 34px;
+    padding: 4px;
+  }
+}
+
+/* === 상단 우측 드롭다운 메뉴 (메인 TopBar 햄버거 버튼용) === */
+.topbar-menu-dropdown {
+  position: absolute;
+  top: 110px;             /* 아이콘 바로 아래쯤 */
+  right: 290px;              /* 햄버거 아이콘 오른쪽 끝 기준 */
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  padding: 8px 0;
+  min-width: 140px;
+  z-index: 900;
+}
+
+/* 메뉴 항목 공통 스타일 */
+.topbar-menu-item {
+  width: 100%;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.topbar-menu-item:hover {
+  background: #f4f7ff;
+}

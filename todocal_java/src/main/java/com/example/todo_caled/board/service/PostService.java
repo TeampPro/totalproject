@@ -1,0 +1,157 @@
+package com.example.todo_caled.board.service;
+
+import com.example.todo_caled.board.entity.Post;
+import com.example.todo_caled.board.repository.PostRepository;
+import com.example.todo_caled.comments.repository.CommentRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class PostService {
+
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository; // 🔥 추가
+
+    // CREATE
+    public Post create(Post post) {
+        String category = post.getCategory();
+        String userType = post.getUserType();  // @Transient 로 받은 값
+
+        if (("NOTICE".equalsIgnoreCase(category) || "공지사항".equals(category))) {
+
+            if (!"ADMIN".equalsIgnoreCase(userType)) {
+                // 프론트에서 alert 띄우게 하고 싶으면 RuntimeException 그대로 써도 되고,
+                // 커스텀 예외 만들어도 됨
+                throw new RuntimeException("공지사항은 관리자만 작성할 수 있습니다.");
+            }
+        }
+
+        post.setCreatedAt(LocalDateTime.now());
+        return postRepository.save(post);
+    }
+
+    // LIST by category
+    public List<Post> getList(String category) {
+        List<Post> posts = postRepository.findByCategoryOrderByCreatedAtDesc(category);
+
+        // 🔥 각 게시글에 댓글 개수 세팅
+        for (Post post : posts) {
+            long count = commentRepository.countByPost(post);
+            post.setCommentCount(count);
+        }
+
+        return posts;
+    }
+
+    // DETAIL
+    public Post getPost(Long id) {
+        Post post = postRepository.findById(id).orElse(null);
+
+        if (post != null) {
+            // 🔥 상세에서도 commentCount 포함
+            long count = commentRepository.countByPost(post);
+            post.setCommentCount(count);
+        }
+
+        return post;
+    }
+
+    // UPDATE
+    public Post update(Long id, Post req) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("게시글 없음"));
+
+        // 🔥 작성자 검증
+        if (!post.getWriter().equals(req.getWriter())) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
+
+        post.setTitle(req.getTitle());
+        post.setContent(req.getContent());
+        post.setUpdatedAt(LocalDateTime.now());
+
+        return postRepository.save(post);
+    }
+
+    // 관리자 권한까지 고려한 삭제
+    public boolean delete(Long id, String writer, String userType) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("게시글 없음"));
+
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(userType);
+
+        // 작성자도 아니고 관리자도 아니면 막기
+        if (!post.getWriter().equals(writer) && !isAdmin) {
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
+
+        // 댓글 전체 삭제
+        commentRepository.deleteByPostId(id);
+
+        postRepository.delete(post);
+        return true;
+    }
+
+    public List<Post> searchFilter(
+            String category,
+            String field,
+            String keyword,
+            String startDate,
+            String endDate
+    ) {
+        LocalDateTime start = null;
+        LocalDateTime end = null;
+
+        if (startDate != null && !startDate.isEmpty()) {
+            start = LocalDate.parse(startDate).atStartOfDay();
+        }
+
+        if (endDate != null && !endDate.isEmpty()) {
+            end = LocalDate.parse(endDate).atTime(23, 59, 59);
+        }
+
+        // 기본값
+        String title = null;
+        String writer = null;
+        String content = null;
+
+        // 🔥 검색 기준에 따라 매핑
+        if (keyword != null && !keyword.isEmpty()) {
+            switch (field) {
+                case "title":
+                    title = keyword;
+                    break;
+                case "writer":
+                    writer = keyword;
+                    break;
+                case "content":
+                    content = keyword;
+                    break;
+            }
+        }
+
+        return postRepository.searchFilter(
+                category,
+                title,
+                writer,
+                content,
+                start,
+                end
+        );
+    }
+
+
+    public Post getPrevPost(Long id) {
+        return postRepository.findTopByIdLessThanOrderByIdDesc(id);
+    }
+
+    public Post getNextPost(Long id) {
+        return postRepository.findTopByIdGreaterThanOrderByIdAsc(id);
+    }
+
+}

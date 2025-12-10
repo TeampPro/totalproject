@@ -1,0 +1,502 @@
+/* ================================
+   전체 페이지 배경
+================================ */
+.board-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #f7fdff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ================================
+  기본 컨테이너
+================================ */
+.board-container {
+  width: 1280px;
+  max-width: 100%;
+  min-height: 1080px;
+  box-sizing: border-box;
+  padding: 32px 35px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ================================
+  상단 영역 (탭 + 글쓰기)
+================================ */
+.board-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 탭 전체 박스 */
+.board-tabs {
+  display: flex;
+  width: 454px;
+  height: 36px;
+  background: #ffffff;
+  box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 개별 탭 */
+.board-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  font-family: "Paperlogy", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  color: #232323;
+  line-height: normal;
+
+  transition: all 0.15s ease;
+}
+
+.board-tab.active {
+  background: #0d99ff;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* 글쓰기 버튼 */
+.board-write-btn {
+  display: flex;
+  height: 36px;
+  padding: 8px 24px;
+  min-width: 227px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+
+  border: none;
+  border-radius: 8px;
+  background: #0d99ff;
+  cursor: pointer;
+
+  color: #ffffff;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.board-write-btn:hover {
+  background: #0a7bd0;
+}
+
+.write-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ================================
+  검색 바
+================================ */
+.board-search-row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  width: 1210px;
+  height: 36px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  gap: 8px;
+}
+
+/* 검색 기준 선택 박스 */
+.search-select {
+  position: relative;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background: #ffffff;
+
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  font-size: 13px;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 120px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+}
+
+.search-dropdown div {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.search-dropdown div:hover {
+  background: #f1f1f1;
+}
+
+/* 검색 인풋 */
+.search-input {
+  flex: 1;
+  padding: 0 6px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+
+  color: #696969;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+}
+
+/* placeholder 색 옅게 */
+.search-input::placeholder {
+  color: #bfbfbf;
+}
+
+/* 검색 버튼 (돋보기) */
+.search-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.search-btn img {
+  width: 19px;
+  height: 19px;
+}
+
+/* ================================
+  공지사항 영역
+================================ */
+.board-notice-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 공지사항 타이틀 라인 */
+.notice-title-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.notice-title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notice-main-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.notice-title-text {
+  color: #48a9f8;
+  font-family: "Paperlogy", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+}
+
+/* 공지 카드 리스트 */
+.notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 개별 공지 카드 */
+.notice-card {
+  width: 1210px;
+  max-width: 100%;
+  height: 80px;
+  border-radius: 15px;
+  background: #ffffff;
+  box-sizing: border-box;
+  padding: 0 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.notice-card-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 공지 게시글용 아이콘 */
+.notice-post-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* 공지 제목 스타일 (상단 카드 전용, 가장 큼) */
+.notice-card-title {
+  max-width: 520px;
+  color: #232323;
+  font-family: "Paperlogy", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  font-size: 24px;
+  font-style: bold;
+  font-weight: 600;
+  line-height: 20px; /* 83.333% */
+  letter-spacing: -0.15px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notice-comment-count {
+  font-size: 16px;
+  color: #ff0033;
+}
+
+.notice-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.notice-writer {
+  font-size: 14px;
+  color: #232323;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+}
+
+.notice-date {
+  font-size: 14px;
+  color: #999999;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+}
+
+/* 공지와 일반 글 사이 구분선 */
+.board-divider {
+  width: 1041px;
+  max-width: 100%;
+  height: 2px;
+  margin: 0 auto;
+  background: #dedede;
+}
+
+/* ================================
+  일반 게시글 리스트
+================================ */
+.board-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 한 줄 */
+.board-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 120px 80px;
+  padding: 10px 6px;
+  border-bottom: 1px solid #f2f2f2;
+  cursor: pointer;
+  transition: background 0.12s ease-in-out;
+}
+
+.board-row:hover {
+  background: #f5faff;
+}
+
+/* 공지글도 배경만 다르게 표시 (폰트는 동일) */
+.board-row.notice {
+  background: #fff7f7;
+}
+
+/* 제목 영역 */
+.col-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ● / • */
+.post-prefix {
+  width: 32px;
+  text-align: center;
+  font-size: 16px;
+  color: #333;
+}
+
+.notice-text {
+  color: #d60000;
+  font-weight: 700;
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+/* ✅ 리스트용 일반 제목 (공지/일반 공통, 공지 카드보다 살짝 작게) */
+.post-title-normal {
+  color: #232323;
+  font-size: 16px; /* 공지 카드(24px)보다 작게 */
+  font-weight: 300;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+}
+
+/* 댓글 수 */
+.comment-count {
+  font-size: 13px;
+  color: #ff0033;
+}
+
+/* 오른쪽 정보 */
+.col-writer,
+.col-date,
+.col-views {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+
+.col-writer {
+  color: #444;
+}
+
+.col-date {
+  color: #999;
+}
+
+.col-views {
+  color: #999;
+  justify-content: flex-end;
+}
+
+/* ================================
+  상태 메시지
+================================ */
+.board-info,
+.board-empty,
+.board-error {
+  font-size: 0.85rem;
+  color: #666;
+  text-align: center;
+  padding: 16px 0;
+}
+
+.board-error {
+  color: #c62828;
+}
+
+/* ================================
+  페이지네이션
+================================ */
+.pagination {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
+  margin-bottom: 96px; /* 하단 고정 네비게이션 바에 가려지지 않도록 위로 올림 */
+}
+
+.page-arrow {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.page-arrow img {
+  width: 24px;
+  height: 24px;
+}
+
+.page-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.page-number {
+  width: 47px;
+  height: 27px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #000000;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px; /* 125% */
+  letter-spacing: -0.15px;
+}
+
+.post-title {
+  color: #232323;
+  font-family: "Paperlogy", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+}
+
+/* 리스트용 제목(공지/일반 게시글 공통) */
+.board-list .post-title-normal {
+  font-size: 20px !important;  /* 다른 css에 덮여도 강제로 16px */
+  font-weight: 300 !important;
+  font-style: bold !important;
+  font-weight: 600 !important;
+}

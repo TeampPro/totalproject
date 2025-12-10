@@ -1,0 +1,158 @@
+.friend-page {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px;
+  box-sizing: border-box;
+}
+
+.friend-page__inner {
+  width: 100%;
+  max-width: 960px;
+}
+
+.friend-header {
+  margin-bottom: 24px;
+}
+
+.friend-header h2 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.friend-header__login {
+  font-size: 14px;
+  color: #666;
+}
+
+/* 친구 추가 영역 */
+.friend-add {
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background-color: #fafafa;
+  border: 1px solid #eee;
+}
+
+.friend-add__label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.friend-add__row {
+  display: flex;
+  gap: 8px;
+}
+
+.friend-input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* 버튼 공통 */
+.friend-button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.friend-button--primary {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+.friend-button--primary:hover {
+  opacity: 0.9;
+}
+
+.friend-button--danger {
+  background-color: #ef4444;
+  color: #fff;
+}
+
+.friend-button--danger:hover {
+  opacity: 0.9;
+}
+
+/* 카드 레이아웃 */
+.friend-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.friend-card {
+  padding: 16px 20px;
+  border-radius: 12px;
+  background-color: #fff;
+  border: 1px solid #eee;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.friend-card__title {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.friend-card__empty {
+  font-size: 14px;
+  color: #777;
+}
+
+/* 리스트 */
+.friend-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.friend-list__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.friend-list__item:last-child {
+  border-bottom: none;
+}
+
+.friend-list__name {
+  font-size: 14px;
+}
+
+/* 요청 전용 */
+.friend-list__item--request {
+  align-items: flex-start;
+}
+
+.friend-request__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.friend-request__id {
+  font-size: 12px;
+  color: #999;
+}
+
+.friend-request__buttons {
+  display: flex;
+  gap: 6px;
+}
+
+/* 작은 화면에서 한 컬럼으로 */
+@media (max-width: 768px) {
+  .friend-columns {
+    grid-template-columns: 1fr;
+  }
+}

@@ -2,7 +2,7 @@ import WeatherBoard from "../../pages/WeatherBoard";
 import Calendar from "../../pages/Calendar";
 import AllTasks from "../../pages/AllTasks";
 import KakaoMapBox from "../../pages/KakaoMapBox";
-import "../../styles/Dashboard.css";
+import "../../styles/DashBoard/Dashboard.css";
 
 export default function Dashboard() {
   return (

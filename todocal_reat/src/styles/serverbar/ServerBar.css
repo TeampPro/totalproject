@@ -1,0 +1,200 @@
+/* 상단 바 전체 */
+.server-bar {
+  width: 100%;
+  background: #f6fbff;
+  box-sizing: border-box;
+
+  /* 🔹 위에서 살짝 내려오게 여백 */
+  padding-top: 12px;
+  padding-bottom: 8px;
+}
+
+/* 안쪽 컨테이너 (1280 기준 가운데 정렬) */
+.server-bar-inner {
+  position: relative;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;           /* 가운데 정렬 */
+  height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;  /* Planix 로고 정확히 가운데 */
+}
+
+/* 🔵 왼쪽: 뒤로가기 버튼 (화면 맨 왼쪽 상단쪽) */
+.server-bar-back-btn {
+  position: absolute;
+  left: -250px;               /* ← 왼쪽에서 거리 (필요하면 숫자만 조절) */
+  top: 50%;
+  transform: translateY(-50%);
+
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 54px;
+  height: 54px;
+  padding: 0;
+}
+
+
+.server-bar-back-btn img {
+  width: 100%;
+  height: 100%;
+  transition: 0.2s ease;
+}
+
+.server-bar-back-btn:hover img {
+  transform: scale(1.05);
+}
+
+/* ⬜ 가운데: ;P Planix 로고 */
+.server-bar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-left: 25px;
+  margin-top: 12px;
+}
+
+.server-bar-logo {
+  width: 70px;
+  height: 70px;
+}
+
+.server-bar-planix {
+  height: 26px;
+}
+
+/* 🟣 오른쪽: 종 / 프로필 / 리스트 */
+.server-bar-right {
+  position: absolute;
+  right: 35px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* 오른쪽 아이콘 공통 */
+.server-bar-icon-btn {
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.server-bar-icon {
+  width: 54px;
+  height: 54px;
+  padding: 6px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.server-bar-icon:hover {
+  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* 알림 숫자 뱃지 */
+.server-bar-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ff4d4f;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 리스트 드롭다운 */
+.server-bar-menu-dropdown {
+  position: absolute;
+  top: 64px;
+  right: 35px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  padding: 8px 0;
+  min-width: 140px;
+  z-index: 1000;
+}
+
+.server-bar-menu-item {
+  width: 100%;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.server-bar-menu-item:hover {
+  background: #f4f7ff;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .server-bar-inner {
+    padding: 0 16px;
+  }
+
+  .server-bar-back-btn {
+    left: 8px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .server-bar-back-btn img {
+    width: 18px;
+    height: 18px;
+  }
+
+  .server-bar-right {
+    right: 16px;
+    gap: 12px;
+  }
+
+  .server-bar-logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  .server-bar-planix {
+    height: 22px;
+  }
+
+  .server-bar-icon {
+    width: 34px;
+    height: 34px;
+    padding: 4px;
+  }
+
+  .server-bar-menu-dropdown {
+    right: 16px;
+    top: 60px;
+  }
+}

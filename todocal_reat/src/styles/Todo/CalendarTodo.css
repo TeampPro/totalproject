@@ -1,0 +1,293 @@
+/* 🔥 모달 전체 오버레이 */
+.todo-modal-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* 🔥 모달 박스 */
+.todo-modal {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.1);
+
+  width: 420px;
+  max-width: 90vw;
+
+  /* 고정 높이 제거 + 기본 최소 높이만 */
+  min-height: 520px;
+
+  padding: 20px 32px 24px;
+
+  display: flex;
+  flex-direction: column;
+  overflow-y: visible;
+
+  font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    system-ui, sans-serif;
+}
+
+/* 상단 헤더: 로고 + 텍스트 가운데 정렬, X 버튼은 우측 상단 */
+.todo-modal-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.todo-modal-titleBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.todo-modal-profileIcon {
+  width: 32px;
+  height: 32px;
+}
+
+.todo-modal-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #232323;
+  font-feature-settings: "liga" off, "clig" off;
+  font-family: Paperlogy, Pretendard, system-ui, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.todo-modal-closeX {
+  position: absolute;
+  right: 0;
+  top: 0;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/* 본문 */
+.todo-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+}
+
+/* 각 필드 컨테이너 */
+.todo-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* 라벨 텍스트 */
+.todo-field-label {
+  color: #232323;
+  font-feature-settings: "liga" off, "clig" off;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: left;
+  margin-bottom: 3px;
+}
+
+.todo-field-sub {
+  color: #a6a6a6;
+  font-feature-settings: "liga" off, "clig" off;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 1.4;
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+/* 인풋/텍스트에어리어 */
+.todo-input,
+.todo-textarea {
+  width: 100%;
+  border-radius: 3px;
+  border: 0.5px solid #d2d2d2;
+  font-size: 12px;
+  padding: 7px 9px;
+  box-sizing: border-box;
+}
+
+.todo-input {
+  height: 28px;
+}
+
+.todo-textarea {
+  height: 80px;
+  resize: none;
+}
+
+/* 공유 토글 줄 */
+.todo-shared-row {
+  margin-top: 6px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.todo-shared-row .shared-label {
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-btn img {
+  width: 32px;
+  height: auto;
+}
+
+/* 하단 버튼들 */
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.modal-buttons button {
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: normal;
+  cursor: pointer;
+  padding: 0 12px;
+}
+
+/* 추가하기 / 수정하기 메인 버튼 */
+.primary-btn {
+  min-width: 72px;
+  height: 24px;
+  background: #48a9f8;
+  color: #ffffff;
+}
+
+/* 회색 보조 버튼 */
+.secondary-btn {
+  min-width: 56px;
+  height: 24px;
+  background: #e0e0e0;
+  color: #232323;
+}
+
+/* 삭제 버튼 (수정 모드에서만 사용) */
+.danger-btn {
+  min-width: 46px;
+  height: 24px;
+  background: #f36c6c;
+  color: #ffffff;
+}
+
+/* 작은 화면에서 살짝 키워주기 */
+@media (max-width: 480px) {
+  .todo-modal {
+    width: 94vw;
+    max-width: 94vw;
+  }
+}
+
+/* ==========================
+   🔥 공유 친구 리스트 (추가, 크기만 맞춤)
+========================== */
+.todo-share-list-wrap {
+  margin-top: 6px;
+}
+
+.todo-share-list-helper {
+  font-size: 10px;
+  color: #a6a6a6;
+  margin-bottom: 5px;
+}
+
+/* 모달 폭에 맞게 100% 사용 */
+.todo-share-list {
+  width: 100%;
+  max-width: 100%;
+  max-height: 100px;
+  margin-top: 2px;
+  padding-right: 4px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  overflow-y: auto;
+}
+
+/* 스크롤바 */
+.todo-share-list::-webkit-scrollbar {
+  width: 4px;
+}
+.todo-share-list::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+.todo-share-list::-webkit-scrollbar-thumb {
+  background: #c4c4c4;
+  border-radius: 2px;
+}
+
+.todo-share-friend {
+  width: 100%;
+  border-radius: 3px;
+  border: 0.5px solid #d2d2d2;
+  background: #f7f7f7;
+  padding: 6px 8px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  font-size: 11px;
+  color: #232323;
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.todo-share-friend.selected {
+  border-color: #48a9f8;
+  background: #e7f3ff;
+}
+
+.todo-share-friend-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

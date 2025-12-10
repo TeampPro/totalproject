@@ -1,0 +1,179 @@
+/* =============================== */
+/*   메인 화면 프로필 카드 (large)  */
+/* =============================== */
+
+.user-info-container {
+  width: 520px;                 /* 로그인 카드랑 동일 폭 */
+  max-width: 100%;
+  min-height: 250px;            /* 피그마 높이 기준 */
+  padding: 20px 28px 22px;
+  border-radius: 28px;
+  box-sizing: border-box;
+
+  background: #ffffff;
+  box-shadow: 0 1px 8px 0 rgba(0, 0, 0, 0.20);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+
+  font-family: "Paperlogy", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+/* 인사말 */
+.welcome-text {
+  font-size: 13px;
+  line-height: 20px;
+  color: #6b7280;
+  letter-spacing: -0.2px;
+  padding-left: 28px;
+  color: #0D99FF;
+}
+
+/* 프로필 메인 라인 */
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  padding-left: 45px;
+}
+
+/* 아바타 테두리 (파란 동그라미) */
+/* 아바타 감싸는 래퍼 */
+.avatar-ring {
+  position: relative;          /* 안에 있는 것들 absolute 배치용 */
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 🔵 round.svg : 파란 원 전체 */
+.avatar-round {
+  position: absolute;
+  inset: 0;                    /* 상하좌우 0 → 래퍼를 꽉 채움 */
+  width: 100%;
+  height: 100%;
+  pointer-events: none;        /* 클릭 막기 */
+}
+
+/* 😀 파란 원 안에 들어갈 프로필 아이콘 */
+.profile-image {
+  position: relative;          /* round 위에 올라오게 */
+  width: 64px;                 /* 필요하면 60~72 사이에서 조절 */
+  height: 64px;
+  border-radius: 50%;
+  object-fit: contain;         /* svg 비율 그대로 */
+}
+
+.profile-image {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* 이름/아이디 영역 */
+.info-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #101828;
+  letter-spacing: -0.3px;
+  margin-left: 10px;
+}
+
+.info-text {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.id-text {
+  font-size: 14px;
+  color: #9ca3af;
+  line-height: 1.2;    /* 줄 간격 조금 줄이기 */
+  margin-top: 10px;    /* 🔹 살짝 더 위로 끌어올리기 */
+  margin-left: 15px;
+}
+
+/* 버튼 두 개 (마이페이지 / 로그아웃) */
+.button-group {
+  margin-top: 10px;
+  display: flex;
+  gap: 12px;
+}
+
+.my-page-btn,
+.logout-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+
+  font-family: "Paperlogy", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.18s ease;
+}
+
+/* 파란 마이페이지 버튼 */
+.my-page-btn {
+  background: #ffffff;
+  color: #6b7280;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+}
+
+
+/* 회색 로그아웃 버튼 */
+.logout-btn {
+  background: #ffffff;
+  color: #6b7280;
+  box-shadow: inset 0 0 0 1px #d5e3ff;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+}
+
+.logout-btn:hover, .my-page-btn:hover {
+  background: #f4f7ff;
+}
+
+/* =============================== */
+/*           small 모드           */
+/* =============================== */
+
+.user-info-container.small {
+  width: 180px;
+  padding: 12px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  background: #ffffff;          /* large용 그라데이션 덮어쓰기 */
+}
+
+.profile-image.small {
+  width: 48px;
+  height: 48px;
+}
+
+.name.small {
+  font-size: 16px;
+}
+
+.loading-box.small {
+  font-size: 12px;
+  padding: 10px;
+}

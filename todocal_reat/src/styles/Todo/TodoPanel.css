@@ -1,0 +1,394 @@
+.todo-panel,
+.todo-title,
+.todo-guest-text,
+.todo-guest-text-done,
+.todo-panel-notice {
+  font-family: "Paperlogy", -apple-system, BlinkMacSystemFont, system-ui,
+    "Segoe UI", sans-serif;
+  color: #101828;
+}
+
+.todo-panel {
+  width: 520px;  /* 🔹 레이아웃 기준이 되는 폭 */
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 3px 8px 0 rgba(0, 0, 0, 0.20);
+  padding: 16px 16px 18px;
+  box-sizing: border-box;
+  margin-top: 30px;
+}
+
+/* 헤더 */
+.todo-panel-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.todo-panel-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.todo-panel-icon {
+  width: 18px;
+  height: 18px;
+  margin-top: 4px;
+}
+
+.todo-panel-title {
+  color: #101828;
+  font-family: "Paperlogy-Medium", "Paperlogy-Regular", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px; /* 150% */
+  letter-spacing: -0.312px;
+}
+
+
+.todo-panel-notice {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* 섹션 (로그인 상태) */
+.todo-section {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  margin-top: 18px;
+}
+
+.todo-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.todo-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #555;
+}
+
+/* 리스트 & 아이템 (로그인 상태) */
+.todo-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.todo-list-inprogress {
+  min-height: 3 * 40px;
+}
+
+.todo-list-done {
+  min-height: 2 * 40px;
+}
+
+.todo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 1px 4px;
+  border-radius: 10px;
+  background: #f9fbff;
+}
+
+.todo-item-done {
+  opacity: 0.7;
+}
+
+.todo-checkbox {
+  margin-top: 2px;
+}
+
+/* 내용 */
+.todo-item-main {
+  flex: 1;
+}
+
+.todo-item-top {
+  display: flex;
+  align-items: center;
+}
+
+.todo-delete-btn {
+  border: none;
+  background: #48a9f8;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.todo-delete-btn:hover {
+  opacity: 0.9;
+}
+
+/* 완료 카드에서 삭제 버튼을 카드 세로 중앙으로 */
+.todo-item-done {
+  position: relative; /* 버튼 absolute 기준 */
+}
+
+.todo-item-done .todo-item-main {
+  padding-right: 60px; /* 버튼이 겹치지 않도록 오른쪽 여유 */
+}
+
+.todo-item-done .todo-delete-btn {
+  position: absolute;
+  right: 16px;        /* 오른쪽 여백 */
+  top: 50%;           /* 카드 세로 중앙 */
+  transform: translateY(-50%);
+}
+
+
+.todo-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  line-height: 1.5;
+}
+
+.todo-meta {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.todo-meta-dday-value {
+  font-weight: 600;
+  color: #083dcc;
+}
+
+.todo-meta-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.todo-meta-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* 제목 바로 아래 버튼 */
+.todo-panel-add-btn {
+  color: #ffffff;
+  text-align: center;
+
+  font-family: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px; /* 142.857% */
+  letter-spacing: -0.15px;
+
+  /* 기존 버튼 스타일 유지 (필요 시 제거 가능) */
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #0D99FF; /* 기본 블루 버튼 */
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: 100%;
+  max-width: 520px;
+}
+
+.todo-panel-add-btn:hover {
+  background: #2563eb;
+}
+
+
+/* 카드 안 아이템 보더 제거 */
+.todo-panel .todo-item {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* +N개 텍스트 */
+.todo-more-text {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: right;
+  height: 18px;
+  line-height: 18px;
+}
+
+/* 자리 채우기용 placeholder */
+.todo-item-placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* 로그인 상태 섹션 높이 */
+.todo-section-inprogress .todo-list {
+  min-height: 230px;
+}
+
+.todo-section-done .todo-list {
+  min-height: 160px;
+}
+
+/* ===================================================== */
+/*   비로그인 전용(게스트 뷰) – 크기 고정 + 정렬 맞추기   */
+/* ===================================================== */
+
+.todo-panel-guest {
+  /* 폭/스타일은 .todo-panel 과 동일 – 이미 같이 적용됨 */
+}
+
+/* 진행 중 / 완료 섹션 전체 박스 */
+.todo-panel-guest .todo-guest-section {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  margin-top: 18px;
+}
+
+/* 섹션 헤더 (진행 중 (1), 완료 (1)) */
+.todo-panel-guest .todo-guest-section-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.todo-panel-guest .todo-guest-section-count {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* ✅ 로그인 상태와 높이 완전히 맞추기 */
+.todo-panel-guest .todo-guest-section-inprogress {
+  height: 230px;                  /* 진행 중 섹션 높이 고정 */
+  display: flex;
+  flex-direction: column;
+}
+
+.todo-panel-guest .todo-guest-section-done {
+  height: 160px;                  /* 완료 섹션 높이 고정 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 카드 – 남는 공간을 전부 채우도록 */
+.todo-panel-guest .todo-guest-card {
+  flex: 1;
+  margin-top: 12px;
+  border-radius: 12px;
+  padding: 18px 18px;
+  background: #f9fbff;
+  display: flex !important;       /* 카드 안을 flex로 */
+  align-items: center !important; /* 세로 가운데 정렬 */
+}
+
+/* 진행 중/완료 공용 행 – 체크박스 + 텍스트 한 줄 */
+.todo-panel-guest .todo-guest-row {
+  width: 100%;
+  display: flex !important;
+  align-items: center !important; /* ✅ 체크박스와 문장 높이 맞추기 */
+  gap: 10px;
+}
+
+.todo-panel-guest .todo-guest-checkbox {
+  width: 16px;
+  height: 16px;
+  margin-top: 0;                  /* 위로 들려 있던 여백 제거 */
+  accent-color: #2d8cff;
+}
+
+/* 텍스트 + 버튼 묶음 */
+.todo-panel-guest .todo-guest-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* 진행 중 문장 – 체크박스 바로 옆에서 시작 */
+.todo-panel-guest .todo-guest-text {
+  margin: 0 !important;
+  font-size: 16px;
+  color: #4b5563;
+  line-height: 1.4;
+  text-align: left;
+}
+
+/* 완료 카드만 조금 다른 배경색 */
+.todo-panel-guest .todo-guest-section-done .todo-guest-card {
+  background: #f3f6ff;
+}
+
+/* 완료 텍스트 스타일 – 가운데 줄 + 회색 */
+.todo-panel-guest .todo-guest-text-done {
+  color: #99a1af;
+  text-decoration-line: line-through;
+}
+
+/* Planix 로그인 버튼 */
+.todo-panel-guest .todo-guest-login-btn {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #88caff;
+  font-size: 12px;
+  font-weight: 600;
+  background: #e2f2ff;
+  color: #0a91ff;
+  cursor: pointer;
+}
+
+/* 완료 뱃지 */
+.todo-panel-guest .todo-guest-badge {
+  margin-top: 6px;
+  align-self: flex-start;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: #22c55e1a;
+  color: #16a34a;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 완료된 할 일 스타일 (로그인 상태) */
+.todo-item-done .todo-title {
+  color: #99a1af;               /* 살짝 연한 회색 */
+  text-decoration: line-through; /* ✅ 취소선 */
+}
+
+/* 헤더 왼쪽 영역: 아이콘 + 제목 블록 한 줄 정렬 */
+.todo-panel-header-left {
+  display: flex;
+  gap: 8px; /* 아이콘과 텍스트 사이 간격 */
+}
+
+/* 서브 타이틀 스타일도 추가해 주면 더 안정적 */
+.todo-panel-subtitle {
+  margin: 0;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #9ca3af;
+}

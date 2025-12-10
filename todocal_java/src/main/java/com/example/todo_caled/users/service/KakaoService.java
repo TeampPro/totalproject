@@ -19,6 +19,10 @@ public class KakaoService {
     @Value("${kakao.redirect-uri}")
     private String kakaoRedirectUri;
 
+    // ✅ Client Secret 추가
+    @Value("${kakao.client-secret}")
+    private String kakaoClientSecret;
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -32,10 +36,14 @@ public class KakaoService {
         String body = "grant_type=authorization_code"
                 + "&client_id=" + kakaoRestApiKey
                 + "&redirect_uri=" + kakaoRedirectUri
-                + "&code=" + code;
+                + "&code=" + code
+                + "&client_secret=" + kakaoClientSecret; // ✅ client_secret 추가
 
         HttpEntity<String> request = new HttpEntity<>(body, headers);
         ResponseEntity<String> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, request, String.class);
+
+        System.out.println("🔹 Kakao token response status = " + response.getStatusCode());
+        System.out.println("🔹 Kakao token response body   = " + response.getBody());
 
         JsonNode jsonNode = objectMapper.readTree(response.getBody());
         return jsonNode.get("access_token").asText();
@@ -50,6 +58,9 @@ public class KakaoService {
 
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(userInfoUrl, HttpMethod.GET, request, String.class);
+
+        System.out.println("🔹 Kakao token response status = " + response.getStatusCode());
+        System.out.println("🔹 Kakao token response body   = " + response.getBody());
 
         JsonNode jsonNode = objectMapper.readTree(response.getBody());
         Map<String, Object> result = new HashMap<>();

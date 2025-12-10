@@ -1,0 +1,154 @@
+/* 전체 페이지 (연한 파란 배경 + 수평 가운데 정렬) */
+.login-fullpage {
+  position: relative; /* 뒤로가기 버튼 absolute 기준 */
+  min-height: 100vh;
+  background: #f4f9ff; /* 피그마 배경색 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 로고 영역(위쪽 여백 넉넉히) */
+.logo-header-container,
+.login-fullpage > div:first-child {
+  margin-top: 10px;
+}
+
+/* 로그인 폼 컨테이너 */
+.login-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: -45px;
+}
+
+/* 로그인 카드 */
+.login-card {
+  width: 380px;
+  background: #f4f9ff;
+  padding: 35px 30px;
+  text-align: center;
+}
+
+/* 로그인 제목 */
+.login-title {
+  font-size: 22px;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+/* 입력 폼 */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 입력창 스타일 */
+.login-input {
+  padding: 14px;
+  font-size: 15px;
+  border: 1px solid #dcdcdc;
+  border-radius: 12px;
+  background: #fafafa;
+  outline: none;
+  transition: border 0.2s ease, background 0.2s ease;
+}
+
+.login-input:focus {
+  border-color: #7bb6ff;
+  background: #fff;
+}
+
+/* 로그인 버튼 */
+.login-btn {
+  margin-top: 10px;
+  padding: 14px;
+  background-color: #56a4ff;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.login-btn:hover {
+  background-color: #3f8ce6;
+}
+
+/* 회원가입 링크 */
+.login-footer {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #666;
+}
+
+.login-link {
+  color: #2575fc;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* 카드 하단 버튼들 */
+.login-bottom-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+/* 일반 하단 버튼 */
+.sub-btn {
+  padding: 12px;
+  background-color: #aaaaaa;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.sub-btn:hover {
+  background-color: #84b3f0;
+}
+
+/* 카카오 로그인 버튼 */
+.kakao-btn {
+  background-color: #fee500;
+  color: #3a1d1d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: bold;
+  border-radius: 12px;
+}
+
+.kakao-logo {
+  width: 22px;
+  height: 22px;
+}
+
+/* 로그인 페이지 뒤로가기 버튼 */
+.login-back-button {
+  position: absolute;
+  top: 32px;
+  left: 32px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: #56a4ff;
+  border-radius: 999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-back-button img {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
+}

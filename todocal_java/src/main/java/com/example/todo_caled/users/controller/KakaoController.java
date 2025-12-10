@@ -1,16 +1,21 @@
 package com.example.todo_caled.users.controller;
 
+import com.example.todo_caled.security.CustomUserDetailService;
+import com.example.todo_caled.security.JwtTokenProvider;
 import com.example.todo_caled.users.entity.User;
 import com.example.todo_caled.users.repository.UserRepository;
 import com.example.todo_caled.users.service.KakaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+import java.net.URI;
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/kakao")
 public class KakaoController {
@@ -21,21 +26,27 @@ public class KakaoController {
     @Autowired
     private UserRepository userRepository;
 
-    // ✅ 프론트에서 인가코드(code) 받으면 여기로 POST
-    @PostMapping("/callback")
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private CustomUserDetailService userDetailService;
+
+    // ✅ 카카오에서 redirect_uri 로 GET 요청이 들어오는 콜백
+    @GetMapping("/callback")
     public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code) {
         try {
             // 1️⃣ 인가코드로 Access Token 받기
             String accessToken = kakaoService.getAccessToken(code);
 
-            // 2️⃣ Access Token으로 사용자 정보 조회
+            // 2️⃣ Access Token 으로 사용자 정보 조회
             Map<String, Object> kakaoUser = kakaoService.getUserInfo(accessToken);
 
             String kakaoId = kakaoUser.get("id").toString();
             String kakaoEmail = (String) kakaoUser.get("email");
             String kakaoName = (String) kakaoUser.get("nickname");
 
-            // 3️⃣ DB에 존재하는지 확인
+            // 3️⃣ DB 에 존재하는지 확인
             User existingUser = userRepository.findByKakaoId(kakaoId);
             if (existingUser == null) {
                 // 신규 사용자면 자동 회원가입
@@ -44,26 +55,47 @@ public class KakaoController {
                 newUser.setKakaoEmail(kakaoEmail);
                 newUser.setName(kakaoName);
                 newUser.setUserType("KAKAO");
-                newUser.setId("kakao_" + kakaoId); // 내부 아이디 자동 생성
-                newUser.setPassword("kakao_login_user"); // 비밀번호 dummy
+                newUser.setId("kakao_" + kakaoId);           // 내부 로그인 아이디
+                newUser.setPassword("kakao_login_user");     // 더미 비밀번호
 
                 userRepository.save(newUser);
                 existingUser = newUser;
             }
 
-            // 4️⃣ 응답
-            Map<String, Object> res = new HashMap<>();
-            res.put("message", "카카오 로그인 성공");
-            res.put("id", existingUser.getId());
-            res.put("name", existingUser.getName());
-            res.put("email", existingUser.getKakaoEmail());
-            res.put("userType", existingUser.getUserType());
+            // 4️⃣ React 카카오 콜백 페이지로 리다이렉트 (우리 로그인 ID 전달)
+            String loginId = existingUser.getId(); // 예: kakao_xxxxx
 
-            return ResponseEntity.ok(res);
+            UserDetails userDetails = userDetailService.loadUserByUsername(loginId);
+
+            Authentication authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            String jwt = jwtTokenProvider.createToken(authentication);
+
+            HttpHeaders headers = new HttpHeaders();
+            String redirectUrl =
+                    "https://teamppro.github.io/totalproject/auth/kakao/success"
+                            + "?id=" + loginId
+                            + "&token=" + jwt;
+
+            headers.setLocation(URI.create(redirectUrl));
+
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "카카오 로그인 중 오류 발생", "error", e.getMessage()));
+
+            e.printStackTrace();
+            // 에러 시 로그인 페이지로 돌려보내기
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(URI.create("https://teamppro.github.io/totalproject/?error=kakao"));
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+
         }
     }
 }

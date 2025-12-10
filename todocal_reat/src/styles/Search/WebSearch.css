@@ -1,0 +1,90 @@
+/* 컨테이너 */
+.web-search-box {
+  width: 100%;
+  margin: 0;
+  display: block;
+}
+
+.web-search-form {
+  width: 100%;
+}
+
+/* 바깥 pill 박스만 그림자 */
+.web-search-inner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100px;
+  padding: 0 18px;
+
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+}
+
+/* 왼쪽 돋보기 */
+.search-icon {
+  width: 25px;
+  height: 25px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+/* input + SVG placeholder 래퍼 */
+.search-input-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* === 안쪽 input */
+.search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 25px;
+  padding: 0;
+  text-indent: 4px;
+
+  -webkit-appearance: none;
+  appearance: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* 실제 placeholder 텍스트는 안 보이게 */
+.search-input::placeholder {
+  color: transparent;
+}
+
+/* SVG placeholder (googleText) 위치 */
+.search-placeholder-img {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 16px;
+  pointer-events: none; /* 클릭해도 input 포커스 */
+  padding: 0 0 0 8px;
+}
+
+/* 오른쪽 Google 로고 */
+.google-logo {
+  height: 30px;
+  margin-left: 15px;
+  flex-shrink: 0;
+}
+
+/* 숨겨진 submit 버튼 */
+.hidden-submit {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}

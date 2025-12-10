@@ -1,0 +1,57 @@
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import "../../styles/Chat/InvitePage.css"
+import { apiFetch } from "../../api/http";
+
+export default function InvitePage() {
+  const navigate = useNavigate();
+  const { code } = useParams();
+
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+
+  const joinRoom = async () => {
+    if (!name.trim()) {
+      setError("이름을 입력해주세요.");
+      return;
+    }
+
+    try {
+      const data = await apiFetch(
+        `/api/chat/invite/join?code=${code}&memberName=${name}`,
+        { method: "POST" }
+      );
+
+      // 🔥 초대 참여자 이름 저장
+      localStorage.setItem("memberName", name);
+
+      // 채팅방으로 이동
+      navigate(`/chat/${data.id}`, {
+        state: { memberName: name },
+      });
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  return (
+    <div className="invite-container">
+      <h2 className="invite-title">채팅방 초대</h2>
+      <p className="invite-code">초대 코드: {code}</p>
+
+      <input
+        type="text"
+        placeholder="닉네임을 입력하세요"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        className="invite-input"
+      />
+
+      {error && <p className="invite-error">{error}</p>}
+
+      <button className="invite-button" onClick={joinRoom}>
+        입장하기
+      </button>
+    </div>
+  );
+}

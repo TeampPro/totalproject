@@ -1,0 +1,60 @@
+﻿name: Deploy Vite site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - develop      # 배포 트리거 브랜치 (원하면 main 으로 바꿔도 됨)
+  workflow_dispatch:  # 수동 실행도 가능하게
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: todocal_reat/package-lock.json
+
+      - name: Install dependencies
+        working-directory: todocal_reat
+        run: npm ci
+
+      - name: Build
+        working-directory: todocal_reat
+        run: npm run build
+
+      # ✅ SPA 새로고침용 404.html 생성 (dist 기준)
+      - name: Create 404.html for SPA routing
+        working-directory: todocal_reat
+        run: cp dist/index.html dist/404.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # ✅ 빌드 결과 위치
+          path: todocal_reat/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

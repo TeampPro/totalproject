@@ -1,0 +1,807 @@
+/* 페이지 배경 + 카드 중앙 정렬 */
+.chat-room {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0 90px;
+  background: #f6fbff;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* 메인 카드 */
+.chat-card {
+  position: relative;
+
+  width: 707px;
+  max-width: 95vw;
+  height: 755px;
+  max-height: calc(100vh - 140px);
+
+  border-radius: 40px;
+  background: #ffffff;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+
+  display: flex;
+  flex-direction: column;
+  padding: 24px 32px;
+  box-sizing: border-box;
+}
+
+/* 헤더 */
+.chat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-room-profile {
+  width: 39px;
+  height: 39px;
+}
+
+.chat-header-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chat-room-title {
+  display: flex;
+  width: 279px;
+  height: 32px;
+  flex-direction: column;
+  justify-content: center;
+
+  color: #232323;
+  font-feature-settings: "liga" off, "clig" off;
+  font-family: "Paperlogy", Pretendard, system-ui, sans-serif;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.chat-room-member-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chat-people-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.chat-member-count {
+  display: flex;
+  width: 20px;
+  height: 17px;
+  flex-direction: column;
+  justify-content: center;
+
+  color: #232323;
+  font-feature-settings: "liga" off, "clig" off;
+  font-family: "Paperlogy", Pretendard, system-ui, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.chat-connection-dot {
+  margin-left: 4px;
+  font-size: 11px;
+  color: #4caf50;
+}
+
+/* 대화방 나가기 버튼 */
+.chat-exit-btn {
+  width: 196px;
+  height: 41px;
+  border-radius: 20.5px;
+  background: #48a9f8;
+  border: none;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ffffff;
+  text-align: center;
+  font-feature-settings: "liga" off, "clig" off;
+  font-family: "Paperlogy", Pretendard, system-ui, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+/* 검색 + 초대 + 메뉴 줄 */
+.chat-search-row {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 검색 박스 */
+.chat-search-box {
+  display: flex;
+  align-items: center;
+  width: 532px;
+  max-width: 100%;
+  height: 35px;
+  border-radius: 20.5px;
+  border: 1px solid #cdcdcd;
+  padding: 0 12px;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.chat-search-icon {
+  width: 21px;
+  height: 21px;
+  margin-right: 8px;
+}
+
+.chat-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+
+  color: #232323;
+  font-feature-settings: "liga" off, "clig" off;
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: normal;
+}
+
+/* 우측: 초대 버튼 + 메뉴 버튼 */
+.chat-search-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 초대 링크 버튼 */
+.chat-invite-btn {
+  padding: 0 14px;
+  min-width: 90px;
+  height: 32px;
+  border-radius: 20px;
+  border: none;
+  background: #48a9f8;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* 메뉴 버튼 */
+.chat-menu-btn {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-menu-btn img {
+  width: 35px;
+  height: 35px;
+}
+
+/* 공통: 상단 메뉴 패널, 참여자 패널 */
+.chat-menu-panel,
+.chat-members-panel {
+  position: absolute;
+  top: 70px;
+  right: 24px;
+
+  width: 252px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+
+  padding: 10px 12px;
+  box-sizing: border-box;
+  z-index: 5;
+}
+
+/* 높이 지정 */
+.chat-menu-panel {
+  height: 177px;
+}
+
+.chat-members-panel {
+  height: 294px;
+}
+
+/* 패널 상단 (X, 메뉴 아이콘) */
+.chat-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.chat-menu-close-btn,
+.chat-menu-topicon-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.chat-menu-close-btn img {
+  width: 18px;
+  height: 18px;
+}
+
+.chat-menu-topicon-btn img {
+  width: 35px;
+  height: 35px;
+}
+
+/* 메뉴 항목 */
+.chat-menu-item {
+  display: flex;
+  width: 224px;
+  height: 23px;
+  flex-direction: column;
+  justify-content: center;
+
+  margin-top: 4px;
+  padding: 0 4px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  color: #232323;
+  font-feature-settings: "liga" off, "clig" off;
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+/* '친구 초대하기' 강조 */
+.chat-menu-item-highlight {
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+/* 참여자 패널 – 제목 */
+.chat-members-title {
+  margin-top: 4px;
+  margin-bottom: 6px;
+
+  display: flex;
+  width: 224px;
+  height: 23px;
+  flex-direction: column;
+  justify-content: center;
+
+  color: #232323;
+  font-feature-settings: "liga" off, "clig" off;
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+/* 참여자 리스트 영역 */
+.chat-members-list-panel {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chat-member-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 참여자 아이콘 */
+.chat-member-avatar {
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  border: 1px solid #008dff;
+  background: #e5f3ff;
+
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-member-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 참여자 이름 */
+.chat-member-name {
+  display: flex;
+  width: 143px;
+  height: 23px;
+  flex-direction: column;
+  justify-content: center;
+
+  color: #232323;
+  font-feature-settings: "liga" off, "clig" off;
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.chat-members-empty {
+  font-size: 11px;
+  color: #999999;
+}
+
+/* 메시지 영역 */
+.chat-messages {
+  flex: 1;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  padding: 12px 4px 12px 0;
+  overflow-y: auto;
+  background: #ffffff;
+}
+
+.system-message {
+  text-align: center;
+  color: #777;
+  margin: 6px 0;
+  font-size: 12px;
+}
+
+/* 메시지 행 */
+.chat-message-row {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.chat-message-row.other {
+  justify-content: flex-start;
+}
+
+.chat-message-row.mine {
+  justify-content: flex-end;
+}
+
+/* 아바타 (채팅 버블 용) */
+.chat-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 32px;
+  border: 1px solid #008dff;
+  background: #48a9f8;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+.chat-avatar-img {
+  width: 18px;
+  height: 18px;
+}
+
+/* 말풍선 묶음 */
+.chat-bubble-block {
+  max-width: 374px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.chat-sender-name {
+  font-size: 11px;
+  color: #555;
+}
+
+/* 말풍선 */
+.chat-bubble {
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: #eff8ff;
+  color: #232323;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.chat-message-row.mine .chat-bubble {
+  background: #48a9f8;
+  color: #ffffff;
+}
+
+.chat-message-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat-message-time {
+  font-size: 10px;
+  color: #9b9c9e;
+  margin-top: 2px;
+  align-self: flex-end;
+}
+
+/* 입력 영역 */
+.chat-input-area {
+  display: flex;
+  flex-direction: column;
+  width: 589px;
+  max-width: 100%;
+  margin: 0 auto;
+  gap: 6px;
+}
+
+.chat-input-top {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.chat-textarea {
+  flex: 1 0 0;
+  height: 104px;
+  border-radius: 8px;
+  border: 1px solid #cccccc;
+  padding: 8px 12px;
+  resize: none;
+  box-sizing: border-box;
+
+  color: #232323;
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+}
+
+.chat-textarea::placeholder {
+  color: #9b9c9e;
+}
+
+.chat-input-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-input-desc {
+  color: #9b9c9e;
+  font-size: 12px;
+}
+
+.chat-send-btn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: #48a9f8;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.chat-send-btn:hover {
+  background-color: #3b8fdb;
+}
+
+/* 초대 모달 배경 */
+.invite-modal-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* 초대 모달 크기 확장 */
+.invite-modal {
+  background: #ffffff;
+  padding: 20px 22px;
+  border-radius: 12px;
+  min-width: 360px;
+  max-width: 480px;
+  width: 90vw;
+  max-height: 80vh;
+  box-sizing: border-box;
+  text-align: left;
+  overflow-y: auto;
+}
+
+/* 모달 제목 */
+.invite-modal-title {
+  margin: 0 0 10px;
+  color: #232323;
+  font-family: "Paperlogy", Pretendard, system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* 친구 리스트 섹션 */
+.invite-modal-friends {
+  background: #f4f9ff;
+  border-radius: 10px;
+  padding: 8px 10px 10px;
+  margin-bottom: 12px;
+}
+
+.invite-modal-friends-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563eb;
+  margin-bottom: 6px;
+  font-family: "Pretendard", system-ui, sans-serif;
+}
+
+/* 🔴 중복 초대 에러 메시지 */
+.invite-modal-error {
+  margin-top: 4px;
+  margin-bottom: 4px;
+  font-size: 11px;
+  color: #ef4444;
+}
+
+.invite-modal-friends-empty {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 4px 2px;
+}
+
+.invite-modal-friend-list {
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 친구 한 줄 */
+.invite-modal-friend-item {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #dbeafe;
+  background: #ffffff;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+}
+
+.invite-modal-friend-item:hover {
+  background: #e3f2ff;
+}
+
+/* 왼쪽 영역: 아바타 + 텍스트 */
+.invite-modal-friend-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.invite-modal-friend-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.invite-modal-friend-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.invite-modal-friend-texts {
+  display: flex;
+  flex-direction: column;
+}
+
+.invite-modal-friend-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.invite-modal-friend-sub {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* 오른쪽 영역: 버튼들 */
+.invite-modal-friend-right {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.invite-modal-friend-btn {
+  width: 100%; /* 🔹 두 버튼 가로길이 통일 */
+  min-width: 78px;
+  height: 24px;
+  border-radius: 999px;
+  border: none;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* 1:1 대화 버튼 */
+.invite-modal-friend-btn:not(.invite-modal-friend-btn--group) {
+  background: #48a9f8;
+  color: #ffffff;
+}
+
+/* 그룹 대화 버튼 기본 */
+.invite-modal-friend-btn--group {
+  background: #e0edff;
+  color: #2563eb;
+}
+
+/* 그룹 대화 버튼 선택됨 */
+.invite-modal-friend-btn--group-selected {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* 선택 정보 + 그룹 시작 버튼 */
+.invite-modal-group-info {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #374151;
+}
+
+.invite-modal-group-start-btn {
+  min-width: 140px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: none;
+  background: #3b82f6;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* 초대 링크 영역 */
+.invite-modal-link {
+  margin-top: 4px;
+}
+
+.invite-modal-link-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.invite-modal-link-box {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #f3f4ff;
+  font-size: 11px;
+  color: #111827;
+  word-break: break-all;
+}
+
+/* 모달 버튼 영역 */
+.invite-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.invite-modal-copy-btn,
+.invite-modal-close-btn {
+  min-width: 80px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.invite-modal-copy-btn {
+  background: #48a9f8;
+  color: #ffffff;
+}
+
+.invite-modal-copy-btn:hover {
+  background: #3b8fdb;
+}
+
+.invite-modal-close-btn {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.invite-modal-close-btn:hover {
+  background: #d1d5db;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .chat-card {
+    width: 95vw;
+    height: auto;
+    max-height: calc(100vh - 120px);
+  }
+
+  .chat-input-area {
+    width: 100%;
+  }
+
+  .chat-search-box {
+    width: 100%;
+  }
+
+  .chat-menu-panel,
+  .chat-members-panel {
+    right: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .invite-modal {
+    min-width: 0;
+    width: 92vw;
+    padding: 16px 14px;
+  }
+
+  .invite-modal-friend-list {
+    max-height: 160px;
+  }
+}

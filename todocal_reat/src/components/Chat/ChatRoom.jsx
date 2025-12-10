@@ -1,48 +1,260 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
-import PropTypes from "prop-types";
-import axios from "axios";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
+import axios from "../../api/setupAxios";
+import { BASE_URL } from "../../api/http";
 import { fetchMessages } from "../../api/chatApi";
+import { fetchFriends } from "../../api/friendApi";
 
-export default function ChatRoom({ room }) {
+import profileBig from "../../assets/profileBig.svg";
+import peopleIcon from "../../assets/people.svg";
+import searchIcon from "../../assets/search.svg";
+import menuIcon from "../../assets/menu.svg";
+import smallLogo from "../../assets/smalllogo.svg"; // 말풍선 아바타용
+import smallProfile from "../../assets/smallprofil.svg"; // 참여자 목록 기본 프로필
+import closeIcon from "../../assets/close.svg";
+
+import "../../styles/Chat/ChatRoom.css";
+
+export default function ChatRoom() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { roomId } = useParams();
+
+  const loginUser = JSON.parse(localStorage.getItem("user") || "null");
+
+  const initialRoomName = location.state?.roomName || "";
+  const [roomName, setRoomName] = useState(initialRoomName);
+
+  const [memberName, setMemberName] = useState("");
   const [messages, setMessages] = useState([]);
+  const [members, setMembers] = useState([]);
+
+  // 🔹 초대 모달 에러 메시지 (중복 초대 등)
+  const [inviteError, setInviteError] = useState("");
+
   const [msg, setMsg] = useState("");
+  const [searchText, setSearchText] = useState("");
+
   const [inviteLink, setInviteLink] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [isConnected, setIsConnected] = useState(false); // ✅ 연결 상태 표시
+  const [isConnected, setIsConnected] = useState(false);
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showMemberPanel, setShowMemberPanel] = useState(false);
+
+  const [friends, setFriends] = useState([]);
+  const [loadingFriends, setLoadingFriends] = useState(false);
+
   const ws = useRef(null);
+  const nickname = useRef("");
   const reconnectTimer = useRef(null);
+  const messagesEndRef = useRef(null);
 
-  // ✅ memberName: 로그인 사용자 이름 또는 localStorage 저장된 이름
-  const memberName =
-    location.state?.memberName || localStorage.getItem("memberName") || "guest";
-  const nickname = useRef(memberName); // nickname = 서버 DB에 저장된 memberName과 일치해야 함
+  const chatBoxRef = useRef(null);
+  const [autoScroll, setAutoScroll] = useState(true);
 
-  // ✅ 과거 메시지 불러오기
-  useEffect(() => {
-    const loadOldMessages = async () => {
-      const data = await fetchMessages(room.id);
-      setMessages(
-        data.length > 0
-          ? data
-          : [{ sender: "SYSTEM", message: "아직 메시지가 없습니다.", time: "" }]
-      );
-    };
-    loadOldMessages();
-  }, [room.id]);
+  const handleScroll = () => {
+    if (!chatBoxRef.current) return;
+    const { scrollTop, clientHeight, scrollHeight } = chatBoxRef.current;
+    const isBottom = scrollHeight - scrollTop - clientHeight < 50;
+    setAutoScroll(isBottom);
+  };
 
-  // ✅ WebSocket 연결 함수
-  const connectWebSocket = () => {
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) return; // 중복 방지
+  // ✅ HTTP/WS 베이스 URL (dev/배포 공통 사용)
+  // const HTTP_BASE = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+  // const WS_BASE = HTTP_BASE ? HTTP_BASE.replace(/^http/, "ws") : "";
 
-    const socket = new WebSocket(
-      `ws://localhost:8080/ws/chat?roomId=${room.id}&memberName=${nickname.current}`
+  const HTTP_BASE = BASE_URL;
+  const WS_BASE = HTTP_BASE.replace(/^http/, "ws");
+
+  const getMemberKey = (m) => {
+    if (!m) return "";
+    if (typeof m === "string") return m;
+
+    const nick =
+      m.nickname ||
+      m.name ||
+      m.memberName || // 서버가 memberName 으로 줄 수도 있음
+      m.sender;
+
+    if (nick) return String(nick);
+
+    return (
+      m.id ||
+      m.userId ||
+      m.friendId ||
+      m.memberId ||
+      m.username ||
+      JSON.stringify(m)
     );
+  };
+
+  useEffect(() => {
+    if (loginUser && loginUser.userType !== "GUEST") {
+      const nick = loginUser.nickname || loginUser.name || loginUser.id;
+      nickname.current = nick;
+      setMemberName(nick);
+      return;
+    }
+
+    if (loginUser && loginUser.userType === "GUEST") {
+      let guestNick =
+        loginUser.nickname ||
+        loginUser.name ||
+        loginUser.id ||
+        `guest_${Math.random().toString(36).substring(2, 8)}`;
+
+      nickname.current = guestNick;
+      setMemberName(guestNick);
+      return;
+    }
+
+    const invitedName = location.state?.memberName;
+    if (invitedName) {
+      nickname.current = invitedName;
+      localStorage.setItem("memberName", invitedName);
+      setMemberName(invitedName);
+      return;
+    }
+
+    const storedGuestName = localStorage.getItem("memberName");
+    if (storedGuestName) {
+      nickname.current = storedGuestName;
+      setMemberName(storedGuestName);
+      return;
+    }
+
+    alert("닉네임 정보가 없습니다. 초대 링크로 입장해주세요.");
+    navigate("/chat/invite");
+  }, []);
+
+  // ✅ 방 정보에서 참여자 목록 및 방 이름을 가져와서 반영 (1)
+  useEffect(() => {
+    if (!roomId) return;
+
+    const fetchRoomInfo = async () => {
+      try {
+        const res = await axios.get(`/api/chat/rooms/${roomId}`);
+        const data = res.data || {};
+
+        if (data.name) {
+          setRoomName(data.name);
+        }
+
+        let list = [];
+        if (Array.isArray(data.members)) list = data.members;
+        else if (Array.isArray(data.participants)) list = data.participants;
+        else if (Array.isArray(data.participantList))
+          list = data.participantList;
+
+        if (list.length === 0) return;
+
+        setMembers((prev) => {
+          const merged = [...prev];
+          const exists = new Set(prev.map((m) => getMemberKey(m)));
+
+          list.forEach((m) => {
+            const key = getMemberKey(m);
+            if (key && !exists.has(key)) {
+              exists.add(key);
+              merged.push(m);
+            }
+          });
+
+          return merged;
+        });
+      } catch (err) {
+        console.error("채팅방 정보 조회 실패:", err);
+      }
+    };
+
+    fetchRoomInfo();
+  }, [roomId]);
+
+  // location.state.initialMembers가 있으면 우선 적용
+  useEffect(() => {
+    const state = location.state;
+    if (
+      state &&
+      Array.isArray(state.initialMembers) &&
+      state.initialMembers.length > 0
+    ) {
+      setMembers(state.initialMembers);
+    }
+  }, [location.state]);
+
+  // ✅ 방 정보에서 참여자 목록 및 방 이름을 가져와서 반영 (2, roomName 고려)
+  useEffect(() => {
+    if (!roomId) return;
+
+    const fetchRoomInfo = async () => {
+      try {
+        const res = await axios.get(`/api/chat/rooms/${roomId}`);
+        const data = res.data || {};
+
+        if (data.name && !roomName) {
+          setRoomName(data.name);
+        }
+
+        let list = [];
+        if (Array.isArray(data.members)) list = data.members;
+        else if (Array.isArray(data.participants)) list = data.participants;
+        else if (Array.isArray(data.participantList))
+          list = data.participantList;
+
+        if (list.length === 0) return;
+
+        setMembers((prev) => {
+          const merged = [...prev];
+          const exists = new Set(prev.map((m) => getMemberKey(m)));
+
+          list.forEach((m) => {
+            const key = getMemberKey(m);
+            if (key && !exists.has(key)) {
+              exists.add(key);
+              merged.push(m);
+            }
+          });
+
+          return merged;
+        });
+      } catch (err) {
+        console.error("채팅방 정보 조회 실패:", err);
+      }
+    };
+
+    fetchRoomInfo();
+  }, [roomId, roomName]);
+
+  // ✅ members가 바뀔 때마다 roomId별로 localStorage에 저장
+  useEffect(() => {
+    if (!roomId) return;
+    if (!members || members.length === 0) return;
+
+    try {
+      localStorage.setItem(
+        `chat_room_members_${roomId}`,
+        JSON.stringify(members)
+      );
+    } catch (e) {
+      console.error("방 멤버 목록 저장 실패:", e);
+    }
+  }, [roomId, members]);
+
+  const connectWebSocket = () => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) return;
+    if (!roomId || !nickname.current) return;
+
+    // ✅ dev: "/ws/..." (Vite proxy) / prod: "wss://<백엔드>/ws/..."
+    const socket = new WebSocket(
+      `${WS_BASE || ""}/ws/chat?roomId=${roomId}&memberName=${encodeURIComponent(
+        nickname.current
+      )}`
+    );
+
     ws.current = socket;
 
     socket.onopen = () => {
-      console.log("✅ WebSocket 연결됨");
       setIsConnected(true);
       if (reconnectTimer.current) {
         clearTimeout(reconnectTimer.current);
@@ -52,7 +264,58 @@ export default function ChatRoom({ room }) {
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.roomId === room.id) {
+
+      const mergeMembers = (incoming) => {
+        if (!incoming) return;
+
+        const list = Array.isArray(incoming) ? incoming : [incoming];
+
+        setMembers((prev) => {
+          const merged = [...prev];
+          const exists = new Set(prev.map((m) => getMemberKey(m)));
+
+          list.forEach((m) => {
+            const key = getMemberKey(m);
+            if (key && !exists.has(key)) {
+              exists.add(key);
+              merged.push(m);
+            }
+          });
+
+          return merged;
+        });
+      };
+
+      if (Array.isArray(data.members)) {
+        mergeMembers(data.members);
+        return;
+      }
+      if (Array.isArray(data.participants)) {
+        mergeMembers(data.participants);
+        return;
+      }
+      if (Array.isArray(data.participantList)) {
+        mergeMembers(data.participantList);
+        return;
+      }
+
+      if (
+        data.type === "MEMBER_JOINED" ||
+        data.type === "JOIN" ||
+        data.type === "MEMBER_ADDED"
+      ) {
+        if (data.member) {
+          mergeMembers(data.member);
+          return;
+        }
+      }
+
+      if (data.member && !data.message && !data.roomId) {
+        mergeMembers(data.member);
+        return;
+      }
+
+      if (data.roomId === roomId) {
         setMessages((prev) => [...prev, data]);
       }
     };
@@ -62,158 +325,698 @@ export default function ChatRoom({ room }) {
     };
 
     socket.onclose = (e) => {
-      console.warn("❌ WebSocket 종료됨", e.code, e.reason);
       setIsConnected(false);
 
-      // ✅ 자동 재연결 시도 (2초 후)
-      if (!reconnectTimer.current) {
-        reconnectTimer.current = setTimeout(() => {
-          console.log("🔁 재연결 시도 중...");
-          connectWebSocket();
-        }, 2000);
+      if (e.code === 1000) return;
+      if (e.code === 1008) return;
+      if (e.code === 1003) {
+        alert(e.reason || "채팅방 입장 권한이 없습니다.");
+        navigate("/chat");
+        return;
       }
+
+      reconnectTimer.current = setTimeout(() => connectWebSocket(), 2000);
     };
   };
 
-  // ✅ WebSocket 연결 초기화
   useEffect(() => {
-    if (ws.current) return;
-    connectWebSocket();
+    if (!memberName || !roomId) return;
 
-    return () => {
-      if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        ws.current.close();
+    const skipJoin = location.state?.skipJoin;
+
+    let cancelled = false;
+
+    const joinAndConnect = async () => {
+      try {
+        if (skipJoin) {
+          if (!cancelled) connectWebSocket();
+          return;
+        }
+
+        await axios.post(`/api/chat/rooms/${roomId}/join`, null, {
+          params: { memberName },
+        });
+
+        if (!cancelled) connectWebSocket();
+      } catch (err) {
+        console.error("❌ 채팅방 입장 실패:", err);
+        if (!cancelled) alert("채팅방 입장 실패");
       }
     };
-  }, []);
 
-  // ✅ 메시지 전송
+    joinAndConnect();
+
+    return () => {
+      cancelled = true;
+      if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
+      if (ws.current) {
+        ws.current.close(1000, "COMPONENT_UNMOUNT");
+        ws.current = null;
+      }
+    };
+  }, [memberName, roomId, location.state?.skipJoin]);
+
+  useEffect(() => {
+    const loadOldMessages = async () => {
+      const data = await fetchMessages(roomId);
+      setMessages(
+        data.length > 0
+          ? data
+          : [{ sender: "SYSTEM", message: "아직 메시지가 없습니다.", time: "" }]
+      );
+    };
+    if (roomId) loadOldMessages();
+  }, [roomId]);
+
+  useEffect(() => {
+    if (autoScroll && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, autoScroll]);
+
+  // 초대 모달 열릴 때 친구 목록 로드 (한 번만)
+  useEffect(() => {
+    const myId = loginUser?.id;
+    if (!showModal || !myId || friends.length > 0 || loadingFriends) return;
+
+    const loadFriends = async () => {
+      try {
+        setLoadingFriends(true);
+        const list = await fetchFriends(myId);
+        setFriends(Array.isArray(list) ? list : []);
+      } catch (e) {
+        console.error("친구 목록 조회 실패:", e);
+      } finally {
+        setLoadingFriends(false);
+      }
+    };
+
+    loadFriends();
+  }, [showModal, loginUser, friends.length, loadingFriends]);
+
   const sendMessage = () => {
     if (!msg.trim()) return;
 
-    // ✅ 연결 상태 확인 (닫힌 소켓 방지)
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
-      alert("서버와의 연결이 끊어졌습니다. 잠시 후 다시 시도해주세요.");
+      alert("서버와 연결이 끊어졌습니다.");
       return;
     }
 
-    const payload = {
-      type: "chat",
-      sender: nickname.current,
-      message: msg,
-      roomId: room.id,
-    };
+    ws.current.send(
+      JSON.stringify({
+        type: "chat",
+        sender: nickname.current,
+        message: msg,
+        roomId,
+      })
+    );
 
-    ws.current.send(JSON.stringify(payload));
     setMsg("");
   };
 
-  // ✅ 초대 링크 생성
   const createInvite = async () => {
     try {
-      const res = await axios.post(`/api/chat/rooms/${room.id}/invite`);
+      const res = await axios.post(`/api/chat/rooms/${roomId}/invite`);
       const fullLink = window.location.origin + res.data;
       setInviteLink(fullLink);
       setShowModal(true);
+      setInviteError("");
     } catch {
       alert("초대 링크 생성 실패");
     }
   };
 
   const copyLink = () => {
+    if (!inviteLink) {
+      alert("초대 링크가 없습니다.");
+      return;
+    }
     navigator.clipboard.writeText(inviteLink);
     alert("초대 링크가 복사되었습니다!");
   };
 
-  return (
-    <div style={{ padding: 20 }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h2>💬 {room.name}</h2>
-        <div>
-          <span
-            style={{
-              color: isConnected ? "green" : "red",
-              fontWeight: "bold",
-              marginRight: 10,
-            }}
+  const handleLeaveRoom = () => {
+    navigate("/chat");
+  };
+
+  const handleChangeRoomName = async () => {
+    const newName = window.prompt(
+      "새 대화방 이름을 입력해주세요.",
+      roomName || ""
+    );
+
+    if (newName === null) return;
+
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      alert("이름은 비워둘 수 없습니다.");
+      return;
+    }
+
+    try {
+      const res = await axios.patch(`/api/chat/rooms/${roomId}/name`, {
+        name: trimmed,
+      });
+
+      const updatedName = res.data?.name ?? trimmed;
+      setRoomName(updatedName);
+    } catch (err) {
+      console.error("채팅방 이름 변경 실패:", err);
+      alert("채팅방 이름 변경에 실패했습니다.");
+    }
+  };
+
+  const handleInviteFriendOneToOne = async (friend) => {
+    try {
+      const baseName =
+        nickname.current ||
+        memberName ||
+        loginUser?.nickname ||
+        loginUser?.name ||
+        loginUser?.id;
+
+      const friendName = friend.nickname || friend.name || friend.id;
+
+      if (!baseName || !friendName) {
+        alert("1:1 대화에 필요한 정보가 부족합니다.");
+        return;
+      }
+
+      const resRoom = await axios.post("/api/chat/rooms", null, {
+        params: { memberName: baseName },
+      });
+
+      if (!resRoom.data || !resRoom.data.id) {
+        throw new Error("1:1 방 생성 실패");
+      }
+
+      const newRoom = resRoom.data;
+
+      try {
+        await axios.post(`/api/chat/rooms/${newRoom.id}/join`, null, {
+          params: { memberName: friendName },
+        });
+      } catch (e) {
+        console.error("친구 1:1 방 참여 실패:", e);
+      }
+
+      const title = `${baseName} & ${friendName}`;
+      try {
+        const renameRes = await axios.patch(
+          `/api/chat/rooms/${newRoom.id}/name`,
+          {
+            name: title,
+          }
+        );
+        newRoom.name = renameRes.data?.name || title;
+      } catch (e) {
+        console.error("1:1 방 이름 변경 실패:", e);
+        newRoom.name = title;
+      }
+
+      const myMemberObj = {
+        id: loginUser?.id,
+        nickname: baseName,
+        name: baseName,
+      };
+      const friendMemberObj = {
+        id: friend.id || friend.friendId || friend.userId,
+        nickname: friendName,
+        name: friend.name || friend.nickname || friend.id,
+      };
+
+      navigate(`/chat/${newRoom.id}`, {
+        state: {
+          roomName: newRoom.name,
+          memberName: baseName,
+          initialMembers: [myMemberObj, friendMemberObj],
+          skipJoin: true,
+        },
+      });
+
+      setShowModal(false);
+      setInviteError("");
+    } catch (e) {
+      console.error("1:1 대화방 생성 실패:", e);
+      alert("1:1 대화방 생성 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleInviteFriendToCurrentRoom = async (friend) => {
+    try {
+      if (!roomId) return;
+
+      setInviteError("");
+
+      const friendName = friend.nickname || friend.name || friend.id || "친구";
+
+      const friendKey = getMemberKey(friend);
+      const existingKeys = new Set(members.map((m) => getMemberKey(m)));
+
+      if (friendKey && existingKeys.has(friendKey)) {
+        setInviteError("현재 방에 이미 존재하는 사람입니다!");
+        return;
+      }
+
+      await axios.post(`/api/chat/rooms/${roomId}/join`, null, {
+        params: { memberName: friendName },
+      });
+
+      setMembers((prev) => {
+        const merged = [...prev];
+        const exists = new Set(prev.map((m) => getMemberKey(m)));
+
+        if (!exists.has(friendKey)) {
+          exists.add(friendKey);
+          merged.push({
+            id: friend.id || friend.friendId || friend.userId,
+            nickname: friendName,
+            name: friend.name || friend.nickname || friend.id,
+          });
+        }
+
+        return merged;
+      });
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          systemMessage: true,
+          message: `${friendName}님이 입장했습니다.`,
+          time: "",
+        },
+      ]);
+
+      alert(`${friendName}님을 대화방에 초대했습니다.`);
+    } catch (e) {
+      console.error("대화방 초대 실패:", e);
+      alert("해당 친구를 대화방에 초대하는 중 오류가 발생했습니다.");
+    }
+  };
+
+  const renderMessageText = (text) => {
+    if (!text) return null;
+
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+
+    return parts.map((part, idx) => {
+      if (/^https?:\/\/[^\s]+$/.test(part)) {
+        return (
+          <a
+            key={idx}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="chat-message-link"
           >
-            {isConnected ? "● 연결됨" : "● 끊김"}
-          </span>
-          <button onClick={createInvite}>🔗 초대</button>
+            {part}
+          </a>
+        );
+      }
+      return <span key={idx}>{part}</span>;
+    });
+  };
+
+  const filteredMessages = messages.filter((m) => {
+    if (!searchText.trim()) return true;
+    if (m.systemMessage) return m.message.includes(searchText);
+    return (
+      m.message?.toLowerCase().includes(searchText.toLowerCase()) ||
+      m.sender?.toLowerCase().includes(searchText.toLowerCase())
+    );
+  });
+
+  const toggleMenu = () => {
+    setMenuOpen((prev) => !prev);
+    setShowMemberPanel(false);
+  };
+
+  const closeMenuPanels = () => {
+    setMenuOpen(false);
+    setShowMemberPanel(false);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setInviteError("");
+  };
+
+  return (
+    <div className="chat-room">
+      <div className="chat-card">
+        {/* 헤더 */}
+        <div className="chat-card-header">
+          <div className="chat-header-left">
+            <img
+              src={profileBig}
+              alt="room icon"
+              className="chat-room-profile"
+            />
+            <div className="chat-header-text-block">
+              <div className="chat-room-title">
+                {roomName || `채팅방 (${roomId})`}
+              </div>
+              <div className="chat-room-member-inline">
+                <img
+                  src={peopleIcon}
+                  alt="참여자"
+                  className="chat-people-icon"
+                />
+                <span className="chat-member-count">{members.length}</span>
+                <span className="chat-connection-dot">
+                  {isConnected ? "● 연결됨" : "● 끊김"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="chat-exit-btn"
+            onClick={handleLeaveRoom}
+          >
+            대화방 나가기
+          </button>
+        </div>
+
+        {/* 검색 + 메뉴 */}
+        <div className="chat-search-row">
+          <div className="chat-search-box">
+            <img src={searchIcon} alt="검색" className="chat-search-icon" />
+            <input
+              type="text"
+              className="chat-search-input"
+              placeholder="찾으실 대화 내용을 검색하세요."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+          </div>
+
+          <div className="chat-search-actions">
+            <button
+              type="button"
+              className="chat-menu-btn"
+              onClick={toggleMenu}
+            >
+              <img src={menuIcon} alt="메뉴" />
+            </button>
+          </div>
+        </div>
+
+        {/* 옵션 메뉴 패널 */}
+        {menuOpen && !showMemberPanel && (
+          <div className="chat-menu-panel">
+            <div className="chat-menu-header">
+              <button
+                type="button"
+                className="chat-menu-close-btn"
+                onClick={closeMenuPanels}
+              >
+                <img src={closeIcon} alt="닫기" />
+              </button>
+              <button
+                type="button"
+                className="chat-menu-topicon-btn"
+                onClick={closeMenuPanels}
+              >
+                <img src={menuIcon} alt="메뉴" />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              className="chat-menu-item"
+              onClick={handleChangeRoomName}
+            >
+              대화방 제목 변경하기
+            </button>
+
+            <button
+              type="button"
+              className="chat-menu-item chat-menu-item-highlight"
+              onClick={() => {
+                createInvite();
+                closeMenuPanels();
+              }}
+            >
+              친구 초대하기
+            </button>
+
+            <button
+              type="button"
+              className="chat-menu-item"
+              onClick={handleLeaveRoom}
+            >
+              대화방 나가기
+            </button>
+
+            <button
+              type="button"
+              className="chat-menu-item"
+              onClick={() => setShowMemberPanel(true)}
+            >
+              참여자 목록
+            </button>
+          </div>
+        )}
+
+        {/* 참여자 목록 패널 */}
+        {menuOpen && showMemberPanel && (
+          <div className="chat-members-panel">
+            <div className="chat-menu-header">
+              <button
+                type="button"
+                className="chat-menu-close-btn"
+                onClick={closeMenuPanels}
+              >
+                <img src={closeIcon} alt="닫기" />
+              </button>
+              <button
+                type="button"
+                className="chat-menu-topicon-btn"
+                onClick={closeMenuPanels}
+              >
+                <img src={menuIcon} alt="메뉴" />
+              </button>
+            </div>
+
+            <div className="chat-members-title">참여자 목록</div>
+
+            <div className="chat-members-list-panel">
+              {members.map((m, idx) => {
+                const name =
+                  typeof m === "string"
+                    ? m
+                    : m.nickname ||
+                      m.name ||
+                      m.id ||
+                      m.username ||
+                      "알 수 없는 사용자";
+
+                const profileUrl =
+                  typeof m === "object"
+                    ? m.profileImageUrl ||
+                      m.profileUrl ||
+                      m.imageUrl ||
+                      m.avatarUrl ||
+                      null
+                    : null;
+
+                return (
+                  <div key={idx} className="chat-member-row">
+                    <div className="chat-member-avatar">
+                      <img
+                        src={profileUrl || smallProfile}
+                        alt={name}
+                        className="chat-member-avatar-img"
+                      />
+                    </div>
+                    <span className="chat-member-name">{name}</span>
+                  </div>
+                );
+              })}
+              {members.length === 0 && (
+                <div className="chat-members-empty">참여자가 없습니다.</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 메시지 리스트 */}
+        <div className="chat-messages" ref={chatBoxRef} onScroll={handleScroll}>
+          {filteredMessages.map((m, i) => {
+            if (m.systemMessage) {
+              return (
+                <div key={i} className="system-message">
+                  {m.message}
+                </div>
+              );
+            }
+
+            const isMine = m.sender === nickname.current;
+
+            return (
+              <div
+                key={i}
+                className={`chat-message-row ${isMine ? "mine" : "other"}`}
+              >
+                {!isMine && (
+                  <div className="chat-avatar">
+                    <img
+                      src={smallLogo}
+                      alt="프로필"
+                      className="chat-avatar-img"
+                    />
+                  </div>
+                )}
+
+                <div className="chat-bubble-block">
+                  {!isMine && (
+                    <div className="chat-sender-name">{m.sender}</div>
+                  )}
+                  <div className="chat-bubble">
+                    <span className="chat-message-text">
+                      {renderMessageText(m.message)}
+                    </span>
+                  </div>
+                  {m.time && <div className="chat-message-time">{m.time}</div>}
+                </div>
+              </div>
+            );
+          })}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* 입력 영역 */}
+        <div className="chat-input-area">
+          <div className="chat-input-top">
+            <textarea
+              value={msg}
+              onChange={(e) => setMsg(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
+              placeholder="내용을 입력해주세요. (Shift+Enter: 줄바꿈 / Enter: 전송)"
+              className="chat-textarea"
+              rows={3}
+            />
+          </div>
+
+          <div className="chat-input-bottom">
+            <span className="chat-input-desc">Description</span>
+            <button
+              onClick={sendMessage}
+              type="button"
+              className="chat-send-btn"
+            >
+              보내기
+            </button>
+          </div>
         </div>
       </div>
 
-      <div
-        style={{
-          border: "1px solid #ccc",
-          height: 300,
-          overflowY: "auto",
-          padding: 10,
-          marginBottom: 10,
-        }}
-      >
-        {messages.map((m, i) => (
-          <div key={i}>
-            <b>{m.sender}</b>: {m.message}{" "}
-            <span style={{ fontSize: "0.8em" }}>({m.time})</span>
-          </div>
-        ))}
-      </div>
-
-      <input
-        value={msg}
-        onChange={(e) => setMsg(e.target.value)}
-        placeholder="메시지 입력..."
-      />
-      <button onClick={sendMessage}>보내기</button>
-
-      {/* ✅ 초대 링크 모달 */}
+      {/* 초대 모달 */}
       {showModal && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-          onClick={() => setShowModal(false)}
-        >
-          <div
-            style={{
-              background: "white",
-              padding: 20,
-              borderRadius: 10,
-              minWidth: 300,
-              textAlign: "center",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3>초대 링크</h3>
-            <p style={{ wordBreak: "break-all" }}>{inviteLink}</p>
-            <button onClick={copyLink}>복사</button>
-            <button onClick={() => setShowModal(false)}>닫기</button>
+        <div className="invite-modal-bg" onClick={handleCloseModal}>
+          <div className="invite-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="invite-modal-title">친구 초대</h3>
+
+            <div className="invite-modal-friends">
+              <div className="invite-modal-friends-header">
+                친구에게 1:1 또는 초대하기
+              </div>
+
+              {inviteError && (
+                <p className="invite-modal-error">{inviteError}</p>
+              )}
+
+              {loadingFriends ? (
+                <p className="invite-modal-friends-empty">
+                  친구 목록을 불러오는 중입니다...
+                </p>
+              ) : friends.length === 0 ? (
+                <p className="invite-modal-friends-empty">
+                  등록된 친구가 없습니다.
+                </p>
+              ) : (
+                <div className="invite-modal-friend-list">
+                  {friends.map((f) => {
+                    const friendId = f.id || f.friendId;
+                    const displayName = f.nickname || f.name || f.id;
+
+                    return (
+                      <div key={friendId} className="invite-modal-friend-item">
+                        <div className="invite-modal-friend-left">
+                          <div className="invite-modal-friend-avatar">
+                            <img
+                              src={profileBig}
+                              alt="친구"
+                              className="invite-modal-friend-avatar-img"
+                            />
+                          </div>
+                          <div className="invite-modal-friend-texts">
+                            <div className="invite-modal-friend-name">
+                              {displayName}
+                            </div>
+                            <div className="invite-modal-friend-sub">
+                              1:1 또는 대화방 초대
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="invite-modal-friend-right">
+                          <button
+                            type="button"
+                            className="invite-modal-friend-btn chat-friend-chat-btn"
+                            onClick={() => handleInviteFriendOneToOne(f)}
+                          >
+                            1:1 대화
+                          </button>
+
+                          <button
+                            type="button"
+                            className="invite-modal-friend-btn invite-modal-friend-btn--group"
+                            onClick={() =>
+                              handleInviteFriendToCurrentRoom(f)
+                            }
+                          >
+                            대화방 초대
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="invite-modal-link">
+              <div className="invite-modal-actions">
+                <button
+                  onClick={handleCloseModal}
+                  type="button"
+                  className="invite-modal-close-btn"
+                >
+                  닫기
+                </button>
+                {inviteLink && (
+                  <button
+                    onClick={copyLink}
+                    type="button"
+                    className="invite-modal-copy-btn"
+                  >
+                    초대 링크 복사
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 }
-
-ChatRoom.propTypes = {
-  room: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string,
-  }).isRequired,
-};
