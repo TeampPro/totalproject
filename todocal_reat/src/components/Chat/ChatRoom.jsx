@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import axios from "../../api/setupAxios";
+import { BASE_URL } from "../../api/http";
 import { fetchMessages } from "../../api/chatApi";
 import { fetchFriends } from "../../api/friendApi";
 
@@ -60,8 +61,11 @@ export default function ChatRoom() {
   };
 
   // ✅ HTTP/WS 베이스 URL (dev/배포 공통 사용)
-  const HTTP_BASE = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
-  const WS_BASE = HTTP_BASE ? HTTP_BASE.replace(/^http/, "ws") : "";
+  // const HTTP_BASE = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+  // const WS_BASE = HTTP_BASE ? HTTP_BASE.replace(/^http/, "ws") : "";
+
+  const HTTP_BASE = BASE_URL;
+  const WS_BASE = HTTP_BASE.replace(/^http/, "ws");
 
   const getMemberKey = (m) => {
     if (!m) return "";
