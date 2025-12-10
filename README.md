@@ -6,6 +6,7 @@
 <p>친구들과의 일정 공유 시스템과 스케줄 관리/채팅/커뮤니티를 한꺼번에~ !</p>
 
 </div>
+<img width="1920" height="1080" alt="image-31" src="https://github.com/user-attachments/assets/b5776483-2f7c-498f-a9ca-155db3dca544" />
 
 ---
 
