@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../api/setupAxios";
-import { BASE_URL } from "../../api/http"; // ✅ 공통 BASE_URL 사용
+import { BASE_URL } from "../../api/http";
 
 import "../../styles/myprofile/UserInfo.css";
 import profileIcon from "../../assets/profileBig.svg";

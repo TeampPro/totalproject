@@ -23,18 +23,6 @@ function WebSearch() {
 
     // 2) 백엔드 검색 결과도 받아서 페이지 내에 표시
     setLoading(true);
-    // setError("");
-    // setResults([]);
-
-    // try {
-    //   const data = await searchGoogle(trimmed);
-    //   setResults(data.results || []);
-    // } catch (err) {
-    //   console.error(err);
-    //   setError("검색 중 오류가 발생했습니다.");
-    // } finally {
-    //   setLoading(false);
-    // }
   };
 
   return (

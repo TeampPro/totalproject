@@ -8,8 +8,6 @@ export const BASE_URL = (
   FALLBACK_BASE_URL
 ).replace(/\/$/, "");
 
-console.log("BASE_URL (http.js) =", BASE_URL); // 확인용
-
 function buildUrl(path, params) {
   if (!params || Object.keys(params).length === 0) return path;
   const search = new URLSearchParams(params).toString();
@@ -59,7 +57,6 @@ export async function apiFetch(path, options = {}) {
   return data;
 }
 
-// src/api/http.js
 export const api = {
   get: (path, options = {}) => {
     const { params, ...rest } = options;
@@ -77,7 +74,6 @@ export const api = {
       body: body instanceof FormData ? body : JSON.stringify(body),
       ...options,
     }),
-  // ✅ 여기 수정
   del: (path, options = {}) => {
     const { params, ...rest } = options;
     return apiFetch(buildUrl(path, params), { method: "DELETE", ...rest });
