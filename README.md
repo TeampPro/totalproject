@@ -2,18 +2,10 @@
 
 <div align="center">
 
-<h3><b> 💡 한 줄 소개 : 깔끔하고 직관적인 서비스 Planix </b></h3>
+<h3><b> 깔끔하고 직관적인 서비스 Planix </b></h3>
 <p>친구들과의 일정 공유 시스템과 스케줄 관리/채팅/커뮤니티를 한꺼번에~ !</p>
 
 </div>
-
----
-
-<!-- 🎬 서비스 대표 GIF 영역 -->
-<p align="center">
-  <!-- 아래 src에 본인 저장소의 GIF 경로를 넣어주세요. -->
-  <img src="./assets/group.svg" alt="서비스 시연 GIF" width="50" />
-</p>
 
 ---
 
